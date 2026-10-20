@@ -1,13 +1,13 @@
 'use strict';
 // Runs the real app (main.js) against a throwaway data dir and lets a scenario drive it.
 //   npx electron test/e2e/harness.js test/e2e/scenarios/<name>.js
-// Screenshots go to $SHOT_DIR (default: <tmp>/maturalab-shots).
+// Screenshots go to $SHOT_DIR (default: <tmp>/informatura-shots).
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
-process.env.MATURALAB_DATA_DIR = process.env.KEEP_DATA_DIR || fs.mkdtempSync(path.join(os.tmpdir(), 'maturalab-e2e-'));
-const OUT = process.env.SHOT_DIR || path.join(os.tmpdir(), 'maturalab-shots');
+process.env.INFORMATURA_DATA_DIR = process.env.KEEP_DATA_DIR || fs.mkdtempSync(path.join(os.tmpdir(), 'informatura-e2e-'));
+const OUT = process.env.SHOT_DIR || path.join(os.tmpdir(), 'informatura-shots');
 fs.mkdirSync(OUT, { recursive: true });
 
 const { app } = require('electron');

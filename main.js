@@ -7,17 +7,17 @@ const { pathToFileURL } = require('url');
 const runner = require('./src/runner');
 const store = require('./src/store');
 
-app.setName('MaturaLab');
-app.setDesktopName('maturalab.desktop'); // lets GNOME/KDE match the window to its launcher and icon on Wayland
-if (process.env.MATURALAB_DATA_DIR) app.setPath('userData', process.env.MATURALAB_DATA_DIR);
+app.setName('Informatura');
+app.setDesktopName('informatura.desktop'); // lets GNOME/KDE match the window to its launcher and icon on Wayland
+if (process.env.INFORMATURA_DATA_DIR) app.setPath('userData', process.env.INFORMATURA_DATA_DIR);
 if (process.platform === 'linux') app.commandLine.appendSwitch('ozone-platform-hint', 'auto');
-if (process.platform === 'win32') app.setAppUserModelId('app.maturalab');
-const DEV = !!process.env.MATURALAB_DEV || process.argv.includes('--dev');
+if (process.platform === 'win32') app.setAppUserModelId('app.informatura');
+const DEV = !!process.env.INFORMATURA_DEV || process.argv.includes('--dev');
 
-// The renderer is served from maturalab://app/ so ES modules, fetch(), WebAssembly and
+// The renderer is served from informatura://app/ so ES modules, fetch(), WebAssembly and
 // web workers all behave as on a normal (secure) web origin.
 protocol.registerSchemesAsPrivileged([
-  { scheme: 'maturalab', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } },
+  { scheme: 'informatura', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } },
 ]);
 
 const ROOT = __dirname;
@@ -59,6 +59,24 @@ function serve(request) {
   return net.fetch(pathToFileURL(file).toString());
 }
 
+// The app used to be called MaturaLab: carry progress, code and window size over on the
+// first start under the new name.
+function migrateOldData() {
+  if (process.env.INFORMATURA_DATA_DIR) return;
+  const dir = app.getPath('userData');
+  const old = path.join(path.dirname(dir), 'MaturaLab');
+  // getPath('userData') may already have created the new folder, so look at what's inside.
+  if (!fs.existsSync(old) || fs.existsSync(path.join(dir, 'store'))) return;
+  for (const name of ['store', 'workspace', 'window-state.json']) {
+    try {
+      const src = path.join(old, name);
+      if (fs.existsSync(src)) fs.cpSync(src, path.join(dir, name), { recursive: true });
+    } catch {
+      // A half-copied workspace is no worse than a fresh one.
+    }
+  }
+}
+
 // ---- window size memory ---------------------------------------------------------------
 
 const stateFile = () => path.join(app.getPath('userData'), 'window-state.json');
@@ -90,7 +108,7 @@ function createWindow() {
     minWidth: 1100,
     minHeight: 680,
     backgroundColor: BG,
-    title: 'MaturaLab',
+    title: 'Informatura',
     icon: path.join(ROOT, 'build', 'icon.png'),
     show: false,
     autoHideMenuBar: true,
@@ -100,11 +118,11 @@ function createWindow() {
       nodeIntegration: false,
       sandbox: true,
       spellcheck: false,
-      backgroundThrottling: !process.env.MATURALAB_HIDDEN,
+      backgroundThrottling: !process.env.INFORMATURA_HIDDEN,
     },
   });
   if (bounds.maximized) win.maximize();
-  win.once('ready-to-show', () => !process.env.MATURALAB_HIDDEN && win.show());
+  win.once('ready-to-show', () => !process.env.INFORMATURA_HIDDEN && win.show());
   win.on('close', saveBounds);
   win.on('closed', () => {
     win = null;
@@ -116,7 +134,7 @@ function createWindow() {
     return { action: 'deny' };
   });
   win.webContents.on('will-navigate', (e, url) => {
-    if (!url.startsWith('maturalab://')) e.preventDefault();
+    if (!url.startsWith('informatura://')) e.preventDefault();
   });
   win.webContents.on('before-input-event', (e, input) => {
     if (input.type !== 'keyDown') return;
@@ -130,11 +148,11 @@ function createWindow() {
     }
   });
 
-  win.loadURL('maturalab://app/index.html');
-  if (process.env.MATURALAB_SELFTEST) selfTest(win);
+  win.loadURL('informatura://app/index.html');
+  if (process.env.INFORMATURA_SELFTEST) selfTest(win);
 }
 
-// MATURALAB_SELFTEST=1: quick smoke test of a (packaged) build – opens a task of each
+// INFORMATURA_SELFTEST=1: quick smoke test of a (packaged) build – opens a task of each
 // kind, prints the result and quits with a matching exit code.
 async function selfTest(w) {
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -238,7 +256,8 @@ if (!app.requestSingleInstanceLock()) {
 
   app.whenReady().then(() => {
     Menu.setApplicationMenu(null);
-    protocol.handle('maturalab', serve);
+    protocol.handle('informatura', serve);
+    migrateOldData();
     registerIpc();
     createWindow();
   });

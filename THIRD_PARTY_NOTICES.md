@@ -1,6 +1,6 @@
 # Third-party notices
 
-MaturaLab is distributed under the GNU General Public License v3.0 only (see `LICENSE`).
+Informatura is distributed under the GNU General Public License v3.0 only (see `LICENSE`).
 It bundles the following software and materials.
 
 ## Software
@@ -15,7 +15,7 @@ It bundles the following software and materials.
 | [Chart.js](https://github.com/chartjs/Chart.js) | 4.5.1 | MIT | Chart.js contributors |
 | [@kurkle/color](https://github.com/kurkle/color) (used by Chart.js) | 0.3.4 | MIT | Jukka Kurkela |
 
-HyperFormula is used under its GPL v3 license (`licenseKey: 'gpl-v3'`), which is why MaturaLab
+HyperFormula is used under its GPL v3 license (`licenseKey: 'gpl-v3'`), which is why Informatura
 as a whole is released under GPL-3.0-only.
 
 ### MIT License (Monaco Editor, sql.js, marked, Chart.js, @kurkle/color, Electron)

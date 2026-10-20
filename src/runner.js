@@ -291,7 +291,7 @@ function start(spec) {
     let dir;
     try {
       dir = spec.sandbox
-        ? prepareWorkspace(null, spec.files, fs.mkdtempSync(path.join(os.tmpdir(), 'maturalab-')))
+        ? prepareWorkspace(null, spec.files, fs.mkdtempSync(path.join(os.tmpdir(), 'informatura-')))
         : prepareWorkspace(spec.taskKey, spec.files);
     } catch (err) {
       send({ type: 'exit', code: -1, error: 'Nie udało się przygotować folderu roboczego: ' + err.message });
@@ -438,7 +438,7 @@ function runOnce(b, input, timeoutMs, cwd) {
 async function runTests(spec) {
   const b = await build(spec.lang, spec.code);
   if (b.error || b.compileError) return { error: b.error, compileError: b.compileError, missingToolchain: b.missingToolchain };
-  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'maturalab-t-'));
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'informatura-t-'));
   const results = [];
   try {
     for (const t of spec.tests || []) {

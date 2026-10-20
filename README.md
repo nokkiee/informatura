@@ -1,4 +1,4 @@
-# MaturaLab
+# Informatura
 
 **Ćwiczenie matury z informatyki (poziom rozszerzony, formuła 2023) na prawdziwych arkuszach.**
 Rozwiązujesz zadania z egzaminów CKE w jednym programie. Kod piszesz i uruchamiasz w Pythonie,
@@ -69,7 +69,7 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
 
 ## Czego potrzebujesz
 
-MaturaLab uruchamia Twój kod na Twoim komputerze, więc potrzebny jest kompilator albo interpreter
+Informatura uruchamia Twój kod na Twoim komputerze, więc potrzebny jest kompilator albo interpreter
 języka, w którym piszesz. Wystarczy jeden z nich.
 
 | Język | Co zainstalować | Ubuntu / Debian |
@@ -90,11 +90,11 @@ Bazy danych, arkusz kalkulacyjny i zadania teoretyczne nie wymagają niczego dod
 
 `npm run dist` buduje w folderze `dist/` dwa pliki:
 
-- `MaturaLab-<wersja>.AppImage` dla dowolnej dystrybucji. Nadaj mu prawo do uruchamiania (`chmod +x`) i uruchom.
-- `maturalab_<wersja>_amd64.deb` dla Debiana i Ubuntu. Instalujesz go poleceniem:
+- `Informatura-<wersja>.AppImage` dla dowolnej dystrybucji. Nadaj mu prawo do uruchamiania (`chmod +x`) i uruchom.
+- `informatura_<wersja>_amd64.deb` dla Debiana i Ubuntu. Instalujesz go poleceniem:
 
 ```bash
-sudo apt install ./dist/maturalab_0.1.0_amd64.deb
+sudo apt install ./dist/informatura_0.1.0_amd64.deb
 ```
 
 ### Ze źródeł
@@ -131,12 +131,12 @@ npm run install-desktop
 Gotową paczkę można szybko sprawdzić. To polecenie otwiera zadanie każdego rodzaju i wypisuje `SELFTEST OK`:
 
 ```bash
-MATURALAB_SELFTEST=1 dist/linux-unpacked/maturalab --no-sandbox
+INFORMATURA_SELFTEST=1 dist/linux-unpacked/informatura --no-sandbox
 ```
 
 ### Struktura
 
-- `main.js`: proces główny Electrona. Serwuje aplikację pod `maturalab://app/`, otwiera PDF-y i obsługuje IPC.
+- `main.js`: proces główny Electrona. Serwuje aplikację pod `informatura://app/`, otwiera PDF-y i obsługuje IPC.
 - `src/runner.js`: kompilacja i uruchamianie kodu (Python, g++, javac), folder roboczy zadania, limity czasu i testy.
 - `renderer/`: interfejs.
   - `renderer/js/views/`: ekrany programu.
