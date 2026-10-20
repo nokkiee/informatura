@@ -38,7 +38,7 @@ Exec="$ELECTRON" --no-sandbox "$APP_DIR"
 Path=$APP_DIR
 Icon=maturalab
 Terminal=false
-Categories=Education;Development;
+Categories=Education;
 Keywords=matura;informatyka;python;cpp;java;sql;excel;
 StartupWMClass=maturalab
 DESKTOP_ENTRY
