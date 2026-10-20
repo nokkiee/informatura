@@ -1,5 +1,6 @@
 'use strict';
-// Opens every task of every exam and checks that it renders without errors.
+// Opens every task of every exam and checks that it renders without errors, then reveals
+// all its hints (and, for code and SQL tasks, the model solution in the editor).
 // SHOTS=1 also saves a screenshot of each task.
 module.exports = async (H) => {
   const keys = await H.js(`(async () => {
@@ -36,6 +37,34 @@ module.exports = async (H) => {
     if (info.len < 20) problems.push(key + ': empty text');
     if (info.raw) problems.push(key + ': raw placeholder or undefined in text');
     if (info.imgs.length) problems.push(key + ': broken image ' + info.imgs.join(', '));
+
+    // every hint: rendered, and for code / SQL tasks the model solution shows up in the editor
+    const hints = await H.js(`(async () => {
+      const [id, no] = ${JSON.stringify(key)}.split('/');
+      const texts = (await import('./content/hints/' + id + '.js')).default[no] || [];
+      const e = (await import('./content/exams/' + id + '.js')).default;
+      const kind = e.groups.flatMap((g) => g.tasks).find((t) => t.no === no).kind;
+      const stages = ['program', 'algorithm'].includes(kind) ? 3 : ['sql', 'sqlwrite'].includes(kind) ? 2 : 0;
+      const btn = () => [...document.querySelectorAll('.answer-actions .btn')].find((b) => /odpowied/i.test(b.textContent));
+      for (let i = 0; i < 12 && btn() && !btn().disabled; i++) btn().click();
+      return { expected: texts.length + stages, stages };
+    })()`);
+    await H.sleep(hints.stages ? 1200 : 150);
+    const shown = await H.js(`(() => {
+      const box = document.querySelector('.hints-box').cloneNode(true);
+      box.querySelectorAll('code, pre').forEach((c) => c.remove());
+      document.body.appendChild(box);
+      const txt = box.innerText;
+      box.remove();
+      return {
+        cards: document.querySelectorAll('.hint-card').length,
+        raw: /\\{\\{|\\$\\{|undefined|\\*\\*|\`/.test(txt),
+        ghost: !!document.querySelector('.ghost-zone, .ghost-inline'),
+      };
+    })()`);
+    if (shown.cards !== hints.expected) problems.push(`${key}: ${shown.cards} hints shown, expected ${hints.expected}`);
+    if (shown.raw) problems.push(key + ': raw markdown in hints');
+    if (hints.stages && !shown.ghost) problems.push(key + ': no model solution in the editor');
     if (process.env.SHOTS) await H.shot('task-' + key.replace(/[/.]/g, '_'));
   }
   if (problems.length) throw new Error('Problems:\n' + problems.join('\n'));
