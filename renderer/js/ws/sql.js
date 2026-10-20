@@ -4,6 +4,7 @@
 import { h, btn, icon, clear, toast, splitter, modal, loadUmd } from '../ui.js';
 import { loadMonaco, editorOptions } from '../monaco.js';
 import { fetchData } from '../content.js';
+import { createGhost } from '../ghost.js';
 
 let sqlPromise = null;
 function loadSqlJs() {
@@ -74,7 +75,7 @@ const ARITY = [
   (fn) => (a, b, c, d, e, g) => fn(a, b, c, d, e, g),
 ];
 
-function registerFunctions(db) {
+export function registerFunctions(db) {
   const f = (name, fn, arities = [fn.length]) => {
     for (const n of arities) db.create_function(name, ARITY[n](fn));
   };
@@ -223,6 +224,8 @@ export function createSqlWorkspace(container, ctx) {
   let monaco = null;
   let disposed = false;
   let completion = null;
+  let ghost = null;
+  let ghostStage = ctx.ghostStage || 0;
 
   const runBtn = btn('Wykonaj', { icon: 'play', kind: 'primary', kbd: 'Ctrl+⏎', onClick: () => runQuery() });
   const resetBtn = h('button', { class: 'icon-btn', title: 'Przywróć bazę do stanu początkowego (cofa INSERT/UPDATE/DELETE)', onclick: () => rebuild(true) }, icon('refresh'));
@@ -420,14 +423,32 @@ export function createSqlWorkspace(container, ctx) {
     });
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => runQuery());
     registerCompletion();
+    ghost = createGhost(monaco, editor);
+    applyGhost();
     if (ctx.focus !== false) editor.focus();
   });
   rebuild(false);
+
+  // Hints: the model query, shown faintly in the editor (stage 1 = first line, 2 = all).
+  async function applyGhost(focus) {
+    if (!ghost) return null;
+    const ref = ghostStage && ctx.solutionFor ? await ctx.solutionFor('sql') : null;
+    if (!ghost) return null;
+    if (!ref) {
+      ghost.set(null);
+      return null;
+    }
+    const plan = ghost.set({ ref, template: starter, lang: 'sql', stage: ghostStage, stages: 2 });
+    if (focus) ghost.focus();
+    return plan;
+  }
 
   return {
     destroy() {
       disposed = true;
       completion?.dispose();
+      ghost?.dispose();
+      ghost = null;
       db?.close();
       if (editor) {
         editor.getModel()?.dispose();
@@ -435,6 +456,10 @@ export function createSqlWorkspace(container, ctx) {
       }
     },
     run: () => runQuery(),
+    setGhostStage(stage, focus) {
+      ghostStage = stage;
+      return applyGhost(focus);
+    },
   };
 }
 

@@ -11,7 +11,7 @@ const names = process.argv.slice(2).length ? process.argv.slice(2) : ['flow', 'f
 for (const name of names) {
   console.log(`\n=== ${name} ===`);
   // CI Linux runners can't set up Chromium's sandbox (no SUID helper, restricted user namespaces).
-  const flags = process.env.CI && process.platform === 'linux' ? ['--no-sandbox'] : [];
+  const flags = process.env.CI && process.platform === 'linux' ? ['--no-sandbox', '--disable-gpu'] : [];
   const r = spawnSync(electron, [...flags, path.join(root, 'test/e2e/harness.js'), path.join(root, 'test/e2e/scenarios', name + '.js')], {
     stdio: 'inherit',
     cwd: root,

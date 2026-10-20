@@ -50,10 +50,15 @@ function waitFor(fn, ms = 10000, step = 50) {
     js: (code) => wc.executeJavaScript(code, true),
     async shot(name) {
       await H.sleep(120);
-      const img = await wc.capturePage();
       const file = path.join(OUT, `${name}.png`);
-      fs.writeFileSync(file, img.toPNG());
-      console.log('shot', file);
+      try {
+        const img = await wc.capturePage();
+        fs.writeFileSync(file, img.toPNG());
+        console.log('shot', file);
+      } catch (err) {
+        // screenshots are for looking at, not assertions; headless CI displays sometimes refuse
+        console.log('shot failed', name, err.message);
+      }
     },
     // Clicks the centre of an element found by CSS selector (optionally the n-th match / containing text).
     async click(selector, text) {

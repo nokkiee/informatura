@@ -94,3 +94,30 @@ export function isPractical(task) {
 export function autoPoints(task) {
   return task.points - (task.self?.points || 0);
 }
+
+// ---- hints -------------------------------------------------------------------------------
+// content/hints/<exam>.js: { '<task no>': ['a vague hint', 'a more specific one', …] } (markdown)
+// content/solutions/<exam>/<task no>.<py|cpp|java|sql>: model solutions, which the later
+// hints reveal line by line in the editor.
+
+const hintModules = new Map();
+export async function getHints(exam, no) {
+  if (!hintModules.has(exam.id)) {
+    hintModules.set(
+      exam.id,
+      import(`../content/hints/${exam.id}.js`).then((m) => m.default).catch(() => ({})),
+    );
+  }
+  return (await hintModules.get(exam.id))[no] || [];
+}
+
+export const SOLUTION_EXT = { python: 'py', cpp: 'cpp', java: 'java', sql: 'sql' };
+
+export async function fetchSolution(exam, no, lang) {
+  const url = `content/solutions/${exam.id}/${no}.${SOLUTION_EXT[lang]}`;
+  if (textCache.has(url)) return textCache.get(url);
+  const res = await fetch(url).catch(() => null);
+  const text = res && res.ok ? await res.text() : null;
+  textCache.set(url, text);
+  return text;
+}
