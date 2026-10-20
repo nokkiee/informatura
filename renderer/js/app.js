@@ -132,8 +132,8 @@ function buildHeader() {
     h(
       'div',
       { class: 'brand', onclick: () => navigate('#/') },
-      h('span', { class: 'logo' }, h('span', null, 'M'), h('span', null, 'L')),
-      h('span', { class: 'brand-name' }, 'Matura', h('b', null, 'Lab')),
+      h('img', { class: 'logo', src: 'img/logo.svg', alt: '' }),
+      h('span', { class: 'brand-name' }, 'Infor', h('b', null, 'matura')),
       h('span', { class: 'brand-sub' }, 'informatyka · rozszerzona · formuła 2023'),
     ),
   );

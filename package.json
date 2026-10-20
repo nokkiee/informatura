@@ -1,13 +1,13 @@
 {
-  "name": "maturalab",
-  "productName": "MaturaLab",
-  "version": "0.1.0",
-  "description": "MaturaLab: ćwicz zadania z prawdziwych matur z informatyki (poziom rozszerzony, formuła 2023) — kod, SQL, arkusz kalkulacyjny i teoria.",
+  "name": "informatura",
+  "productName": "Informatura",
+  "version": "1.0.0",
+  "description": "Informatura: ćwicz zadania z prawdziwych matur z informatyki (poziom rozszerzony, formuła 2023) — kod, SQL, arkusz kalkulacyjny i teoria.",
   "main": "main.js",
   "license": "GPL-3.0-only",
   "private": true,
   "author": {
-    "name": "MaturaLab contributors"
+    "name": "Informatura contributors"
   },
   "scripts": {
     "start": "electron .",
@@ -32,10 +32,10 @@
     "monaco-editor": "^0.57.0",
     "sql.js": "^1.15.1"
   },
-  "homepage": "https://github.com/nokkiee/maturalab",
+  "homepage": "https://github.com/nokkiee/informatura",
   "build": {
-    "appId": "app.maturalab",
-    "productName": "MaturaLab",
+    "appId": "app.informatura",
+    "productName": "Informatura",
     "directories": {
       "output": "dist",
       "buildResources": "build"
@@ -80,11 +80,11 @@
         "entry": {
           "GenericName": "Matura z informatyki",
           "Keywords": "matura;informatyka;python;cpp;java;sql;",
-          "StartupWMClass": "maturalab"
+          "StartupWMClass": "informatura"
         }
       },
       "maintainer": "nokkiee <202015925+nokkiee@users.noreply.github.com>",
-      "executableName": "maturalab"
+      "executableName": "informatura"
     },
     "deb": {
       "packageCategory": "education"
@@ -95,18 +95,18 @@
         "portable"
       ],
       "icon": "build/icon.png",
-      "executableName": "MaturaLab"
+      "executableName": "Informatura"
     },
     "nsis": {
       "oneClick": true,
       "perMachine": false,
       "createDesktopShortcut": true,
-      "shortcutName": "MaturaLab",
+      "shortcutName": "Informatura",
       "artifactName": "${productName}-Setup-${version}.${ext}"
     },
     "portable": {
       "artifactName": "${productName}-${version}-Portable.${ext}"
     }
   },
-  "desktopName": "maturalab.desktop"
+  "desktopName": "informatura.desktop"
 }
