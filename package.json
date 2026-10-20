@@ -12,8 +12,14 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
-    "vendor": "node scripts/vendor.js",
-    "test": "node --test test/unit/*.test.js"
+    "test": "node --test test/unit/*.test.js",
+    "test:e2e": "for s in flow features alltasks; do electron test/e2e/harness.js test/e2e/scenarios/$s.js || exit 1; done",
+    "icons": "electron scripts/make-icon.js",
+    "install-desktop": "scripts/install-desktop.sh",
+    "dist": "electron-builder --linux AppImage deb",
+    "dist:win": "electron-builder --win nsis portable",
+    "pack": "electron-builder --linux dir",
+    "verify-content": "for f in tools/ref/ref_*.py; do python3 $f > /dev/null || exit 1; done"
   },
   "devDependencies": {
     "electron": "^44.9.1",
@@ -25,5 +31,82 @@
     "marked": "^18.1.1",
     "monaco-editor": "^0.57.0",
     "sql.js": "^1.15.1"
-  }
+  },
+  "homepage": "https://github.com/nokkiee/maturalab",
+  "build": {
+    "appId": "app.maturalab",
+    "productName": "MaturaLab",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "renderer/**/*",
+      "content/**/*",
+      "build/icon.png",
+      "package.json",
+      "!node_modules/monaco-editor/{esm,dev,node_modules}/**",
+      "!node_modules/monaco-editor/*.{md,txt,ts}",
+      "!node_modules/hyperformula/{es,commonjs,typings}/**",
+      "!node_modules/hyperformula/dist/{hyperformula.js,hyperformula.min.js,hyperformula.full.js}",
+      "!node_modules/hyperformula/dist/languages/{csCZ,daDK,deDE,enGB,esES,fiFI,frFR,huHU,idID,itIT,nbNO,nlNL,ptPT,ruRU,svSE,trTR,all}.js",
+      "!node_modules/{chevrotain,@chevrotain,regexp-to-ast,tiny-emitter,unicode-segmenter,bignumber.js,dompurify,marked/src,marked/bin,marked/man}/**",
+      "!node_modules/sql.js/dist/{*.zip,*debug*,sql-asm*,worker*,sql-wasm-browser*,sql-wasm-inline*}",
+      "!node_modules/chart.js/{auto,helpers,types}/**",
+      "!node_modules/chart.js/dist/{chunks,controllers,core,elements,helpers,platform,plugins,scales,types}/**",
+      "!node_modules/chart.js/dist/{chart.js,chart.cjs,chart.umd.js,*.map,*.d.ts}",
+      "!node_modules/**/*.map"
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "content/pdf/**"
+    ],
+    "extraResources": [
+      "LICENSE",
+      "THIRD_PARTY_NOTICES.md"
+    ],
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Education",
+      "icon": "build/icons",
+      "synopsis": "Matura z informatyki – ćwiczenia",
+      "desktop": {
+        "entry": {
+          "GenericName": "Matura z informatyki",
+          "Keywords": "matura;informatyka;python;cpp;java;sql;",
+          "StartupWMClass": "maturalab"
+        }
+      },
+      "maintainer": "nokkiee <202015925+nokkiee@users.noreply.github.com>",
+      "executableName": "maturalab"
+    },
+    "deb": {
+      "packageCategory": "education"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.png",
+      "executableName": "MaturaLab"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "shortcutName": "MaturaLab",
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-Portable.${ext}"
+    }
+  },
+  "desktopName": "maturalab.desktop"
 }
