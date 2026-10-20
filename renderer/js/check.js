@@ -35,7 +35,9 @@ export function tokenize(text) {
     for (let p of pieces) {
       p = p.replace(/^[.!?]+/, '').replace(/(?<!\.)[.!?]+$/, '');
       if (!p || /^[-/\\_]+$/.test(p)) continue;
-      out.push(normDate(p) || p);
+      const ym = p.match(/^(\d{4})-(\d{1,2})$/); // "2023-05" -> year and month
+      if (ym) out.push(ym[1], ym[2]);
+      else out.push(normDate(p) || p);
     }
   }
   return out;
@@ -180,7 +182,13 @@ export function checkAnswer(answer, expect, { taskNo, siblings = [], autoPoints 
   });
 
   // lines parts are matched together, so each user line is used at most once
-  const lineParts = spec.parts.map((p, i) => [p, i]).filter(([p]) => p.lines);
+  // "reuse" parts (e.g. a separate point for sorting) look at the same lines again
+  const lineParts = spec.parts.map((p, i) => [p, i]).filter(([p]) => p.lines && !p.reuse);
+  for (const [p, i] of spec.parts.map((p, i) => [p, i]).filter(([p]) => p.lines && p.reuse)) {
+    const sub = checkAnswer(text, { exactLines: false, parts: [{ ...p, reuse: false, points: 1 }] }, { autoPoints: 1 });
+    results[i].ok = sub.parts[0].ok;
+    results[i].note = sub.parts[0].note;
+  }
   let extra = [];
   if (lineParts.length) {
     let ulines = answerLines(text, taskNo);
@@ -212,11 +220,35 @@ export function checkAnswer(answer, expect, { taskNo, siblings = [], autoPoints 
         }
       }
     }
-    for (const [, i] of lineParts) {
+    const lineOf = new Array(wanted.length).fill(-1);
+    if (!anyOrdered) {
+      // remember which user line matched each expected line (for "sort" checks)
+      const used2 = new Array(ulines.length).fill(false);
+      const order = wanted.map((w, k) => k).sort((a, b) => wanted[b].tokens.length - wanted[a].tokens.length);
+      for (const k of order) {
+        const j = ulines.findIndex((u, jj) => !used2[jj] && lineMatches(wanted[k].tokens, u.tokens));
+        if (j >= 0) {
+          used2[j] = true;
+          lineOf[k] = j;
+        }
+      }
+    }
+    for (const [p, i] of lineParts) {
       const mine = wanted.map((w, k) => [w, k]).filter(([w]) => w.part === i);
       const missing = mine.filter(([, k]) => !found[k]).length;
       results[i].ok = missing === 0;
       if (missing) results[i].note = `brakuje ${missing} z ${mine.length} oczekiwanych wierszy`;
+      if (results[i].ok && p.sort) {
+        // lines must appear sorted by their last number (ties in any order)
+        const seq = mine
+          .map(([w, k]) => ({ at: lineOf[k], v: Number([...w.tokens].reverse().find((t) => NUM.test(t))) }))
+          .sort((a, b) => a.at - b.at);
+        const okSort = seq.every((x, n) => n === 0 || (p.sort === 'desc' ? seq[n - 1].v >= x.v : seq[n - 1].v <= x.v));
+        if (!okSort) {
+          results[i].ok = false;
+          results[i].note = p.sort === 'desc' ? 'wiersze nie są posortowane nierosnąco' : 'wiersze nie są posortowane niemalejąco';
+        }
+      }
     }
     extra = ulines.filter((_, j) => !usedLine[j]).map((u) => u.raw);
     if (spec.exactLines && extra.length) {

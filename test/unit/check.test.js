@@ -93,3 +93,10 @@ test('alternatives, non-breaking thousands and custom scoring', () => {
   assert.strictEqual(C.checkAnswer('1\n3', exp).points, 2);
   assert.strictEqual(C.checkAnswer('1\n3\n9', exp).points, 0);
 });
+
+test('sorted lines with ties, year-month tokens', () => {
+  const exp = { parts: [{ lines: ['a 5', 'b 3', 'c 3', 'd 1'], points: 1 }, { lines: ['a 5', 'b 3', 'c 3', 'd 1'], sort: 'desc', reuse: true, points: 1 }], exactLines: false };
+  assert.strictEqual(C.checkAnswer('a 5\nc 3\nb 3\nd 1', exp).points, 2);
+  assert.strictEqual(C.checkAnswer('a 5\nd 1\nc 3\nb 3', exp).points, 1);
+  assert.strictEqual(C.checkAnswer('2023-05 48', { parts: [{ tokens: '2023', points: 1 }, { tokens: ['maj', '5'], points: 1 }, { tokens: '48', points: 1 }] }).points, 3);
+});
