@@ -345,7 +345,7 @@ export default {
 
             *s* = aaaaaaaaaa, *k1* = 2, *k2* = 5
 
-            (Program sprawdza Twoją odpowiedź, symulując funkcję *czy_mniejszy* – poprawnych odpowiedzi jest wiele.)
+            (Program sprawdza Twoją odpowiedź, symulując funkcję *czy_mniejszy* – poprawnych odpowiedzi jest wiele. Uwaga: dla pierwszego przykładu z klucza funkcja wykonuje w pierwszej instrukcji **jeżeli** 7 porównań – ostatnie porównuje *s*[7] = a z *s*[9] = b; drugi przykład daje dokładnie 6.)
           `,
         },
         {

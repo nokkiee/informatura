@@ -107,3 +107,10 @@ test('alphabetical sort by a chosen token', () => {
   assert.strictEqual(C.checkAnswer('Anna Mason K151\nAnna Dymek K358\nBarbara Wroblewska K275', exp).points, 2);
   assert.strictEqual(C.checkAnswer('Barbara Wroblewska K275\nAnna Mason K151\nAnna Dymek K358', exp).points, 1);
 });
+
+test('numbers written with digit-group spaces', () => {
+  assert.strictEqual(C.checkAnswer('2 422 669,40', '2422669,40', { autoPoints: 1 }).points, 1);
+  assert.strictEqual(C.checkAnswer('11 224 kg', '11224', { autoPoints: 1 }).points, 1);
+  assert.strictEqual(C.checkAnswer('3 436', { parts: [{ tokens: '3', points: 2 }, { tokens: '436', points: 1 }] }).points, 3);
+  assert.strictEqual(C.checkAnswer('2 422 669,41', '2422669,40', { autoPoints: 1 }).points, 0);
+});

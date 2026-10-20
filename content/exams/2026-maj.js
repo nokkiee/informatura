@@ -1,4 +1,4 @@
-import { md, table, sample, all, perField, byCount, evalExpr, parseCalls } from '../lib.js';
+import { md, table, sample, all, perField, byCount, evalExpr, parseCalls, inline } from '../lib.js';
 
 const frac = (a, b) => `<span class="frac"><span>${a}</span><span>${b}</span></span>`;
 
@@ -71,7 +71,7 @@ export default {
       intro: md`
         Dana jest zdefiniowana rekurencyjnie funkcja *A*(*m*, *n*), gdzie *m* i *n* są dodatnimi liczbami całkowitymi.
 
-        <div class="formula">*A*(*m*, *n*) = <span class="cases"><span>*m* — gdy *n* = 1</span><span>*A*(2 · *m*, ${frac('n', '2')}) — gdy *n* > 1 oraz *n* jest podzielne przez 2</span><span>2 · *A*(*m*, ${frac('n – 1', '2')}) + *m* — gdy *n* > 1 oraz *n* nie jest podzielne przez 2</span></span></div>
+        ${inline(`<div class="formula">*A*(*m*, *n*) = <span class="cases"><span>*m* — gdy *n* = 1</span><span>*A*(2 · *m*, ${frac('n', '2')}) — gdy *n* > 1 oraz *n* jest podzielne przez 2</span><span>2 · *A*(*m*, ${frac('n – 1', '2')}) + *m* — gdy *n* > 1 oraz *n* nie jest podzielne przez 2</span></span></div>`)}
       `,
       tasks: [
         {

@@ -21,10 +21,20 @@ export function md(strings, ...values) {
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+// Markdown isn't parsed inside HTML blocks, so table cells and formulas convert their
+// own **bold**, *italic* and `code` here.
+export function inline(s) {
+  return String(s)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+    .replace(/(^|[^\\\w*])\*([^*\s](?:[^*]*?[^*\s])?)\*(?![\w*])/g, '$1<i>$2</i>')
+    .replace(/\\\*/g, '*');
+}
+
 // rows: array of rows (arrays of cell HTML). The first row is the header unless head:false.
 export function table(rows, { head = true, cls = '', widths = null } = {}) {
   const colgroup = widths ? `<colgroup>${widths.map((w) => `<col style="width:${w}">`).join('')}</colgroup>` : '';
-  const tr = (r, tag) => `<tr>${r.map((c) => `<${tag}>${c}</${tag}>`).join('')}</tr>`;
+  const tr = (r, tag) => `<tr>${r.map((c) => `<${tag}>${inline(c)}</${tag}>`).join('')}</tr>`;
   const body = (head ? rows.slice(1) : rows).map((r) => tr(r, 'td')).join('');
   const thead = head ? `<thead>${tr(rows[0], 'th')}</thead>` : '';
   return `<table class="tbl ${cls}">${colgroup}${thead}<tbody>${body}</tbody></table>`;

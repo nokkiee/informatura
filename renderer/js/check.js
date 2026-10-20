@@ -74,13 +74,36 @@ export function seqEqual(exp, got) {
   return exp.length === got.length && exp.every((e, i) => tokEq(e, got[i]));
 }
 
+// A large number written with spaces between digit groups ("2 422 669,40", "11 224")
+// arrives as several tokens; returns how many tokens starting at j spell e, or 0.
+function groupedNumberAt(e, got, j) {
+  if (!NUM.test(e) || e.replace(/[-+.]/g, '').length < 4 || !/^\d{1,3}$/.test(got[j] || '')) return 0;
+  let cand = got[j];
+  for (let k = j + 1; k < got.length && k < j + 6; k++) {
+    if (!/^\d{3}(\.\d+)?$/.test(got[k])) break;
+    cand += got[k];
+    if (tokEq(e, cand)) return k - j + 1;
+    if (got[k].includes('.')) break;
+  }
+  return 0;
+}
+
 // Expected tokens appear in order (not necessarily next to each other).
 export function isSubsequence(exp, got, from = 0) {
   let j = from;
   for (const e of exp) {
-    while (j < got.length && !tokEq(e, got[j])) j++;
+    let used = 0;
+    while (j < got.length) {
+      if (tokEq(e, got[j])) {
+        used = 1;
+        break;
+      }
+      used = groupedNumberAt(e, got, j);
+      if (used) break;
+      j++;
+    }
     if (j >= got.length) return false;
-    j++;
+    j += used;
   }
   return true;
 }
