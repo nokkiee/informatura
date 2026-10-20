@@ -2715,3 +2715,18 @@ body[data-view='t'] .view {
   text-align: center;
   padding: 3px 0;
 }
+.formula {
+  margin: 10px 0 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.formula.big {
+  font-size: 18px;
+}
+.formula .cases > span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

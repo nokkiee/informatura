@@ -52,3 +52,136 @@ export const byCount = (steps) => (ok) => {
 };
 // groups([['a', 'b'], ['c']], each): points for every group whose fields are all correct.
 export const groups = (gs, each = 1) => (ok) => gs.filter((g) => g.every((id) => ok[id])).length * each;
+
+// ---- evaluating answers written as expressions ---------------------------------------------
+// evalExpr('2^(k-i) - 1', { k: 5, i: 2 }) -> 7. Understands + - * / ^ ( ), "div", "mod",
+// floor(…) or ⌊…⌋, the dots/crosses used for multiplication and implicit products like 2k.
+// Returns NaN when the text isn't a valid expression.
+const SUP = { '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4', '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9' };
+
+export function evalExpr(text, vars = {}) {
+  let s = String(text ?? '')
+    .toLowerCase()
+    .replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, (m) => '^' + [...m].map((c) => SUP[c]).join(''))
+    .replace(/[·×∙⋅]/g, '*')
+    .replace(/[−–—]/g, '-')
+    .replace(/\*\*/g, '^')
+    .replace(/⌊/g, 'floor(')
+    .replace(/⌋/g, ')')
+    .replace(/(\d),(\d)/g, '$1.$2')
+    .replace(/(\d)[\s\u00a0\u202f]+(?=\d{3}(?!\d))/g, '$1') // 512 000 000
+    .replace(/\s+/g, ' ')
+    .trim();
+  const toks = [];
+  const re = /\s*(\d+(?:\.\d+)?|floor|div|mod|[a-z]|\/\/|[-+*/^%()])/y;
+  let m;
+  re.lastIndex = 0;
+  while (re.lastIndex < s.length) {
+    m = re.exec(s);
+    if (!m) return NaN;
+    toks.push(m[1]);
+  }
+  // implicit multiplication: 2k, 2(…), )(, k(…)
+  const full = [];
+  for (let i = 0; i < toks.length; i++) {
+    const a = toks[i - 1];
+    const b = toks[i];
+    const endsValue = a !== undefined && (/^[\d.]+$/.test(a) || (/^[a-z]$/.test(a)) || a === ')');
+    const startsValue = /^[\d.]+$/.test(b) || /^[a-z]$/.test(b) || b === '(' || b === 'floor';
+    if (endsValue && startsValue && !(/^[\d.]+$/.test(a) && /^[\d.]+$/.test(b))) full.push('*');
+    full.push(b);
+  }
+  let pos = 0;
+  const peek = () => full[pos];
+  const take = () => full[pos++];
+  function expr() {
+    let v = term();
+    while (peek() === '+' || peek() === '-') v = take() === '+' ? v + term() : v - term();
+    return v;
+  }
+  function term() {
+    let v = unary();
+    for (;;) {
+      const op = peek();
+      if (op === '*') (take(), (v *= unary()));
+      else if (op === '/') (take(), (v /= unary()));
+      else if (op === '//' || op === 'div') (take(), (v = Math.floor(v / unary())));
+      else if (op === '%' || op === 'mod') {
+        take();
+        const d = unary();
+        v = ((v % d) + d) % d;
+      } else return v;
+    }
+  }
+  function unary() {
+    if (peek() === '-') return take(), -unary();
+    if (peek() === '+') return take(), unary();
+    return power();
+  }
+  function power() {
+    const base = atom();
+    if (peek() === '^') {
+      take();
+      return base ** unary();
+    }
+    return base;
+  }
+  function atom() {
+    const t = take();
+    if (t === undefined) throw new Error('end');
+    if (/^[\d.]+$/.test(t)) return Number(t);
+    if (t === '(') {
+      const v = expr();
+      if (take() !== ')') throw new Error(')');
+      return v;
+    }
+    if (t === 'floor') {
+      if (take() !== '(') throw new Error('(');
+      const v = expr();
+      if (take() !== ')') throw new Error(')');
+      return Math.floor(v);
+    }
+    if (/^[a-z]$/.test(t) && t in vars) return vars[t];
+    throw new Error('token ' + t);
+  }
+  try {
+    const v = expr();
+    return pos === full.length ? v : NaN;
+  } catch {
+    return NaN;
+  }
+}
+
+// Splits "A(2^6, 2^4), A(2^7, 2^3)" into [['2^6', '2^4'], ['2^7', '2^3']].
+export function parseCalls(text, name = 'A') {
+  const out = [];
+  const s = String(text ?? '');
+  let i = 0;
+  while ((i = s.indexOf('(', i)) >= 0) {
+    const before = s.slice(0, i).trimEnd();
+    if (!before.toUpperCase().endsWith(name.toUpperCase())) {
+      i++;
+      continue;
+    }
+    let depth = 0;
+    let j = i;
+    const args = [''];
+    for (; j < s.length; j++) {
+      const c = s[j];
+      if (c === '(') {
+        depth++;
+        if (depth === 1) continue;
+      } else if (c === ')') {
+        depth--;
+        if (depth === 0) break;
+      } else if ((c === ',' || c === ';') && depth === 1) {
+        args.push('');
+        continue;
+      }
+      args[args.length - 1] += c;
+    }
+    out.push(args.map((a) => a.trim()));
+    i = j + 1;
+  }
+  return out;
+}
