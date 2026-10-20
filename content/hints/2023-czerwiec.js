@@ -79,7 +79,7 @@ export default {
   '6.4': [
     `Liczą się tylko kwietniowe godziny od 10 do 15, w których był pobór z sieci. Wystarczy, że dodatkowe panele pokryją go w najgorszej z tych godzin.`,
     `Jeden panel daje 1/18 generowania z danej godziny. Żeby pokryć pobór *P* w godzinie z generowaniem *G*, potrzeba *P* / (*G* / 18) dodatkowych paneli.`,
-    `Liczbę paneli zaokrąglij w górę (ZAOKR.GÓRA) i weź największą z tych liczb. Godzinę wyciągniesz funkcją GODZINA(A2), a miesiąc – MIESIĄC(A2).`,
+    `Na przykład w kolumnie D: =JEŻELI(ORAZ(MIESIĄC(A2)=4;GODZINA(A2)>=10;GODZINA(A2)<=15;B2>0);ZAOKR.GÓRA(B2/(C2/18);0);0). Odpowiedź to największa liczba w tej kolumnie (MAKS).`,
   ],
   '7.1': [
     `Typ urządzenia jest w tabeli urzadzenia, a instalacje w tabeli instalacje – połącz je i policz instalacje dla każdego typu.`,

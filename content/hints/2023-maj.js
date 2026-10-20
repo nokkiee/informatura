@@ -78,7 +78,7 @@ export default {
   '6.3': [
     `To symulacja dzień po dniu: owoce, które zostały po produkcji, są doliczane do dostawy następnego dnia.`,
     `Każdego dnia: stan = reszta z wczoraj + dzisiejsza dostawa. Produkujesz z dwóch owoców, których jest najwięcej – czyli rodzaj konfitury wyznacza owoc, którego jest **najmniej** (on nie jest używany).`,
-    `W arkuszu: kolumny E, F, G – stan malin, truskawek i porzeczek przed produkcją, kolumna H – rodzaj, np. =JEŻELI(ORAZ(G2<E2;G2<F2);"malinowo-truskawkowe";JEŻELI(F2<E2;"malinowo-porzeczkowe";"truskawkowo-porzeczkowe")). Z obu użytych owoców zużywasz tyle, ile jest mniejszego z nich. Na koniec policz rodzaje funkcją LICZ.JEŻELI.`,
+    `W wierszu 2 stany E, F, G to po prostu dostawa. Rodzaj w H: =JEŻELI(ORAZ(G2<E2;G2<F2);"malinowo-truskawkowe";JEŻELI(F2<E2;"malinowo-porzeczkowe";"truskawkowo-porzeczkowe")), zużycie każdego z dwóch owoców w I: =MEDIANA(E2:G2). Następny dzień: E3 =B3+E2-JEŻELI(H2="truskawkowo-porzeczkowe";0;I2), a F3 i G3 analogicznie. Rodzaje policz funkcją LICZ.JEŻELI.`,
   ],
   '6.4': [
     `Wystarczy symulacja z zadania 6.3 – trzeba tylko zapisywać, ile konfitury powstało każdego dnia.`,
