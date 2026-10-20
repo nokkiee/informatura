@@ -5,7 +5,8 @@
 //   node tools/sheet-eval.mjs <exam> <file> [--import <file>]… [--rows a-b] "<cell template>"… "=<formula>"…
 //
 // A template like "F{r}=WYSZUKAJ.PIONOWO(B{r};cennik!$A$1:$B$16;2;0)" is filled in for every
-// data row (or the --rows range); every "=<formula>" is then evaluated once and printed.
+// data row (or the --rows range, or its own "a-b:" prefix; {r-1} is the row above); every
+// "=<formula>" is then evaluated once and printed.
 // Example:
 //   node tools/sheet-eval.mjs 2024-maj jablka.txt --import cennik.txt \
 //     'F{r}=WYSZUKAJ.PIONOWO(B{r};cennik!$A$1:$B$16;2;0)' 'G{r}=E{r}*F{r}' '=SUMA(G1:G2500)'
@@ -60,11 +61,15 @@ for (const f of imports) load(f);
 
 const [r0, r1] = rows || [1, sheet.n];
 for (const t of templates) {
-  const [cell, ...rest] = t.split('=');
+  // optional own row range: "3-154:E{r}=…"; {r-1} refers to the row above
+  const own = t.match(/^(\d+)-(\d+):(.*)$/);
+  const [a0, a1, body] = own ? [Number(own[1]), Number(own[2]), own[3]] : [r0, r1, t];
+  const [cell, ...rest] = body.split('=');
   const formula = '=' + rest.join('=');
-  for (let r = r0; r <= r1; r++) {
+  for (let r = a0; r <= a1; r++) {
     const a = E.parseAddr(cell.replace('{r}', r));
-    hf.setCellContents({ sheet: sheet.id, row: a.r, col: a.c }, formula.replaceAll('{r}', r));
+    const value = rest.length ? formula.replaceAll('{r-1}', r - 1).replaceAll('{r}', r) : cell;
+    hf.setCellContents({ sheet: sheet.id, row: a.r, col: a.c }, value);
   }
 }
 for (const f of formulas) {
