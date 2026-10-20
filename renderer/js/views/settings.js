@@ -159,7 +159,7 @@ export async function renderSettings(view) {
       h(
         'p',
         { class: 'small' },
-        `Informatura ${info.version}. Zadania, pliki z danymi i zasady oceniania pochodzą z arkuszy egzaminu maturalnego z informatyki (CKE), pobranych z arkusze.pl. Program nie dodaje własnych zadań – testy dodatkowe do zadań z zapisem algorytmu sprawdzają tylko poprawność Twojego programu.`,
+        `Informatura ${info.version}. Zadania, pliki z danymi i zasady oceniania pochodzą z arkuszy egzaminu maturalnego z informatyki (CKE), pobranych z arkusze.pl. Program nie dodaje własnych zadań – testy dodatkowe do zadań z zapisem algorytmu sprawdzają tylko poprawność Twojego programu. Podpowiedzi i przykładowe rozwiązania (Python, C++, Java, SQL) przygotowano dla programu; każde rozwiązanie daje wynik zgodny z kluczem CKE.`,
       ),
     ),
   );
