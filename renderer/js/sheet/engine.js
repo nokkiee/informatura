@@ -14,6 +14,7 @@ export const EXCEL_PL = {
   AVERAGEA: 'ŚREDNIA.A',
   ROUND: 'ZAOKR',
   DATEDIF: 'DATA.RÓŻNICA',
+  SUMIFS: 'SUMA.WARUNKÓW',
 };
 
 export function loadHyperFormula() {
