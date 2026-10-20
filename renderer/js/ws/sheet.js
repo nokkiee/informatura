@@ -621,6 +621,8 @@ export function createSheetWorkspace(container, ctx) {
     const fnSel = h('select', { class: 'select' }, ['Suma', 'Liczba', 'Średnia', 'Maksimum', 'Minimum'].map((f) => h('option', null, f)));
     const grpSel = h('select', { class: 'select' }, [
       ['', 'bez grupowania'],
+      ['day', 'dni'],
+      ['hour', 'godziny'],
       ['month', 'miesiące'],
       ['year', 'lata'],
       ['ym', 'rok i miesiąc'],
@@ -653,6 +655,11 @@ export function createSheetWorkspace(container, ctx) {
       const t = typeof v === 'number' ? wb.hf.getCellValueDetailedType(a) : null;
       if (grouping && typeof v === 'number') {
         const ymd = formatDate(v, 'YYYY-MM-DD');
+        if (grouping === 'day') return { k: ymd, label: formatDate(v, 'DD.MM.YYYY') };
+        if (grouping === 'hour') {
+          const hour = Math.floor(Math.round((v - Math.floor(v)) * 1440) / 60) % 24; // via minutes: 10:00 is 0.41666…
+          return { k: hour, label: hour };
+        }
         if (grouping === 'month') return { k: Number(ymd.slice(5, 7)), label: MONTHS[Number(ymd.slice(5, 7)) - 1] };
         if (grouping === 'year') return { k: Number(ymd.slice(0, 4)), label: ymd.slice(0, 4) };
         return { k: ymd.slice(0, 7), label: ymd.slice(0, 7) };
@@ -688,7 +695,8 @@ export function createSheetWorkspace(container, ctx) {
     const ck = sortKeys(colsMap);
     const out = [];
     const title = `${fn} z ${names[vf]}`;
-    out.push([names[rf] + (grp ? ` (${grp === 'month' ? 'miesiąc' : grp === 'year' ? 'rok' : 'rok-miesiąc'})` : ''), ...(cf === null ? [title] : ck.map((k) => colsMap.get(k))), ...(cf !== null && fn !== 'Średnia' ? ['Suma końcowa'] : [])]);
+    const grpLabel = { day: 'dzień', hour: 'godzina', month: 'miesiąc', year: 'rok', ym: 'rok-miesiąc' }[grp];
+    out.push([names[rf] + (grp ? ` (${grpLabel})` : ''), ...(cf === null ? [title] : ck.map((k) => colsMap.get(k))), ...(cf !== null && fn !== 'Średnia' ? ['Suma końcowa'] : [])]);
     for (const r of rk) {
       const row = [typeof r === 'number' && !grp ? r : rowsMap.get(r)];
       let total = 0;

@@ -107,6 +107,30 @@ module.exports = async (H) => {
   await H.sleep(100);
   H.assert((await H.js(`document.querySelector('.fx-input').value`)) === '', 'undo cleared D2');
 
+  // pivot grouped by hours: average generation at 10:00 (June 2023, task 6.3: 2,1241)
+  await go('#/t/2023-czerwiec/6.3?from=exam', 300);
+  await H.waitFor(() => H.js(`!!document.querySelector('.grid-canvas')`), 15000);
+  await H.sleep(500);
+  await H.js(`(() => { const n = document.querySelector('.namebox'); n.focus(); n.value = 'A2'; })()`);
+  press('Return');
+  await H.sleep(150);
+  await H.click('.btn', 'Tabela przestawna');
+  await H.sleep(200);
+  await H.js(`(() => {
+    const sels = document.querySelectorAll('.modal select');
+    sels[0].value = '0'; // rows: Data_godzina
+    sels[1].value = 'hour';
+    sels[3].value = '2'; // values: Generowanie
+    sels[4].value = 'Średnia';
+  })()`);
+  await H.click('.modal .btn', 'Utwórz');
+  await H.sleep(500);
+  await H.js(`(() => { const n = document.querySelector('.namebox'); n.focus(); n.value = 'B12'; })()`); // row 12 = hour 10
+  press('Return');
+  await H.sleep(150);
+  const avg10 = Number((await H.js(`document.querySelector('.fx-input').value`)).replace(',', '.'));
+  H.assert(Math.abs(avg10 - 2.1241) < 0.00005, 'average generation at 10:00 = 2,1241, got ' + avg10);
+
   // ---- SQL dialect helpers --------------------------------------------------------------------
   await go('#/t/2025-maj/7.2?from=exam', 1800);
   await H.js(`window.monaco.editor.getEditors().find((e) => e.getContainerDomNode().offsetParent !== null).setValue("SELECT TOP 1 nazwa_lazika, MIN(data_pomiaru), MAX(data_pomiaru)\\nFROM Pomiary INNER JOIN Laziki ON Pomiary.nr_lazika = Laziki.nr_lazika\\nWHERE YEAR(data_pomiaru) > 2000\\nGROUP BY Laziki.nr_lazika\\nORDER BY DATEDIFF(MAX(data_pomiaru), MIN(data_pomiaru)) DESC;")`);
