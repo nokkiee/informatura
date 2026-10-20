@@ -1,6 +1,7 @@
 'use strict';
 // Recomputes the answers to the data tasks with the reference scripts in tools/ref and
-// checks them against the CKE keys. Needs Python 3.
+// checks them against the CKE keys, then runs every model solution the hints reveal
+// (tools/check-solutions.mjs). Needs Python 3, g++ and a JDK.
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
@@ -17,4 +18,7 @@ for (const f of fs.readdirSync(dir).filter((n) => /^ref_.*\.py$/.test(n)).sort()
     process.stderr.write((r.stdout || '') + (r.stderr || '') + (r.error ? String(r.error) : ''));
   }
 }
-process.exit(failed ? 1 : 0);
+if (failed) process.exit(1);
+
+const sol = spawnSync(process.execPath, [path.join(__dirname, '..', 'tools', 'check-solutions.mjs')], { stdio: 'inherit' });
+process.exit(sol.status === 0 ? 0 : 1);
