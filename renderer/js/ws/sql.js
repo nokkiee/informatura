@@ -84,6 +84,13 @@ function registerFunctions(db) {
     const y = parseDate(b);
     return x && y ? Math.round((x - y) / DAY) : null;
   });
+  const timeOf = (v) => {
+    const m = String(v ?? '').match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+    return m ? [+m[1], +m[2], +(m[3] || 0)] : null;
+  };
+  f('HOUR', (v) => timeOf(v)?.[0] ?? null);
+  f('MINUTE', (v) => timeOf(v)?.[1] ?? null);
+  f('SECOND', (v) => timeOf(v)?.[2] ?? null);
   f('LEFT', (s, n) => (s == null ? null : String(s).slice(0, Math.max(0, n))));
   f('RIGHT', (s, n) => (s == null ? null : n > 0 ? String(s).slice(-n) : ''));
   f('MID', (s, start, len) => (s == null ? null : len == null ? String(s).slice(start - 1) : String(s).substr(start - 1, len)));

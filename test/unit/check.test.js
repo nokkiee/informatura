@@ -100,3 +100,10 @@ test('sorted lines with ties, year-month tokens', () => {
   assert.strictEqual(C.checkAnswer('a 5\nd 1\nc 3\nb 3', exp).points, 1);
   assert.strictEqual(C.checkAnswer('2023-05 48', { parts: [{ tokens: '2023', points: 1 }, { tokens: ['maj', '5'], points: 1 }, { tokens: '48', points: 1 }] }).points, 3);
 });
+
+test('alphabetical sort by a chosen token', () => {
+  const L = ['Anna Dymek K358', 'Anna Mason K151', 'Barbara Wroblewska K275'];
+  const exp = { exactLines: false, parts: [{ lines: L, points: 1 }, { lines: L, sort: 'asc', sortBy: 0, reuse: true, points: 1 }] };
+  assert.strictEqual(C.checkAnswer('Anna Mason K151\nAnna Dymek K358\nBarbara Wroblewska K275', exp).points, 2);
+  assert.strictEqual(C.checkAnswer('Barbara Wroblewska K275\nAnna Mason K151\nAnna Dymek K358', exp).points, 1);
+});
