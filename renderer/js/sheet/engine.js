@@ -6,7 +6,7 @@ let hfPromise = null;
 const loadScript = loadUmd;
 
 // Names that differ between HyperFormula's Polish pack and Polish Excel.
-const EXCEL_PL = {
+export const EXCEL_PL = {
   COUNT: 'ILE.LICZB',
   COUNTA: 'ILE.NIEPUSTYCH',
   CONCATENATE: 'ZŁĄCZ.TEKSTY',
