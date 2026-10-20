@@ -3,6 +3,7 @@ import { checkAnswer, fieldMatches } from './check.js';
 import { autoPoints } from './content.js';
 
 export function fieldResults(task, values = {}) {
+  if (typeof task.validate === 'function') return task.validate(values).ok;
   const ok = {};
   for (const [id, spec] of Object.entries(task.fields || {})) ok[id] = fieldMatches(spec, values[id] ?? '');
   return ok;
@@ -19,8 +20,12 @@ export function gradeTask(entry, state = {}) {
   const max = task.points;
   switch (task.kind) {
     case 'fill': {
-      const ok = fieldResults(task, state.fields);
       const filled = Object.values(state.fields || {}).some((v) => String(v).trim() !== '');
+      if (typeof task.validate === 'function') {
+        const r = task.validate(state.fields || {});
+        return { points: filled ? Math.min(max, r.points) : 0, max, auto: true, detail: { ok: r.ok, note: r.note } };
+      }
+      const ok = fieldResults(task, state.fields);
       return { points: filled ? scoreWith(task, ok) : 0, max, auto: true, detail: { ok } };
     }
     case 'tf': {

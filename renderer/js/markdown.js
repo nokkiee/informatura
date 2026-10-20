@@ -45,7 +45,9 @@ export function renderWithFields(el, src, { values = {}, onInput, disabled = fal
       if (m.index > last) frag.appendChild(document.createTextNode(text.slice(last, m.index)));
       const [, id, width, opts] = m;
       let input;
-      if (opts) {
+      if (opts && opts.startsWith('board:')) {
+        input = boardInput(id, opts.slice(6), values[id], onInput, disabled);
+      } else if (opts) {
         input = document.createElement('select');
         input.className = 'fld fld-select';
         input.appendChild(new Option('…', ''));
@@ -59,10 +61,12 @@ export function renderWithFields(el, src, { values = {}, onInput, disabled = fal
         if (width) input.style.width = `calc(${Math.max(2, Number(width))}ch + 18px)`;
       }
       input.dataset.field = id;
-      input.value = values[id] ?? '';
+      if (!input.classList.contains('board-input')) input.value = values[id] ?? '';
       input.disabled = disabled;
-      input.addEventListener('input', () => onInput?.(id, input.value));
-      input.addEventListener('change', () => onInput?.(id, input.value));
+      if (!input.classList.contains('board-input')) {
+        input.addEventListener('input', () => onInput?.(id, input.value));
+        input.addEventListener('change', () => onInput?.(id, input.value));
+      }
       inputs[id] = input;
       frag.appendChild(input);
       last = m.index + m[0].length;
@@ -71,4 +75,50 @@ export function renderWithFields(el, src, { values = {}, onInput, disabled = fal
     node.parentNode.replaceChild(frag, node);
   }
   return inputs;
+}
+
+// A board of white/black cells the user paints by clicking ({{id:board:5x5}}).
+// The value is rows of 1 (white) and 0 (black) joined with "/"; the top-left and
+// bottom-right corners stay white.
+function boardInput(id, size, value, onInput, disabled) {
+  const [n, m] = size.split('x').map(Number);
+  const rows = String(value || '').split('/');
+  const cells = Array.from({ length: n }, (_, i) => Array.from({ length: m }, (_, j) => (rows[i]?.[j] === '0' ? 0 : 1)));
+  const wrap = document.createElement('div');
+  wrap.className = 'board-input';
+  wrap.value = '';
+  const table = document.createElement('table');
+  table.className = 'board';
+  const emit = () => {
+    wrap.value = cells.map((r) => r.join('')).join('/');
+    onInput?.(id, wrap.value);
+  };
+  for (let i = 0; i < n; i++) {
+    const tr = document.createElement('tr');
+    for (let j = 0; j < m; j++) {
+      const td = document.createElement('td');
+      const corner = (i === 0 && j === 0) || (i === n - 1 && j === m - 1);
+      td.className = (cells[i][j] ? 'w' : 'b') + (corner ? ' fixed' : '');
+      if (!corner && !disabled) {
+        td.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          cells[i][j] = cells[i][j] ? 0 : 1;
+          td.className = cells[i][j] ? 'w' : 'b';
+          emit();
+        });
+      }
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+  wrap.appendChild(table);
+  const black = () => cells.flat().filter((v) => !v).length;
+  const info = document.createElement('div');
+  info.className = 'board-info muted small';
+  const upd = () => (info.textContent = `Czarnych pól: ${black()} · kliknij pole, aby je zamalować`);
+  table.addEventListener('mousedown', () => setTimeout(upd, 0));
+  upd();
+  wrap.appendChild(info);
+  wrap.value = cells.map((r) => r.join('')).join('/');
+  return wrap;
 }

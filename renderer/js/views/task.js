@@ -269,7 +269,8 @@ export async function renderTask(view, { key, from }) {
         input.classList.toggle('wrong', !ok[id]);
       }
       const wrong = Object.values(ok).filter((v) => !v).length;
-      box.appendChild(h('div', { class: 'small muted' }, wrong ? `Błędnych pól: ${wrong} z ${Object.keys(ok).length}.` : 'Wszystkie pola poprawne.'));
+      if (g.detail.note) box.appendChild(h('div', { class: 'small' }, g.detail.note));
+      else box.appendChild(h('div', { class: 'small muted' }, wrong ? `Błędnych pól: ${wrong} z ${Object.keys(ok).length}.` : 'Wszystkie pola poprawne.'));
     } else if (task.kind === 'tf') {
       tfRows.forEach((row, i) => {
         row.classList.toggle('good', g.detail.ok[i]);
@@ -489,6 +490,7 @@ export async function renderTask(view, { key, from }) {
       return createSqlWorkspace(host, {
         ...common,
         extraTables: task.extraTables,
+        extraColumns: task.extraColumns,
         onOutput: task.kind === 'sqlwrite' ? null : common.onOutput,
         onSqlResult: (r) => {
           const el = stmt.querySelector('.sql-status');

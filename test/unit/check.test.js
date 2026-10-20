@@ -80,3 +80,16 @@ test('fieldMatches handles sequences, symbols and expressions', () => {
   assert.ok(!C.fieldMatches('', '5'));
   assert.ok(C.fieldMatches('k', ' K '));
 });
+
+test('alternatives, non-breaking thousands and custom scoring', () => {
+  assert.strictEqual(C.checkAnswer('Miesiąc: 11, punkty 1766', { parts: [{ tokens: ['listopad', '11'], points: 1 }] }).points, 1);
+  assert.strictEqual(C.checkAnswer('2 422 669,40 zł', '2422669,40', { autoPoints: 1 }).points, 1);
+  const exp = {
+    exactLines: false,
+    parts: ['1', '2', '3'].map((v) => ({ lines: [v], points: 1 })),
+    score: (oks, d) => (oks.every(Boolean) && !d.extra.length ? 3 : oks.some(Boolean) && !d.extra.length ? 2 : 0),
+  };
+  assert.strictEqual(C.checkAnswer('1\n2\n3', exp).points, 3);
+  assert.strictEqual(C.checkAnswer('1\n3', exp).points, 2);
+  assert.strictEqual(C.checkAnswer('1\n3\n9', exp).points, 0);
+});

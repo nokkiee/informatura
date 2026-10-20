@@ -42,7 +42,7 @@ export function chartData(wb, cfg) {
     if (cfg.type === 'scatter') return false;
     for (let r = dr0; r <= r1; r++) {
       const x = cell(r, c0);
-      if (typeof x.v === 'string' || String(x.type).startsWith('NUMBER_DATE')) return true;
+      if (typeof x.v === 'string' || String(x.type).startsWith('NUMBER_DATE') || wb.metaFor(sheet).colFmt[c0]?.date) return true;
     }
     return cfg.firstColLabels ?? false;
   })();

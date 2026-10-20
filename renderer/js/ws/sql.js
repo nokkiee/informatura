@@ -134,7 +134,7 @@ export function dialectFix(sql) {
   return s;
 }
 
-export async function buildDatabase(exam, group, extraTables) {
+export async function buildDatabase(exam, group, extraTables, extraColumns) {
   const SQL = await loadSqlJs();
   const db = new SQL.Database();
   registerFunctions(db);
@@ -149,6 +149,13 @@ export async function buildDatabase(exam, group, extraTables) {
     db.run('COMMIT');
     stmt.free();
     schema.push({ name: table, file, columns: header.map((c, i) => ({ name: c, type: types[i] })), rows: rows.length });
+  }
+  for (const [table, cols] of Object.entries(extraColumns || {})) {
+    const t = schema.find((x) => x.name === table);
+    for (const c of cols) {
+      db.run(`ALTER TABLE "${table}" ADD COLUMN ${c}`);
+      t?.columns.push({ name: c.split(/\s+/)[0], type: c.split(/\s+/)[1] || '', extra: true });
+    }
   }
   for (const [table, cols] of Object.entries(extraTables || {})) {
     db.run(`CREATE TABLE "${table}" (${cols.join(', ')})`);
@@ -224,7 +231,7 @@ export function createSqlWorkspace(container, ctx) {
   async function rebuild(announce) {
     try {
       db?.close();
-      ({ db, schema } = await buildDatabase(entry.exam, group, ctx.extraTables));
+      ({ db, schema } = await buildDatabase(entry.exam, group, ctx.extraTables, ctx.extraColumns));
       if (disposed) return db.close();
       renderSide();
       registerCompletion();
