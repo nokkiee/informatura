@@ -72,10 +72,14 @@ export function hfConfig(lang) {
 // ---- importing text files --------------------------------------------------------------
 
 const RE_NUM = /^[-+]?\d+([.,]\d+)?$/;
-const RE_DMY = /^\d{1,2}\.\d{1,2}\.\d{4}$/;
-const RE_ISO = /^\d{4}-\d{2}-\d{2}$/;
-const RE_TIME = /^\d{1,2}:\d{2}(:\d{2})?$/;
-const RE_ISO_DT = /^(\d{4}-\d{2}-\d{2})[ T](\d{1,2}:\d{2}(:\d{2})?)$/;
+const RE_DATE = /^(?:(\d{1,2})\.(\d{1,2})\.(\d{4})|(\d{4})-(\d{1,2})-(\d{1,2}))(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/;
+const RE_TIME = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/;
+const EPOCH = Date.UTC(1899, 11, 30);
+
+// Spreadsheet serial number (days since 1899-12-30, time as a fraction), like Excel.
+export function toSerial(y, m, d, hh = 0, mi = 0, ss = 0) {
+  return (Date.UTC(y, m - 1, d) - EPOCH) / 86400000 + (hh * 3600 + mi * 60 + ss) / 86400;
+}
 
 export function detectSeparator(lines) {
   const sample = lines.slice(0, 20);
@@ -102,22 +106,18 @@ export function parseDataFile(text, { sep = 'auto' } = {}) {
       const t = v.trim();
       if (t === '') return null;
       if (RE_NUM.test(t) && !(t.length > 1 && /^[-+]?0\d/.test(t))) return Number(t.replace(',', '.'));
-      if (RE_DMY.test(t)) {
-        formats[c] = formats[c] || 'DD.MM.YYYY';
-        return t;
+      const d = t.match(RE_DATE);
+      if (d) {
+        const dmy = d[1] !== undefined;
+        const [y, m, day] = dmy ? [+d[3], +d[2], +d[1]] : [+d[4], +d[5], +d[6]];
+        const hasTime = d[7] !== undefined;
+        formats[c] = formats[c] || (dmy ? 'DD.MM.YYYY' : 'YYYY-MM-DD') + (hasTime ? ' hh:mm' : '');
+        return toSerial(y, m, day, +(d[7] || 0), +(d[8] || 0), +(d[9] || 0));
       }
-      if (RE_ISO.test(t)) {
-        formats[c] = formats[c] || 'YYYY-MM-DD';
-        return t;
-      }
-      const dt = t.match(RE_ISO_DT);
-      if (dt) {
-        formats[c] = formats[c] || 'YYYY-MM-DD hh:mm';
-        return `${dt[1]} ${dt[2]}`;
-      }
-      if (RE_TIME.test(t)) {
+      const tm = t.match(RE_TIME);
+      if (tm && +tm[1] < 24) {
         formats[c] = formats[c] || 'hh:mm';
-        return t;
+        return (+tm[1] * 3600 + +tm[2] * 60 + +(tm[3] || 0)) / 86400;
       }
       // keep values that would look like formulas or leading-zero codes as text
       if (/^[=+]/.test(t) || /^0\d+$/.test(t)) return "'" + t;

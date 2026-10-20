@@ -23,7 +23,7 @@ function normDate(t) {
 }
 
 export function tokenize(text) {
-  const s = plain(text)
+  const s = plain(String(text ?? '').replace(/(\d)[\u00a0\u202f](?=\d{3}\b)/g, '$1')) // 2 422 669,40 with non-breaking spaces
     .replace(/[−–—]/g, '-')
     .replace(/(\d):(\d)/g, '$1\u0001$2'); // keep times like 12:30 together
   const out = [];
@@ -55,6 +55,8 @@ function canonInt(t) {
 export function tokEq(e, u) {
   if (e === u) return true;
   if (e.endsWith('…') && e.length > 1) return u.startsWith(e.slice(0, -1)); // 'malinowo…' matches any ending
+  // "10" counts as the hour "10:00"
+  if (/^\d{1,2}$/.test(e) && /^\d{1,2}:00(:00)?$/.test(u)) return Number(e) === Number(u.split(':')[0]);
   if (!NUM.test(e) || !NUM.test(u)) return false;
   if (!e.includes('.')) {
     // Leading zeros are significant in digit strings such as "014576540" or "00".
@@ -148,9 +150,11 @@ export function checkAnswer(answer, expect, { taskNo, siblings = [], autoPoints 
   const results = spec.parts.map((p) => ({ label: p.label || '', max: p.points ?? 0, ok: false, note: '' }));
 
   // tokens / items parts
+  const usedByItems = new Array(tokens.length).fill(false);
   spec.parts.forEach((p, idx) => {
     if (p.tokens != null) {
-      results[idx].ok = isSubsequence(tokenize(p.tokens), tokens);
+      const alts = Array.isArray(p.tokens) ? p.tokens : [p.tokens];
+      results[idx].ok = alts.some((alt) => isSubsequence(tokenize(alt), tokens));
     } else if (p.items) {
       const used = new Array(tokens.length).fill(false);
       let pos = 0;
@@ -171,6 +175,7 @@ export function checkAnswer(answer, expect, { taskNo, siblings = [], autoPoints 
         pos = at + exp.length;
       }
       results[idx].ok = ok;
+      if (ok) used.forEach((u, k) => u && (usedByItems[k] = true));
     }
   });
 
@@ -222,8 +227,12 @@ export function checkAnswer(answer, expect, { taskNo, siblings = [], autoPoints 
     }
   }
 
-  const points = results.reduce((s, r) => s + (r.ok ? r.max : 0), 0);
+  let points = results.reduce((s, r) => s + (r.ok ? r.max : 0), 0);
   const max = results.reduce((s, r) => s + r.max, 0);
+  // rubrics like "1 pkt for one or two of the three" need their own rule
+  // numbers in the answer that no "items" part accounted for (for "no wrong numbers" rubrics)
+  const extraNumbers = tokens.filter((t, k) => !usedByItems[k] && /^-?\d+$/.test(t) && t !== taskNo);
+  if (typeof spec.score === 'function') points = Math.min(max, spec.score(results.map((r) => r.ok), { extra, extraNumbers }));
   return { ok: points === max && max > 0, points, max, parts: results, extra };
 }
 
@@ -234,7 +243,12 @@ function normExpr(s) {
     .replace(/\s+/g, '')
     .replace(/[−–—]/g, '-')
     .replace(/\*\*/g, '^')
-    .replace(/[·×⋅]/g, '*');
+    .replace(/[·×⋅]/g, '*')
+    .replace(/≥|=>/g, '>=')
+    .replace(/≤|=</g, '<=')
+    .replace(/≠|<>/g, '!=')
+    .replace(/←|:=/g, '=')
+    .replace(/;$/, '');
 }
 
 export function fieldMatches(spec, value) {
