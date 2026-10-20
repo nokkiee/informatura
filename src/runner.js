@@ -34,13 +34,75 @@ function execOut(cmd, args, opts = {}) {
 }
 
 function splitCmd(s) {
-  // "py -3" -> ['py', '-3']; a quoted Windows path stays one piece.
+  // "py -3" -> ['py', '-3']; a quoted Windows path stays one piece, and so does an unquoted
+  // path to an existing file ("C:\Program Files\...\python.exe").
+  const whole = String(s).trim().replace(/^"|"$/g, '');
+  if (whole && path.isAbsolute(whole) && fs.existsSync(whole)) return [whole];
   const parts = String(s).match(/"[^"]+"|\S+/g) || [];
   return parts.map((p) => p.replace(/^"|"$/g, ''));
 }
 
+// Places where Windows installers put toolchains that aren't always on PATH, e.g. the
+// MinGW bundled with Code::Blocks or Dev-C++, which many students already have.
+// A '*' matches part of one folder name; newer versions (sorted last) come first.
+function winCandidates(patterns) {
+  if (!IS_WIN) return [];
+  const env = process.env;
+  const vars = {
+    PF: env.ProgramFiles || 'C:\\Program Files',
+    PF86: env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)',
+    LOCAL: env.LOCALAPPDATA || '',
+    SYS: env.SystemDrive || 'C:',
+  };
+  const found = [];
+  for (const pattern of patterns) {
+    const p = pattern.replace(/\{(\w+)\}/g, (_, k) => vars[k]);
+    const parts = p.split('\\');
+    const i = parts.findIndex((x) => x.includes('*'));
+    if (i < 0) {
+      if (fs.existsSync(p)) found.push(p);
+      continue;
+    }
+    const re = new RegExp('^' + parts[i].replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$', 'i');
+    let names = [];
+    try {
+      names = fs.readdirSync(parts.slice(0, i).join('\\')).filter((n) => re.test(n));
+    } catch {}
+    names.sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+    for (const n of names) {
+      const full = [...parts.slice(0, i), n, ...parts.slice(i + 1)].join('\\');
+      if (fs.existsSync(full)) found.push(full);
+    }
+  }
+  return found;
+}
+
+const WIN_PYTHON = ['{LOCAL}\\Programs\\Python\\Python3*\\python.exe', '{PF}\\Python3*\\python.exe', '{SYS}\\Python3*\\python.exe'];
+const WIN_CPP = [
+  '{SYS}\\msys64\\ucrt64\\bin\\g++.exe',
+  '{SYS}\\msys64\\mingw64\\bin\\g++.exe',
+  '{LOCAL}\\Microsoft\\WinGet\\Packages\\BrechtSanders.WinLibs*\\mingw64\\bin\\g++.exe',
+  '{SYS}\\mingw64\\bin\\g++.exe',
+  '{SYS}\\ProgramData\\mingw64\\mingw64\\bin\\g++.exe',
+  '{SYS}\\MinGW\\bin\\g++.exe',
+  '{SYS}\\TDM-GCC-64\\bin\\g++.exe',
+  '{PF}\\CodeBlocks\\MinGW\\bin\\g++.exe',
+  '{PF86}\\CodeBlocks\\MinGW\\bin\\g++.exe',
+  '{PF86}\\Embarcadero\\Dev-Cpp\\TDM-GCC-64\\bin\\g++.exe',
+  '{PF86}\\Dev-Cpp\\MinGW64\\bin\\g++.exe',
+  '{PF}\\Dev-Cpp\\MinGW64\\bin\\g++.exe',
+];
+const WIN_JAVA = [
+  '{PF}\\Eclipse Adoptium\\jdk*\\bin\\java.exe',
+  '{PF}\\Java\\jdk*\\bin\\java.exe',
+  '{PF}\\Microsoft\\jdk*\\bin\\java.exe',
+  '{PF}\\Zulu\\zulu*\\bin\\java.exe',
+  '{PF}\\Amazon Corretto\\jdk*\\bin\\java.exe',
+  '{PF}\\BellSoft\\LibericaJDK*\\bin\\java.exe',
+];
+
 async function findPython(custom) {
-  const candidates = custom ? [custom] : IS_WIN ? ['py -3', 'python', 'python3'] : ['python3', 'python'];
+  const candidates = custom ? [custom] : IS_WIN ? ['py -3', 'python', 'python3', ...winCandidates(WIN_PYTHON)] : ['python3', 'python'];
   for (const c of candidates) {
     const [cmd, ...pre] = splitCmd(c);
     const r = await execOut(cmd, [...pre, '--version']);
@@ -51,31 +113,43 @@ async function findPython(custom) {
 }
 
 async function findCpp(custom) {
-  const candidates = custom ? [custom] : ['g++', 'clang++'];
+  const candidates = custom ? [custom] : ['g++', 'clang++', ...winCandidates(WIN_CPP)];
   for (const c of candidates) {
     const [cmd, ...pre] = splitCmd(c);
-    const r = await execOut(cmd, [...pre, '--version']);
+    const r = await execOut(cmd, [...pre, '--version'], { env: compilerEnv(cmd) });
     if (!r.ok) continue;
     const first = r.out.split('\n')[0].trim();
     // Prefer C++20 when the compiler knows it.
     const probe = await new Promise((resolve) => {
-      const p = spawn(cmd, [...pre, '-std=c++20', '-x', 'c++', '-fsyntax-only', '-'], { windowsHide: true });
+      const p = spawn(cmd, [...pre, '-std=c++20', '-x', 'c++', '-fsyntax-only', '-'], { windowsHide: true, env: compilerEnv(cmd) });
       p.on('error', () => resolve(false));
       p.on('close', (code) => resolve(code === 0));
+      p.stdin.on('error', () => {});
       p.stdin.end('int main(){}\n');
     });
-    return { ok: true, cmd: [cmd, ...pre], version: first, std: probe ? 'c++20' : 'c++17' };
+    return { ok: true, cmd: [cmd, ...pre], version: first, std: probe ? 'c++20' : 'c++17', gnu: /g\+\+|gcc|mingw/i.test(cmd + ' ' + first) };
   }
   return { ok: false, error: 'Nie znaleziono kompilatora C++ (g++ lub clang++).' };
 }
 
+// A compiler found outside PATH (e.g. Code::Blocks' MinGW) needs its own folder on PATH
+// to find the programs and DLLs it runs.
+function compilerEnv(cmd) {
+  if (!path.isAbsolute(cmd)) return process.env;
+  const env = { ...process.env };
+  const key = Object.keys(env).find((k) => k.toUpperCase() === 'PATH') || 'PATH';
+  env[key] = path.dirname(cmd) + path.delimiter + (env[key] || '');
+  return env;
+}
+
 async function findJava(custom) {
   const javaCandidates = [];
-  if (custom) javaCandidates.push(custom);
+  if (custom) javaCandidates.push(custom.trim().replace(/^"|"$/g, ''));
   else {
     if (process.env.JAVA_HOME) javaCandidates.push(path.join(process.env.JAVA_HOME, 'bin', IS_WIN ? 'java.exe' : 'java'));
-    javaCandidates.push('java');
+    javaCandidates.push('java', ...winCandidates(WIN_JAVA));
   }
+  let firstError = null;
   for (const java of javaCandidates) {
     const r = await execOut(java, ['-version']);
     if (!r.ok) continue;
@@ -87,7 +161,7 @@ async function findJava(custom) {
     const javacNext = path.join(dir, IS_WIN ? 'javac.exe' : 'javac');
     let javac = null;
     if (path.isAbsolute(java) && fs.existsSync(javacNext)) javac = [javacNext];
-    else {
+    else if (!path.isAbsolute(java)) {
       const jc = await execOut(IS_WIN ? 'javac.exe' : 'javac', ['-version']);
       if (jc.ok) javac = [IS_WIN ? 'javac.exe' : 'javac'];
     }
@@ -95,10 +169,14 @@ async function findJava(custom) {
       const mods = await execOut(java, ['--list-modules']);
       if (/jdk\.compiler@/.test(mods.out)) javac = [java, '-m', 'jdk.compiler/com.sun.tools.javac.Main'];
     }
-    if (!javac) return { ok: false, error: `${version} jest zainstalowana, ale bez kompilatora (potrzebny jest JDK, nie samo JRE).` };
+    if (!javac) {
+      // e.g. Oracle's javapath stub pointing at a JRE; a full JDK may still be installed elsewhere
+      firstError = firstError || `${version} jest zainstalowana, ale bez kompilatora (potrzebny jest JDK, nie samo JRE).`;
+      continue;
+    }
     return { ok: true, cmd: [java], javac, version };
   }
-  return { ok: false, error: 'Nie znaleziono Javy (JDK).' };
+  return { ok: false, error: firstError || 'Nie znaleziono Javy (JDK).' };
 }
 
 async function detect(force) {
@@ -231,7 +309,12 @@ async function build(lang, code) {
     const exe = path.join(dir, IS_WIN ? 'zadanie.exe' : 'zadanie');
     if (!fs.existsSync(exe)) {
       fs.writeFileSync(path.join(dir, 'zadanie.cpp'), code);
-      const r = await spawnCollect(t.cmd[0], [...t.cmd.slice(1), `-std=${t.std}`, '-O2', '-o', path.basename(exe), 'zadanie.cpp'], { cwd: dir });
+      // On Windows: link the C++ runtime in, so the program runs without MinGW's DLLs on PATH,
+      // and give it a bigger stack (the default 1 MB overflows on deep recursion long before
+      // Linux's 8 MB does).
+      const winFlags = IS_WIN && t.gnu ? ['-static', '-Wl,--stack,268435456'] : [];
+      const args = [...t.cmd.slice(1), `-std=${t.std}`, '-O2', ...winFlags, '-o', path.basename(exe), 'zadanie.cpp'];
+      const r = await spawnCollect(t.cmd[0], args, { cwd: dir, env: compilerEnv(t.cmd[0]) });
       if (r.code !== 0) return { compileError: r.out || 'Kompilacja nie powiodła się.' };
     }
     return { cmd: exe, args: [], dir, strip: [] };
@@ -247,7 +330,7 @@ async function build(lang, code) {
     }
     return {
       cmd: t.cmd[0],
-      args: ['-Dfile.encoding=UTF-8', '-Dstdout.encoding=UTF-8', '-Dstderr.encoding=UTF-8', '-Dstdin.encoding=UTF-8', '-XX:TieredStopAtLevel=1', '-XX:+UseSerialGC', '-cp', classes, cls],
+      args: ['-Dfile.encoding=UTF-8', '-Dstdout.encoding=UTF-8', '-Dstderr.encoding=UTF-8', '-Dstdin.encoding=UTF-8', '-Dsun.stdout.encoding=UTF-8', '-Dsun.stderr.encoding=UTF-8', '-XX:TieredStopAtLevel=1', '-XX:+UseSerialGC', '-cp', classes, cls],
       dir,
       strip: [],
     };
@@ -269,6 +352,11 @@ function killTree(child) {
       child.kill('SIGKILL');
     } catch {}
   }
+}
+
+// Windows programs end lines with \r\n; the console and the checks want plain \n.
+function crlf(chunk) {
+  return String(chunk).replace(/\r(?=\n|$)/g, '');
 }
 
 function stripPaths(text, strip) {
@@ -333,7 +421,7 @@ function start(spec) {
     };
     const onData = (stream) => (d) => {
       if (truncated) return;
-      const s = d.toString('utf8');
+      const s = crlf(d);
       total += s.length;
       if (total > OUTPUT_LIMIT) {
         truncated = true;
@@ -343,6 +431,8 @@ function start(spec) {
       buf[stream] += s;
       if (!flushTimer) flushTimer = setTimeout(flush, 40);
     };
+    child.stdout.setEncoding('utf8'); // keeps a Polish letter split between two chunks intact
+    child.stderr.setEncoding('utf8');
     child.stdout.on('data', onData('out'));
     child.stderr.on('data', onData('err'));
     child.stdin.on('error', () => {});
@@ -414,7 +504,9 @@ function runOnce(b, input, timeoutMs, cwd) {
     let stdout = '';
     let stderr = '';
     let timedOut = false;
-    const cap = (s, d) => (s.length < TEST_OUTPUT_LIMIT ? s + d.toString('utf8') : s);
+    const cap = (s, d) => (s.length < TEST_OUTPUT_LIMIT ? s + crlf(d) : s);
+    child.stdout.setEncoding('utf8');
+    child.stderr.setEncoding('utf8');
     child.stdout.on('data', (d) => (stdout = cap(stdout, d)));
     child.stderr.on('data', (d) => (stderr = cap(stderr, d)));
     child.stdin.on('error', () => {});

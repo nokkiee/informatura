@@ -13,13 +13,13 @@
     "start": "electron .",
     "dev": "electron . --dev",
     "test": "node --test test/unit/*.test.js",
-    "test:e2e": "for s in flow features alltasks; do electron test/e2e/harness.js test/e2e/scenarios/$s.js || exit 1; done",
+    "test:e2e": "node scripts/e2e.js",
     "icons": "electron scripts/make-icon.js",
     "install-desktop": "scripts/install-desktop.sh",
     "dist": "electron-builder --linux AppImage deb",
     "dist:win": "electron-builder --win nsis portable",
     "pack": "electron-builder --linux dir",
-    "verify-content": "for f in tools/ref/ref_*.py; do python3 $f > /dev/null || exit 1; done"
+    "verify-content": "node scripts/verify-content.js"
   },
   "devDependencies": {
     "electron": "^44.9.1",
