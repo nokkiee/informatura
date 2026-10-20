@@ -32,8 +32,8 @@ test.before(async () => {
 const withHints = () => exams.filter((e) => e.hints);
 const tasksOf = (e) => e.groups.flatMap((g) => g.tasks);
 
-test('every task of an exam with hints has at least two of them', () => {
-  assert.ok(withHints().length > 0);
+test('every task of every exam has at least two hints', () => {
+  for (const e of exams) assert.ok(e.hints, `${e.id}: no content/hints/${e.id}.js`);
   for (const e of withHints()) {
     const nos = new Set(tasksOf(e).map((t) => t.no));
     for (const t of tasksOf(e)) {
