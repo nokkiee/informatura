@@ -62,14 +62,28 @@ function parseDate(v) {
 
 const DAY = 86400000;
 
+// sql.js takes a function's arity from fn.length, so variadic helpers are registered
+// once per supported number of arguments (SQLite overloads functions by arity).
+const ARITY = [
+  (fn) => () => fn(),
+  (fn) => (a) => fn(a),
+  (fn) => (a, b) => fn(a, b),
+  (fn) => (a, b, c) => fn(a, b, c),
+  (fn) => (a, b, c, d) => fn(a, b, c, d),
+  (fn) => (a, b, c, d, e) => fn(a, b, c, d, e),
+  (fn) => (a, b, c, d, e, g) => fn(a, b, c, d, e, g),
+];
+
 function registerFunctions(db) {
-  const f = (name, fn) => db.create_function(name, fn);
+  const f = (name, fn, arities = [fn.length]) => {
+    for (const n of arities) db.create_function(name, ARITY[n](fn));
+  };
   f('YEAR', (d) => parseDate(d)?.getUTCFullYear() ?? null);
   f('MONTH', (d) => (parseDate(d) ? parseDate(d).getUTCMonth() + 1 : null));
   f('DAY', (d) => parseDate(d)?.getUTCDate() ?? null);
   f('DAYOFWEEK', (d) => (parseDate(d) ? parseDate(d).getUTCDay() + 1 : null)); // MySQL: 1 = niedziela
   f('WEEKDAY', (d) => (parseDate(d) ? (parseDate(d).getUTCDay() + 6) % 7 : null)); // MySQL: 0 = poniedziałek
-  f('DATEDIFF', (a, b, c) => {
+  const datediff = (a, b, c) => {
     // MySQL: DATEDIFF(a, b) = a − b w dniach. Access: DateDiff("d", a, b) = b − a.
     if (c !== undefined && typeof a === 'string' && /^[a-z]+$/i.test(a)) {
       const x = parseDate(b);
@@ -83,7 +97,8 @@ function registerFunctions(db) {
     const x = parseDate(a);
     const y = parseDate(b);
     return x && y ? Math.round((x - y) / DAY) : null;
-  });
+  };
+  f('DATEDIFF', datediff, [2, 3]);
   const timeOf = (v) => {
     const m = String(v ?? '').match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
     return m ? [+m[1], +m[2], +(m[3] || 0)] : null;
@@ -93,13 +108,13 @@ function registerFunctions(db) {
   f('SECOND', (v) => timeOf(v)?.[2] ?? null);
   f('LEFT', (s, n) => (s == null ? null : String(s).slice(0, Math.max(0, n))));
   f('RIGHT', (s, n) => (s == null ? null : n > 0 ? String(s).slice(-n) : ''));
-  f('MID', (s, start, len) => (s == null ? null : len == null ? String(s).slice(start - 1) : String(s).substr(start - 1, len)));
+  f('MID', (s, start, len) => (s == null ? null : len == null ? String(s).slice(start - 1) : String(s).substr(start - 1, len)), [2, 3]);
   f('LEN', (s) => (s == null ? null : String(s).length));
   f('CHAR_LENGTH', (s) => (s == null ? null : String(s).length));
   f('UCASE', (s) => (s == null ? null : String(s).toUpperCase()));
   f('LCASE', (s) => (s == null ? null : String(s).toLowerCase()));
-  f('CONCAT', (...a) => (a.some((x) => x == null) ? null : a.join('')));
-  f('TRUNCATE', (x, d = 0) => (x == null ? null : Math.trunc(x * 10 ** d) / 10 ** d));
+  f('CONCAT', (...a) => (a.some((x) => x == null) ? null : a.join('')), [1, 2, 3, 4, 5, 6]);
+  f('TRUNCATE', (x, d = 0) => (x == null ? null : Math.trunc(x * 10 ** (d ?? 0)) / 10 ** (d ?? 0)), [1, 2]);
   f('FIX', (x) => (x == null ? null : Math.trunc(x)));
   f('INT', (x) => (x == null ? null : Math.floor(x)));
   // math functions are missing from some SQLite builds

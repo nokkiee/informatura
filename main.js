@@ -8,6 +8,7 @@ const runner = require('./src/runner');
 const store = require('./src/store');
 
 app.setName('MaturaLab');
+app.setDesktopName('maturalab.desktop'); // lets GNOME/KDE match the window to its launcher and icon on Wayland
 if (process.env.MATURALAB_DATA_DIR) app.setPath('userData', process.env.MATURALAB_DATA_DIR);
 if (process.platform === 'linux') app.commandLine.appendSwitch('ozone-platform-hint', 'auto');
 if (process.platform === 'win32') app.setAppUserModelId('app.maturalab');
@@ -130,12 +131,51 @@ function createWindow() {
   });
 
   win.loadURL('maturalab://app/index.html');
+  if (process.env.MATURALAB_SELFTEST) selfTest(win);
+}
+
+// MATURALAB_SELFTEST=1: quick smoke test of a (packaged) build – opens a task of each
+// kind, prints the result and quits with a matching exit code.
+async function selfTest(w) {
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const js = (code) => w.webContents.executeJavaScript(code, true);
+  const until = async (code, ms = 20000) => {
+    const t0 = Date.now();
+    while (Date.now() - t0 < ms) {
+      try {
+        if (await js(code)) return true;
+      } catch {}
+      await wait(200);
+    }
+    return false;
+  };
+  const result = {};
+  result.home = await until(`!document.body.classList.contains('loading') && !!document.querySelector('.hero')`);
+  await js(`location.hash = '#/t/2023-maj/2.2?from=exam'`);
+  result.code = await until(`!!window.monaco && window.monaco.editor.getEditors().length > 0`);
+  await js(`location.hash = '#/t/2023-maj/7.1?from=exam'`);
+  result.sql = await until(`document.querySelectorAll('.sql-side .tbl-item').length === 3`);
+  await js(`location.hash = '#/t/2023-maj/6.2?from=exam'`);
+  result.sheet = await until(`!!document.querySelector('.grid-canvas') && document.querySelector('.fx-input')?.value === 'data'`);
+  try {
+    openPdf('pdf/informatyka-2023-maj-matura-rozszerzona.pdf', 3);
+    await wait(1500);
+    result.pdf = BrowserWindow.getAllWindows().length === 2;
+  } catch (e) {
+    result.pdf = String(e.message);
+  }
+  result.toolchains = await runner.detect();
+  const ok = ['home', 'code', 'sql', 'sheet', 'pdf'].every((k) => result[k] === true);
+  console.log('SELFTEST ' + (ok ? 'OK ' : 'FAILED ') + JSON.stringify(result));
+  app.exit(ok ? 0 : 1);
 }
 
 // Original exam sheets open in their own window, in Chromium's PDF viewer.
 const pdfWindows = new Map();
 function openPdf(rel, page) {
-  const file = resolveUrlPath('/content/' + rel);
+  let file = resolveUrlPath('/content/' + rel);
+  // Chromium's PDF viewer can't read inside app.asar; the PDFs are unpacked next to it.
+  if (file && file.includes(`app.asar${path.sep}`)) file = file.replace(`app.asar${path.sep}`, `app.asar.unpacked${path.sep}`);
   if (!file || !fs.existsSync(file)) throw new Error('Brak pliku: ' + rel);
   const url = pathToFileURL(file).toString() + (page ? `#page=${page}` : '');
   let w = pdfWindows.get(rel);

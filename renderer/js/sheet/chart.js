@@ -96,6 +96,7 @@ export async function drawChart(canvas, wb, cfg, prev) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      locale: 'pl-PL',
       animation: false,
       indexAxis: cfg.type === 'bar' ? 'y' : 'x',
       plugins: {
