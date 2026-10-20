@@ -1,0 +1,7 @@
+node_modules/
+dist/
+build/wine/
+.venv/
+*.log
+logs/
+.DS_Store
