@@ -9,9 +9,9 @@ const HINTS = {
     java: 'sudo apt install default-jdk',
   },
   win32: {
-    python: 'Pobierz instalator z python.org i zaznacz „Add python.exe to PATH”.',
-    cpp: 'Zainstaluj MSYS2 (msys2.org), potem w konsoli MSYS2: pacman -S mingw-w64-ucrt-x86_64-gcc i dodaj C:\\msys64\\ucrt64\\bin do PATH.',
-    java: 'Zainstaluj JDK, np. Eclipse Temurin (adoptium.net).',
+    python: 'W PowerShellu: winget install Python.Python.3.12 (albo instalator z python.org z zaznaczonym „Add python.exe to PATH”).',
+    cpp: 'W PowerShellu: winget install BrechtSanders.WinLibs.POSIX.UCRT. Program sam znajdzie też kompilator z Code::Blocks, Dev-C++ i MSYS2.',
+    java: 'W PowerShellu: winget install EclipseAdoptium.Temurin.21.JDK (albo JDK z adoptium.net).',
   },
   darwin: {
     python: 'brew install python',

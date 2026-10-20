@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md', 'docs/**']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run verify-content
+      - name: End-to-end tests (Python, C++ and Java code, SQL, spreadsheet, all 175 tasks)
+        run: xvfb-run -a npm run test:e2e
+
+  windows:
+    # Runs the app on real Windows with the toolchains a student would install, then builds
+    # the installer and the portable version and checks that the installed app starts.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: C++ compiler (MinGW)
+        shell: pwsh
+        run: |
+          # Not added to PATH on purpose: the app should find MinGW in its usual folder by itself.
+          if (-not (Get-Command g++ -ErrorAction SilentlyContinue)) { choco install mingw -y --no-progress }
+      - run: npm ci
+      - run: npm test
+      - run: npm run verify-content
+      - name: End-to-end tests
+        run: npm run test:e2e
+      - run: npx electron-builder --win nsis portable --publish never
+      - name: Install silently and start the installed app
+        shell: pwsh
+        env:
+          INFORMATURA_SELFTEST: '1'
+        run: |
+          $setup = Get-ChildItem dist\Informatura-Setup-*.exe | Select-Object -First 1
+          Start-Process $setup.FullName -ArgumentList '/S' -Wait
+          $exe = Join-Path $env:LOCALAPPDATA 'Programs\Informatura\Informatura.exe'
+          if (-not (Test-Path $exe)) { throw "Informatura.exe was not installed" }
+          $p = Start-Process $exe -Wait -PassThru -RedirectStandardOutput selftest.txt -RedirectStandardError selftest-err.txt
+          Get-Content selftest.txt
+          if ($p.ExitCode -ne 0 -or -not (Select-String -Path selftest.txt -Pattern 'SELFTEST OK' -Quiet)) {
+            Get-Content selftest-err.txt
+            throw "Self-test of the installed app failed (exit $($p.ExitCode))"
+          }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Informatura-windows
+          path: dist/*.exe
+          retention-days: 7
