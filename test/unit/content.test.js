@@ -4,6 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('fs');
 const path = require('path');
+const url = (file) => require('url').pathToFileURL(file).href; // Windows paths aren't valid import specifiers
 
 const ROOT = path.join(__dirname, '..', '..', 'content');
 let exams = [];
@@ -11,8 +12,8 @@ let check;
 let algo;
 
 test.before(async () => {
-  const ids = (await import(path.join(ROOT, 'exams', 'index.js'))).default;
-  for (const id of ids) exams.push((await import(path.join(ROOT, 'exams', id + '.js'))).default);
+  const ids = (await import(url(path.join(ROOT, 'exams', 'index.js')))).default;
+  for (const id of ids) exams.push((await import(url(path.join(ROOT, 'exams', id + '.js')))).default);
   check = await import('../../renderer/js/check.js');
   algo = await import('../../renderer/js/algo.js');
 });
