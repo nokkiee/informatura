@@ -240,10 +240,11 @@ export function checkAnswer(answer, expect, { taskNo, siblings = [], autoPoints 
       if (missing) results[i].note = `brakuje ${missing} z ${mine.length} oczekiwanych wierszy`;
       if (results[i].ok && p.sort) {
         // lines must appear sorted by their last number (ties in any order)
-        const seq = mine
-          .map(([w, k]) => ({ at: lineOf[k], v: Number([...w.tokens].reverse().find((t) => NUM.test(t))) }))
-          .sort((a, b) => a.at - b.at);
-        const okSort = seq.every((x, n) => n === 0 || (p.sort === 'desc' ? seq[n - 1].v >= x.v : seq[n - 1].v <= x.v));
+        // the sort key is the last number of the expected line, or its token number p.sortBy
+        const keyOf = (w) => (p.sortBy != null ? w.tokens[p.sortBy] : [...w.tokens].reverse().find((t) => NUM.test(t)));
+        const cmp = (a, b) => (NUM.test(a) && NUM.test(b) ? Number(a) - Number(b) : a.localeCompare(b, 'pl'));
+        const seq = mine.map(([w, k]) => ({ at: lineOf[k], v: keyOf(w) })).sort((a, b) => a.at - b.at);
+        const okSort = seq.every((x, n) => n === 0 || (p.sort === 'desc' ? cmp(seq[n - 1].v, x.v) >= 0 : cmp(seq[n - 1].v, x.v) <= 0));
         if (!okSort) {
           results[i].ok = false;
           results[i].note = p.sort === 'desc' ? 'wiersze nie są posortowane nierosnąco' : 'wiersze nie są posortowane niemalejąco';

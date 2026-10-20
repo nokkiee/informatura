@@ -116,7 +116,7 @@ export function parseDataFile(text, { sep = 'auto' } = {}) {
       }
       const tm = t.match(RE_TIME);
       if (tm && +tm[1] < 24) {
-        formats[c] = formats[c] || 'hh:mm';
+        formats[c] = formats[c] || (tm[3] !== undefined ? 'hh:mm:ss' : 'hh:mm');
         return (+tm[1] * 3600 + +tm[2] * 60 + +(tm[3] || 0)) / 86400;
       }
       // keep values that would look like formulas or leading-zero codes as text
