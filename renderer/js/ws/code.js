@@ -162,6 +162,7 @@ export function createCodeWorkspace(container, ctx) {
     return plan;
   }
 
+  function switchLang(l) {
     lang = l;
     state.lang = l;
     ctx.save();
