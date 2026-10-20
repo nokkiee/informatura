@@ -526,11 +526,12 @@ function runOnce(b, input, timeoutMs, cwd) {
   });
 }
 
-// spec: { lang, code, tests: [{ input }], timeoutMs? }
+// spec: { lang, code, tests: [{ input }], timeoutMs?, files? }
+// files: data files copied into the (throw-away) working folder first.
 async function runTests(spec) {
   const b = await build(spec.lang, spec.code);
   if (b.error || b.compileError) return { error: b.error, compileError: b.compileError, missingToolchain: b.missingToolchain };
-  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), 'informatura-t-'));
+  const cwd = prepareWorkspace(null, spec.files || [], fs.mkdtempSync(path.join(os.tmpdir(), 'informatura-t-')));
   const results = [];
   try {
     for (const t of spec.tests || []) {

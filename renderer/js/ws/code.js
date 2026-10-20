@@ -6,6 +6,7 @@ import { getSettings, setSettings } from '../store.js';
 import { LANGS, dataTemplate, scratchTemplate, algoTemplate, buildTests, bannedUses } from '../algo.js';
 import { dataSrc, fetchData, examTitle } from '../content.js';
 import { checkAnswer, outputMatches, tokenize } from '../check.js';
+import { createGhost } from '../ghost.js';
 
 const INSTALL_HINTS = {
   python: 'Zainstaluj Pythona 3 (Linux: sudo apt install python3, Windows: python.org – zaznacz „Add to PATH”).',
@@ -27,6 +28,8 @@ export function createCodeWorkspace(container, ctx) {
   let consoleText = '';
   let stdout = '';
   let disposed = false;
+  let ghost = null;
+  let ghostStage = ctx.ghostStage || 0;
 
   const mainFile = task?.mainFile || entry?.group.files?.[0];
   const template = (l) => {
@@ -137,10 +140,28 @@ export function createCodeWorkspace(container, ctx) {
       ctx.save();
       toast('Zapisano', 'info', 1200);
     });
+    ghost = createGhost(monaco, editor);
+    applyGhost();
     if (ctx.focus !== false) editor.focus();
   });
 
-  function switchLang(l) {
+  // Hints: the model solution, shown faintly in the editor (stage 1 = one line … 3 = all).
+  let ghostSeq = 0;
+  async function applyGhost(focus) {
+    if (!ghost) return null;
+    const seq = ++ghostSeq;
+    const l = lang;
+    const ref = ghostStage && ctx.solutionFor ? await ctx.solutionFor(l) : null;
+    if (!ghost || seq !== ghostSeq) return null;
+    if (!ref) {
+      ghost.set(null);
+      return null;
+    }
+    const plan = ghost.set({ ref, template: template(l), lang: l, stage: ghostStage, stages: 3 });
+    if (focus) ghost.focus();
+    return plan;
+  }
+
     lang = l;
     state.lang = l;
     ctx.save();
@@ -149,6 +170,7 @@ export function createCodeWorkspace(container, ctx) {
       const old = editor.getModel();
       editor.setModel(monaco.editor.createModel(codeFor(l), LANGS[l].monaco));
       old.dispose();
+      applyGhost();
     }
     ctx.onLangChange?.(l);
   }
@@ -509,6 +531,8 @@ export function createCodeWorkspace(container, ctx) {
       disposed = true;
       unsub?.();
       if (runId) window.api.kill(runId);
+      ghost?.dispose();
+      ghost = null;
       if (editor) {
         editor.getModel()?.dispose();
         editor.dispose();
@@ -517,6 +541,12 @@ export function createCodeWorkspace(container, ctx) {
     getLang: () => lang,
     getStdout: () => stdout,
     run,
+    // Shows hint stage `stage` of the model solution; resolves to the ghost plan (or null
+    // when there's no model solution in the current language).
+    setGhostStage(stage, focus) {
+      ghostStage = stage;
+      return applyGhost(focus);
+    },
   };
 }
 

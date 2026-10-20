@@ -2,7 +2,7 @@
 // SQL) on the right.
 import { h, btn, icon, clear, toast, splitter, esc, fmtTime, debounce } from '../ui.js';
 import { md, renderWithFields } from '../markdown.js';
-import { getTask, examTitle, CATEGORIES, KIND_LABELS, isPractical, autoPoints, fetchData } from '../content.js';
+import { getTask, examTitle, CATEGORIES, KIND_LABELS, isPractical, autoPoints, fetchData, getHints, fetchSolution } from '../content.js';
 import { loadTaskState, saveTaskState, recordResult, getProgress, markSeen, getSession, getSettings } from '../store.js';
 import { gradeTask, fieldResults } from '../grading.js';
 import { createCodeWorkspace, showPreview } from '../ws/code.js';
@@ -224,6 +224,73 @@ export async function renderTask(view, { key, from }) {
   const checkBtn = sim ? null : btn('Sprawdź', { icon: 'check', kind: 'primary', onClick: () => check() });
   const revealBtn = sim ? null : btn('Pokaż rozwiązanie', { icon: 'eye', onClick: () => showSolution() });
 
+  // ---- hints: vague first, then more specific; the last ones write the model solution into
+  // the editor as faint text, one line first, then more. None during an exam simulation.
+  const ghostTool = ['program', 'algorithm'].includes(task.kind) ? 'code' : ['sql', 'sqlwrite'].includes(task.kind) ? 'sql' : null;
+  const hintTexts = sim ? [] : await getHints(exam, task.no);
+  const hasModel = !sim && !!ghostTool && (await fetchSolution(exam, task.no, ghostTool === 'sql' ? 'sql' : 'python')) != null;
+  const GHOST_STEPS =
+    ghostTool === 'sql'
+      ? [
+          '**Pierwsza linijka zapytania** jest w edytorze SQL – szarym tekstem, w miejscu, w którym powinna się znaleźć. Przepisz ją albo naciśnij **Tab**.',
+          'W edytorze widać teraz **całe przykładowe zapytanie**. Linijki, które są już w Twoim zapytaniu, znikają z podpowiedzi, a przekreślone linijki przykładu na start nie są potrzebne.',
+        ]
+      : [
+          '**Pierwsza linijka rozwiązania** jest w edytorze – szarym tekstem, w miejscu, w którym powinna się znaleźć. Przepisz ją albo naciśnij **Tab**.',
+          'W edytorze widać teraz **mniej więcej połowę rozwiązania**. Linijki, które są już w Twoim kodzie, znikają z podpowiedzi.',
+          'W edytorze widać **całe przykładowe rozwiązanie**. Przekreślone linijki szablonu nie są w nim potrzebne.',
+        ];
+  const hintLevels = [...hintTexts.map((text) => ({ text })), ...(hasModel ? GHOST_STEPS.map((text, i) => ({ text, ghost: i + 1 })) : [])];
+  state.hintLevel = Math.min(state.hintLevel || 0, hintLevels.length);
+  const ghostStage = () => hintLevels.slice(0, state.hintLevel).filter((l) => l.ghost).length;
+  const hintsBox = h('div', { class: 'hints-box', hidden: true });
+  const hintBtn = hintLevels.length ? btn('Podpowiedź', { icon: 'bulb', onClick: () => nextHint() }) : null;
+
+  function renderHints() {
+    clear(hintsBox);
+    hintsBox.hidden = !state.hintLevel;
+    const shown = hintLevels.slice(0, state.hintLevel);
+    const lastGhost = shown.map((l) => !!l.ghost).lastIndexOf(true);
+    shown.forEach((l, i) => {
+      hintsBox.appendChild(
+        h(
+          'div',
+          { class: `hint-card${l.ghost ? ' code' : ''}` },
+          h('div', { class: 'hint-head' }, icon('bulb', 14), ` Podpowiedź ${i + 1}`, h('span', { class: 'muted small' }, ` z ${hintLevels.length}`)),
+          h('div', { class: 'md', html: md(l.text) }),
+          i === lastGhost ? h('div', { class: 'hint-actions' }, btn('Pokaż w edytorze', { icon: ghostTool === 'sql' ? 'db' : 'code', small: true, onClick: () => showGhost(true) })) : null,
+        ),
+      );
+    });
+    if (hintBtn) {
+      const n = state.hintLevel;
+      hintBtn.disabled = n >= hintLevels.length;
+      hintBtn.lastChild.textContent = n === 0 ? 'Podpowiedź' : n >= hintLevels.length ? 'Brak kolejnych podpowiedzi' : `Kolejna podpowiedź (${n + 1}/${hintLevels.length})`;
+    }
+  }
+
+  function nextHint() {
+    if (state.hintLevel >= hintLevels.length) return;
+    state.hintLevel++;
+    save();
+    renderHints();
+    const level = hintLevels[state.hintLevel - 1];
+    if (level.ghost) showGhost(true);
+    hintsBox.lastChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // Puts the revealed part of the model solution into the editor.
+  async function showGhost(focus) {
+    if (!ghostTool) return;
+    if (focus && currentTool !== ghostTool) showTool(ghostTool);
+    const plan = await instances[ghostTool]?.setGhostStage?.(ghostStage(), focus);
+    if (focus && plan === null && ghostTool === 'code') {
+      toast('Do tego zadania nie ma jeszcze przykładowego rozwiązania w tym języku.', 'warn');
+    } else if (focus && plan && !plan.missing) {
+      toast('Ta część rozwiązania jest już w Twoim kodzie.', 'ok', 2400);
+    }
+  }
+
   // practical tasks: an answer box like the exam's results file
   let answerArea = null;
   const setAnswer = (text, source) => {
@@ -299,7 +366,7 @@ export async function renderTask(view, { key, from }) {
           save();
         },
       });
-      put(answer, h('div', { class: 'answer-actions' }, checkBtn, revealBtn, sim ? h('span', { class: 'muted small' }, 'Odpowiedzi zapisują się automatycznie.') : null));
+      put(answer, h('div', { class: 'answer-actions' }, checkBtn, hintBtn, revealBtn, sim ? h('span', { class: 'muted small' }, 'Odpowiedzi zapisują się automatycznie.') : null));
       break;
     }
     case 'tf': {
@@ -326,7 +393,7 @@ export async function renderTask(view, { key, from }) {
       });
       table.appendChild(h('tbody', null, tfRows));
       textEl.appendChild(table);
-      put(answer, h('div', { class: 'answer-actions' }, checkBtn, revealBtn));
+      put(answer, h('div', { class: 'answer-actions' }, checkBtn, hintBtn, revealBtn));
       break;
     }
     case 'choice': {
@@ -357,7 +424,7 @@ export async function renderTask(view, { key, from }) {
         choiceBox.appendChild(o);
       }
       textEl.appendChild(choiceBox);
-      put(answer, h('div', { class: 'answer-actions' }, checkBtn, revealBtn));
+      put(answer, h('div', { class: 'answer-actions' }, checkBtn, hintBtn, revealBtn));
       break;
     }
     case 'open': {
@@ -368,7 +435,7 @@ export async function renderTask(view, { key, from }) {
         state.text = ta.value;
         save();
       });
-      put(answer, h('div', { class: 'answer-label' }, 'Odpowiedź'), ta, h('div', { class: 'answer-actions' }, revealBtn));
+      put(answer, h('div', { class: 'answer-label' }, 'Odpowiedź'), ta, h('div', { class: 'answer-actions' }, hintBtn, revealBtn));
       break;
     }
     case 'algorithm': {
@@ -386,7 +453,7 @@ export async function renderTask(view, { key, from }) {
         h('div', { class: 'tests-status' }),
       );
       put(answer, info);
-      put(answer, h('div', { class: 'answer-actions' }, revealBtn));
+      put(answer, h('div', { class: 'answer-actions' }, hintBtn, revealBtn));
       renderTestsStatus(info.querySelector('.tests-status'));
       break;
     }
@@ -404,7 +471,7 @@ export async function renderTask(view, { key, from }) {
           ),
           h('div', { class: 'sql-status' }),
         ),
-        h('div', { class: 'answer-actions' }, revealBtn),
+        h('div', { class: 'answer-actions' }, hintBtn, revealBtn),
       );
       break;
     }
@@ -428,13 +495,15 @@ export async function renderTask(view, { key, from }) {
         answerArea,
         task.answerHint ? h('div', { class: 'muted small hint' }, task.answerHint) : null,
         answerNote,
-        h('div', { class: 'answer-actions' }, checkBtn, revealBtn, sim ? h('span', { class: 'muted small' }, 'Odpowiedź zapisuje się automatycznie; wynik zobaczysz po zakończeniu egzaminu.') : null),
+        h('div', { class: 'answer-actions' }, checkBtn, hintBtn, revealBtn, sim ? h('span', { class: 'muted small' }, 'Odpowiedź zapisuje się automatycznie; wynik zobaczysz po zakończeniu egzaminu.') : null),
       );
     }
   }
+  stmt.appendChild(hintsBox);
   stmt.appendChild(answer);
   stmt.appendChild(resultBox);
   stmt.appendChild(solution);
+  renderHints();
   if (state.revealed && !sim) showSolution();
 
   function renderTestsStatus(el) {
@@ -467,6 +536,10 @@ export async function renderTask(view, { key, from }) {
   const wsKey = `${exam.id}-zad${group.no}`;
   function makeWorkspace(tool, host) {
     const common = { entry, state, save, wsKey, focus: true, onOutput: (text, source) => setAnswer(text, source) };
+    if (tool === ghostTool && hasModel) {
+      common.solutionFor = (lang) => fetchSolution(exam, task.no, lang);
+      common.ghostStage = ghostStage();
+    }
     if (tool === 'code') {
       if (task.kind === 'algorithm') {
         return createCodeWorkspace(host, {
