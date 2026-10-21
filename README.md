@@ -20,23 +20,24 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
 - **Losowe zadanie:** losujesz z wybranych działów i matur.
 - **Przeglądanie:** wszystkie zadania z filtrami według działu, matury i postępu.
 - **Podpowiedzi** do każdego zadania: najpierw ogólne, potem coraz konkretniejsze, a przy kodzie i SQL –
-  przykładowe rozwiązanie pokazane w edytorze, w miejscu, w którym powinno się znaleźć.
+  przykładowe rozwiązanie podpowiadane w edytorze tak, jak VS Code podpowiada kod.
 - **Oryginał pod ręką:** przycisk *Arkusz PDF* otwiera oryginalny arkusz na stronie z danym zadaniem.
   Klucz odpowiedzi CKE też jest w programie.
 
 ### Podpowiedzi
 
-![Podpowiedzi i przykładowe rozwiązanie w edytorze](docs/screenshots/ekran-podpowiedzi-pasek.png)
+![Podpowiedzi i przykładowe rozwiązanie w edytorze](docs/screenshots/ekran-podpowiedzi-kursor.png)
 
 - Przycisk **Podpowiedź** odsłania kolejne wskazówki. Pierwsze tylko naprowadzają (od czego zacząć,
   na co uważać), następne mówią coraz dokładniej, co zrobić – w arkuszu kalkulacyjnym aż do gotowych formuł.
-- W zadaniach z programowaniem i SQL kolejne podpowiedzi pokazują w edytorze **przykładowe rozwiązanie**
-  w podświetlonym pasku z żarówką, dokładnie w miejscu, w którym powinno się znaleźć:
+- W zadaniach z programowaniem i SQL kolejne podpowiedzi podpowiadają w edytorze **przykładowe rozwiązanie**,
+  tak jak VS Code podpowiada kod:
+  - szary tekst przy kursorze pokazuje, co pisać dalej – także wokół nawiasów, które edytor domknął sam;
+    kolejne linijki widać szarym tekstem pod kursorem, a kod niżej się nie przesuwa;
+  - żarówka przy numerach linii pokazuje, gdzie czeka podpowiedź – kliknięcie przenosi tam kursor;
   - najpierw jedna linijka, potem mniej więcej połowa, na końcu całe rozwiązanie (w SQL: pierwsza linijka, potem całe zapytanie);
-  - podpowiedź nigdy nie miesza się z linijką, którą piszesz – piszesz w wierszu pod paskiem, a część już
-    przepisana robi się w pasku zielona (nawiasy domknięte przez edytor nie przeszkadzają);
-  - linijki, które już są w Twoim kodzie, znikają z podpowiedzi – odstępy, cudzysłowy i komentarze nie mają znaczenia;
-  - **Tab** wpisuje kolejną podpowiedzianą linijkę (w wierszu pod paskiem albo na końcu linijki nad nim);
+  - linijki, które już są w Twoim kodzie, nie są podpowiadane – odstępy, cudzysłowy i komentarze nie mają znaczenia;
+  - **Tab** wpisuje podpowiedzianą linijkę, **Esc** chowa podpowiedź;
   - przy całym rozwiązaniu linijki szablonu, których ono nie potrzebuje, są przekreślone.
 - Przykładowe rozwiązania są w Pythonie, C++ i Javie – podpowiedź pokazuje kod w języku wybranym w edytorze.
 - Każde z 209 rozwiązań (171 programów i 38 zapytań) jest automatycznie uruchamiane na danych z matury

@@ -1,8 +1,8 @@
 'use strict';
-// Hints: text hints first, then the model solution appears in a marked block in the editor, one
-// line first and more later; the line being typed is never mixed with the hint (brackets the
-// editor closes itself stay out of it); typed lines leave the ghost, Tab writes a line; no hints
-// in an exam.
+// Hints: text hints first, then the model solution is hinted in the editor the way VS Code
+// suggests code – faint text at the cursor (woven around brackets the editor closed itself) and
+// the following lines faintly under it, while the code below stays put; a bulb marks where a
+// hint waits; Tab writes a line, Esc hides the hint; no hints in an exam.
 module.exports = async (H) => {
   const go = async (hash, wait = 900) => {
     await H.js(`location.hash = ${JSON.stringify(hash)}`);
@@ -10,11 +10,22 @@ module.exports = async (H) => {
   };
   const editor = `window.monaco.editor.getEditors().find((e) => e.getContainerDomNode().offsetParent !== null)`;
   const hintCount = () => H.js(`document.querySelectorAll('.hint-card').length`);
+  // (Monaco draws the spaces of injected text as no-break spaces)
+  const ghostText = () => H.js(`[...document.querySelectorAll('.ghost-text')].map((d) => d.textContent.replace(/\\u00a0/g, ' ')).join('|')`);
   const ghostLines = () => H.js(`[...document.querySelectorAll('.ghost-zone > div')].map((d) => d.textContent)`);
-  const typedPart = () => H.js(`document.querySelector('.ghost-done')?.textContent ?? ''`);
+  const bulbs = () => H.js(`document.querySelectorAll('.ghost-bulb').length`);
+  const value = () => H.js(`${editor}.getValue()`);
+  const cursorLine = () => H.js(`(() => { const p = ${editor}.getPosition(); return ${editor}.getModel().getLineContent(p.lineNumber); })()`);
+  const topOf = (text) => H.js(`(() => { const ed = ${editor}; return ed.getTopForLineNumber(ed.getModel().getLinesContent().indexOf(${JSON.stringify(text)}) + 1); })()`);
   const key = (keyCode, modifiers = []) => {
     H.wc.sendInputEvent({ type: 'keyDown', keyCode, modifiers });
     H.wc.sendInputEvent({ type: 'keyUp', keyCode, modifiers });
+  };
+  const enter = async () => {
+    H.wc.sendInputEvent({ type: 'keyDown', keyCode: 'Return' });
+    H.wc.sendInputEvent({ type: 'char', keyCode: '\r' });
+    H.wc.sendInputEvent({ type: 'keyUp', keyCode: 'Return' });
+    await H.sleep(100);
   };
   const type = async (text) => {
     for (const ch of text) {
@@ -23,6 +34,7 @@ module.exports = async (H) => {
       H.wc.sendInputEvent({ type: 'keyUp', keyCode: ch });
       await H.sleep(15);
     }
+    await H.sleep(150);
   };
   const hintBtn = () => H.click('.answer-actions .btn', 'odpowied'); // „Podpowiedź” / „Kolejna podpowiedź”
 
@@ -35,93 +47,70 @@ module.exports = async (H) => {
   await hintBtn();
   await H.sleep(300);
   H.assert((await hintCount()) === 1, 'first hint shown');
-  H.assert((await ghostLines()).length === 0, 'no code in the editor after a text hint');
+  H.assert((await ghostText()) === '' && (await ghostLines()).length === 0 && (await bulbs()) === 0, 'no code in the editor after a text hint');
   await hintBtn();
   await hintBtn();
   await H.sleep(600);
   H.assert((await hintCount()) === 3, 'three hints shown');
-  H.assert(JSON.stringify(await ghostLines()) === '["for liczba in dane:"]', 'one ghost line at stage 1: ' + JSON.stringify(await ghostLines()));
-  H.assert(await H.js(`!!document.querySelector('.ghost-margin svg')`), 'the hint block is marked in the margin');
-  // the line under the block is where it gets typed; the line itself stays untouched
-  const typingLine = await H.js(`(() => { const p = ${editor}.getPosition(); return ${editor}.getModel().getLineContent(p.lineNumber); })()`);
-  H.assert(typingLine === '', 'cursor on the empty line under the hint: ' + JSON.stringify(typingLine));
+  // stage 1: the first line, at the cursor on the empty line where it belongs
+  H.assert((await ghostText()) === 'for liczba in dane:', 'one line hinted at the cursor: ' + (await ghostText()));
+  H.assert((await ghostLines()).length === 0, 'only one line at stage 1');
+  H.assert((await bulbs()) === 1, 'a bulb marks where the hint waits');
+  H.assert((await cursorLine()) === '', 'the line itself stays empty');
   await H.shot('40-hint-one-line');
 
-  // type the line: it leaves the ghost
-  await H.js(`(() => {
-    const ed = ${editor};
-    const m = ed.getModel();
-    const ln = m.getLinesContent().indexOf('wynik = 0') + 2;
-    ed.executeEdits('t', [{ range: new monaco.Range(ln, 1, ln, 1), text: 'for liczba in dane :' }]);
-  })()`);
-  await H.sleep(300);
-  H.assert((await ghostLines()).length === 0, 'typed line no longer a ghost');
+  // typing it: the rest follows the cursor and the code below doesn't move
+  const printTop = await topOf('print(wynik)');
+  await type('for liczba in da');
+  H.assert((await ghostText()) === 'ne:', 'the rest of the line follows the cursor: ' + (await ghostText()));
+  H.assert((await topOf('print(wynik)')) === printTop, 'the code below stays put');
+  await type('ne:');
+  H.assert((await ghostText()) === '' && (await bulbs()) === 0, 'typed line no longer hinted');
 
-  // stage 2: about half of the solution
+  // stage 2: about half of the solution; the cursor goes where the next lines belong
   await hintBtn();
   await H.sleep(600);
-  const half = await ghostLines();
-  H.assert(half.length === 3, 'stage 2 shows the next lines: ' + JSON.stringify(half));
-
-  // Tab writes the ghost line under the cursor
-  await H.js(`(() => {
-    const ed = ${editor};
-    const m = ed.getModel();
-    const ln = m.getLinesContent().findIndex((l) => l.startsWith('for liczba')) + 1;
-    ed.executeEdits('t', [{ range: new monaco.Range(ln, m.getLineMaxColumn(ln), ln, m.getLineMaxColumn(ln)), text: '\\n    ' }]);
-    ed.setPosition({ lineNumber: ln + 1, column: m.getLineMaxColumn(ln + 1) });
-    ed.focus();
-  })()`);
+  H.assert(JSON.stringify(await ghostLines()) === JSON.stringify(['    bloki = 1', '    for i in range(1, len(liczba)):', '        if liczba[i] != liczba[i - 1]:']), 'stage 2 shows the next lines: ' + JSON.stringify(await ghostLines()));
+  // Tab writes the next line
+  key('Tab');
   await H.sleep(300);
-  H.wc.sendInputEvent({ type: 'keyDown', keyCode: 'Tab' });
-  H.wc.sendInputEvent({ type: 'keyUp', keyCode: 'Tab' });
-  await H.sleep(300);
-  const written = await H.js(`${editor}.getValue()`);
-  H.assert(written.includes('\n    bloki = 1\n'), 'Tab wrote the ghost line:\n' + written);
-
-  // typing the next line by hand: the editor closes the bracket itself, and the hint block only
-  // marks the typed part – nothing is added to the line being typed
-  key('End');
-  H.wc.sendInputEvent({ type: 'keyDown', keyCode: 'Return' });
-  H.wc.sendInputEvent({ type: 'char', keyCode: '\r' });
-  H.wc.sendInputEvent({ type: 'keyUp', keyCode: 'Return' });
-  await H.sleep(100);
+  H.assert((await value()).includes('dane:\n    bloki = 1\n'), 'Tab wrote the hinted line:\n' + (await value()));
+  // typing the next one by hand: the editor closes the bracket, the hint goes around it
+  const top2 = await topOf('print(wynik)');
+  await enter();
   await type('for i in range(');
-  await H.sleep(300);
-  const line = await H.js(`(() => { const p = ${editor}.getPosition(); return ${editor}.getModel().getLineContent(p.lineNumber); })()`);
-  H.assert(line === '    for i in range()', 'the editor closed the bracket: ' + JSON.stringify(line));
-  H.assert((await typedPart()) === '    for i in range(', 'typed part marked in the hint: ' + JSON.stringify(await typedPart()));
-  H.assert((await ghostLines())[0] === '    for i in range(1, len(liczba)):', 'hint keeps the whole line: ' + JSON.stringify(await ghostLines()));
+  H.assert((await cursorLine()) === '    for i in range()', 'the editor closed the bracket: ' + JSON.stringify(await cursorLine()));
+  H.assert((await ghostText()) === '1, len(liczba|):', 'hint woven around the bracket: ' + (await ghostText()));
+  H.assert((await topOf('print(wynik)')) === top2, 'the code below stays put while typing');
   await H.shot('40b-hint-typing');
-  key('Tab'); // finishes the line from the hint
+  key('Tab'); // finishes the started line
   await H.sleep(300);
-  H.assert((await H.js(`${editor}.getValue()`)).includes('\n    for i in range(1, len(liczba)):\n'), 'Tab finished the started line');
+  H.assert((await value()).includes('\n    for i in range(1, len(liczba)):\n'), 'Tab finished the started line');
+  // Esc hides the hint
+  H.assert((await ghostLines()).length === 1, 'one more line hinted under the cursor');
+  key('Escape');
+  await H.sleep(200);
+  H.assert((await ghostLines()).length === 0 && (await ghostText()) === '', 'Esc hid the hint');
+  H.assert((await bulbs()) === 1, 'the bulb still marks it');
 
   // stage 3: the whole solution; running it gives the right answer
   await hintBtn();
   await H.sleep(600);
   H.assert((await hintCount()) === 5, 'all five hints shown');
   await H.shot('41-hint-whole-solution');
-  const missing = await H.js(`(async () => {
-    const ed = ${editor};
-    const m = ed.getModel();
-    // write out the rest of the ghost exactly as shown
-    const ref = await (await fetch('content/solutions/2023-maj/2.2.py')).text();
-    ed.setValue(ref);
-    return 0;
-  })()`);
+  await H.js(`(async () => ${editor}.setValue(await (await fetch('content/solutions/2023-maj/2.2.py')).text()))()`);
   await H.sleep(400);
-  H.assert(missing === 0 && (await ghostLines()).length === 0, 'the whole solution typed: no ghost left');
+  H.assert((await ghostLines()).length === 0 && (await ghostText()) === '' && (await bulbs()) === 0, 'the whole solution typed: no hint left');
   await H.click('.btn', 'Uruchom');
   await H.waitFor(() => H.js(`(document.querySelector('.answer-area')?.value || '').trim() === '10'`), 20000);
 
-  // other language: the ghost follows
+  // other language: the hints follow
   await H.js(`(() => { const s = document.querySelector('.lang-select'); s.value = 'cpp'; s.dispatchEvent(new Event('change')); })()`);
   await H.sleep(900);
-  await H.click('.hint-card .btn', 'Pokaż w edytorze'); // scrolls the ghost into view
+  await H.click('.hint-card .btn', 'Pokaż w edytorze'); // puts the cursor where the hint is
   await H.sleep(400);
-  const cppGhost = (await ghostLines()).join('\n');
-  H.assert(cppGhost.includes('for (string liczba : dane) {'), 'C++ ghost shown: ' + cppGhost.slice(0, 200));
+  const cppGhost = (await ghostText()) + '\n' + (await ghostLines()).join('\n');
+  H.assert(cppGhost.includes('for (string liczba : dane) {'), 'C++ hint shown: ' + cppGhost.slice(0, 200));
   await H.shot('42-hint-cpp');
 
   // ---- SQL ------------------------------------------------------------------------------------
@@ -132,10 +121,10 @@ module.exports = async (H) => {
     await H.sleep(250);
   }
   await H.sleep(500);
-  H.assert(((await ghostLines())[0] || '').startsWith('WITH zestawienie AS ('), 'SQL ghost: first line: ' + JSON.stringify(await ghostLines()));
+  H.assert((await ghostText()).startsWith('WITH zestawienie AS ('), 'SQL hint: first line: ' + (await ghostText()));
   await hintBtn();
   await H.sleep(600);
-  H.assert((await ghostLines()).length > 10, 'SQL ghost: whole query');
+  H.assert((await ghostLines()).length > 10, 'SQL hint: whole query');
   const struck = await H.js(`${editor}.getModel().getAllDecorations().filter((d) => d.options.inlineClassName === 'ghost-remove').length`);
   H.assert(struck === 3, 'starter lines struck through: ' + struck);
   await H.shot('43-hint-sql');
