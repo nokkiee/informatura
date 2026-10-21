@@ -56,8 +56,8 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
 - Na start edytor ma szablon, który wczytuje plik z danymi i wypisuje wynik. W *Ustawieniach*
   (**Kod na start → Pusty edytor**) można zamiast tego zaczynać od pustego pola, jak na maturze.
   Dotyczy to też zapytań SQL. Kod już napisany w zadaniu zostaje.
-- Konsola domyślnie zostawia wyniki poprzednich uruchomień. W *Ustawieniach* (**Konsola przy uruchomieniu**)
-  można ją czyścić przed każdym uruchomieniem.
+- Konsola domyślnie zostawia wyniki poprzednich uruchomień. Pole **Czyść przy uruchomieniu** w pasku konsoli
+  (albo *Ustawienia → Konsola przy uruchomieniu*) czyści ją przed każdym uruchomieniem.
 
 ### Bazy danych: SQL w stylu Accessa
 

@@ -116,6 +116,12 @@ module.exports = async (H) => {
   await runOnce();
   await runOnce();
   H.assert((await runs()) === 1, 'console cleared before each run: ' + (await runs()));
+  // the same setting as a checkbox on the console's tab bar
+  H.assert(await H.js(`document.querySelector('.con-opt input').checked`), 'console checkbox follows the setting');
+  await H.click('.con-opt input');
+  H.assert(await H.js(`import('./js/store.js').then((s) => s.getSettings().clearConsole === false)`), 'console checkbox turns the setting off');
+  await runOnce();
+  H.assert((await runs()) === 2, 'output kept again: ' + (await runs()));
 
   // ---- „Pokaż rozwiązanie” shows the solution, and hides it on the next click --------------------
   await go('#/t/2024-maj/1.1?from=exam', 800);
