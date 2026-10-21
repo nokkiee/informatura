@@ -107,6 +107,7 @@ export function createSheetWorkspace(container, ctx) {
       const file = group.sheet?.file || group.files?.[0];
       if (file) await importFile(file, 'auto', { initial: true });
       else wb.hf.addSheet('Arkusz1');
+      if (disposed) return; // the task was closed while the data file was loading
       wb.sheet = 0;
     }
     if (!wb.hf.getSheetNames().length) wb.hf.addSheet('Arkusz1');
@@ -134,6 +135,7 @@ export function createSheetWorkspace(container, ctx) {
 
   async function importFile(file, sep, { initial = false } = {}) {
     const text = await fetchData(entry.exam, file);
+    if (disposed) return; // wb.hf is already destroyed
     const parsed = parseDataFile(text, { sep });
     let name = file.replace(/\.txt$/i, '');
     let n = 2;
@@ -841,6 +843,7 @@ export function createSheetWorkspace(container, ctx) {
   });
 
   init().catch((err) => {
+    if (disposed) return;
     console.error(err);
     clear(gridHost).appendChild(h('div', { class: 'con-err-title pad' }, 'Nie udało się uruchomić arkusza: ' + err.message));
   });
