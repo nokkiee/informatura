@@ -110,7 +110,7 @@ export async function renderSettings(view) {
         h(
           'div',
           { class: `tc-row ${v.ok ? 'ok' : 'bad'}` },
-          h('div', { class: 'tc-head' }, v.ok ? icon('check') : icon('x'), h('b', null, LANGS[k].label), h('span', { class: 'muted' }, v.ok ? v.version : v.error)),
+          h('div', { class: 'tc-head' }, v.ok ? icon('check') : icon('x'), h('b', null, LANGS[k].label), h('span', { class: 'muted', title: v.ok ? v.details || '' : '' }, v.ok ? v.version : v.error)),
           !v.ok ? h('div', { class: 'small' }, 'Jak zainstalować: ', h('code', null, hints[k])) : null,
           input,
         ),

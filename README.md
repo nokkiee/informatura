@@ -7,7 +7,7 @@ Rozwiązujesz zadania z egzaminów CKE w jednym programie. Kod piszesz i urucham
 C++ albo Javie, zapytania SQL wykonujesz na wbudowanej bazie, a obliczenia robisz we wbudowanym
 arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba pobierać.
 
-![Strona startowa](docs/screenshots/ekran-startowy.png)
+![Strona startowa](docs/screenshots/ekran-start.png)
 
 ## Co jest w środku
 

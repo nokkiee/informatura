@@ -127,9 +127,19 @@ async function findCpp(custom) {
       p.stdin.on('error', () => {});
       p.stdin.end('int main(){}\n');
     });
-    return { ok: true, cmd: [cmd, ...pre], version: first, std: probe ? 'c++20' : 'c++17', gnu: /g\+\+|gcc|mingw/i.test(cmd + ' ' + first) };
+    return { ok: true, cmd: [cmd, ...pre], version: compilerVersion(first), details: first, std: probe ? 'c++20' : 'c++17', gnu: /g\+\+|gcc|mingw/i.test(cmd + ' ' + first) };
   }
   return { ok: false, error: 'Nie znaleziono kompilatora C++ (g++ lub clang++).' };
+}
+
+// "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0" -> "g++ 15.2.0", like "Python 3.14.4" and "Java 25"
+// for the other languages; the full first line of --version stays in `details`.
+function compilerVersion(first) {
+  const tool = /clang/i.test(first) ? 'clang++' : 'g++';
+  const stated = first.match(/version\s+(\d+(?:\.\d+)+)/i);
+  const numbers = first.match(/\d+\.\d+(?:\.\d+)*/g);
+  const num = stated ? stated[1] : numbers ? numbers[numbers.length - 1] : null;
+  return num ? `${tool} ${num}` : first;
 }
 
 // A compiler found outside PATH (e.g. Code::Blocks' MinGW) needs its own folder on PATH
@@ -543,4 +553,4 @@ async function runTests(spec) {
   return { results };
 }
 
-module.exports = { init, detect, start, stdin, kill, killAll, runTests, prepareWorkspace, listWorkspace, readWorkspaceFile, javaClassName, splitCmd };
+module.exports = { init, detect, start, stdin, kill, killAll, runTests, prepareWorkspace, listWorkspace, readWorkspaceFile, javaClassName, splitCmd, compilerVersion };
