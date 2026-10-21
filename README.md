@@ -161,7 +161,8 @@ npm run install-desktop
 | `npm run dev` | uruchamia z narzędziami deweloperskimi (F12) |
 | `npm test` | testy jednostkowe: sprawdzanie odpowiedzi, kompletność treści, to, że oficjalne odpowiedzi z klucza dostają pełne punkty |
 | `npm run test:e2e` | testy całej aplikacji w Electronie: uruchamianie kodu w trzech językach, SQL, arkusz, symulacja, podpowiedzi, wyświetlanie każdego z 175 zadań razem z jego podpowiedziami |
-| `npm run verify-content` | skrypty w `tools/ref/` liczą odpowiedzi z plików danych i porównują je z kluczem CKE, a `tools/check-solutions.mjs` uruchamia wszystkie przykładowe rozwiązania z podpowiedzi |
+| `npm run verify-content` | skrypty w `tools/ref/` liczą odpowiedzi z plików danych i porównują je z kluczem CKE, `tools/check-solutions.mjs` uruchamia wszystkie przykładowe rozwiązania z podpowiedzi, a `tools/audit-pdf.mjs` porównuje treść z oryginalnymi PDF-ami (strony, punkty, liczby w treści, odpowiedzi z klucza) |
+| `node scripts/e2e.js solveall` | rozwiązuje każde ze 175 zadań przez interfejs programu (pola, przyciski, uruchomienie kodu i zapytań) i sprawdza, czy dostaje pełne punkty; trwa kilka minut |
 | `npm run pack` | buduje nierozpakowaną wersję do `dist/linux-unpacked` |
 | `npm run dist` | buduje AppImage i .deb |
 | `npm run dist:win` | buduje instalator i wersję przenośną dla Windowsa |
