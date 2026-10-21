@@ -223,9 +223,20 @@ export function splitter(el, { min = 280, max = () => 2000, onResize, vertical =
 // Loads a UMD script as a plain global. Monaco's AMD loader defines `define.amd`, which
 // would make UMD bundles register as AMD modules instead, so it is hidden meanwhile.
 const umdLoads = new Map();
+// One at a time: two overlapping loads would each save and restore define.amd, and the
+// second could run its script with define.amd back in place (registering an AMD module
+// instead of the global it's meant to set) or leave define.amd hidden for good.
+// Monaco's own loader goes through the same queue, so it can't appear mid-load either.
+let umdQueue = Promise.resolve();
+export function queueScript(task) {
+  const p = umdQueue.then(task);
+  umdQueue = p.catch(() => {});
+  return p;
+}
+
 export function loadUmd(src) {
   if (umdLoads.has(src)) return umdLoads.get(src);
-  const p = new Promise((resolve, reject) => {
+  const p = queueScript(() => new Promise((resolve, reject) => {
     const def = typeof window.define === 'function' ? window.define : null;
     const amd = def ? def.amd : undefined;
     if (def) def.amd = undefined;
@@ -243,7 +254,7 @@ export function loadUmd(src) {
       reject(new Error('Nie można wczytać ' + src));
     };
     document.head.appendChild(s);
-  });
+  }));
   umdLoads.set(src, p);
   return p;
 }
