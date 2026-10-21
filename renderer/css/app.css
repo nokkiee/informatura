@@ -1926,6 +1926,21 @@ body[data-view='t'] .view {
   background: var(--panel3);
   color: var(--text);
 }
+.con-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 8px;
+  color: var(--muted);
+  font: 12.5px var(--font);
+  cursor: pointer;
+  user-select: none;
+}
+.con-opt input {
+  margin: 0;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
 .bottom-area {
   flex: 1;
   min-height: 0;

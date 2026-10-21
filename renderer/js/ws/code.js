@@ -103,8 +103,16 @@ export function createCodeWorkspace(container, ctx) {
       if (t.id === id) tabArea.appendChild(t.body);
     }
     tabBar.appendChild(h('div', { class: 'grow' }));
+    if (id === 'console') tabBar.appendChild(clearOnRunToggle());
     tabBar.appendChild(h('button', { class: 'icon-btn small', title: 'Wyczyść konsolę', onclick: () => clearConsole() }, icon('trash', 14)));
     if (id === 'files') refreshFiles();
+  }
+
+  // the setting „Konsola przy uruchomieniu” (also in Ustawienia), right where it matters
+  function clearOnRunToggle() {
+    const box = h('input', { type: 'checkbox', checked: !!getSettings().clearConsole });
+    box.addEventListener('change', () => setSettings({ clearConsole: box.checked }));
+    return h('label', { class: 'con-opt', title: 'Czyść konsolę przed każdym uruchomieniem programu (to samo ustawienie jest w Ustawieniach → Programowanie)' }, box, 'Czyść przy uruchomieniu');
   }
 
   const bottom = h('div', { class: 'ws-bottom' }, tabBar, tabArea);
