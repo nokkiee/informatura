@@ -21,8 +21,16 @@ fi
 rm -f "$DATA/applications/maturalab.desktop"
 for s in 16 24 32 48 64 128 256 512; do rm -f "$ICON_BASE/${s}x${s}/apps/maturalab.png"; done
 
-ELECTRON="$APP_DIR/node_modules/.bin/electron"
+# The Electron binary itself, not node_modules/.bin/electron: that one is a Node script, and the
+# desktop shell's PATH may not have node in it.
+ELECTRON="$APP_DIR/node_modules/electron/dist/electron"
 [[ -x "$ELECTRON" ]] || { echo "Run 'npm install' in $APP_DIR first." >&2; exit 1; }
+
+# Write a fresh file rather than changing it in place: GNOME Shell keeps the entry it read first,
+# so after the project folder moved it went on launching the old path.
+rm -f "$DESKTOP"
+command -v update-desktop-database >/dev/null && update-desktop-database "$DATA/applications" || true
+sleep 1
 
 mkdir -p "$DATA/applications"
 for s in 16 24 32 48 64 128 256 512; do
