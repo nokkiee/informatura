@@ -171,6 +171,9 @@ async function selfTest(w) {
   result.home = await until(`!document.body.classList.contains('loading') && !!document.querySelector('.hero')`);
   await js(`location.hash = '#/t/2023-maj/2.2?from=exam'`);
   result.code = await until(`!!window.monaco && window.monaco.editor.getEditors().length > 0`);
+  // hints: three of them reach the first line of the model solution in the editor
+  await js(`(() => { for (let i = 0; i < 3; i++) [...document.querySelectorAll('.answer-actions .btn')].find((b) => /odpowied/i.test(b.textContent))?.click(); })()`);
+  result.hints = await until(`document.querySelectorAll('.hint-card').length >= 3 && !!document.querySelector('.ghost-inline, .ghost-zone')`);
   await js(`location.hash = '#/t/2023-maj/7.1?from=exam'`);
   result.sql = await until(`document.querySelectorAll('.sql-side .tbl-item').length === 3`);
   await js(`location.hash = '#/t/2023-maj/6.2?from=exam'`);
@@ -183,7 +186,7 @@ async function selfTest(w) {
     result.pdf = String(e.message);
   }
   result.toolchains = await runner.detect();
-  const ok = ['home', 'code', 'sql', 'sheet', 'pdf'].every((k) => result[k] === true);
+  const ok = ['home', 'code', 'hints', 'sql', 'sheet', 'pdf'].every((k) => result[k] === true);
   console.log('SELFTEST ' + (ok ? 'OK ' : 'FAILED ') + JSON.stringify(result));
   app.exit(ok ? 0 : 1);
 }
