@@ -77,3 +77,15 @@ test('SQL: hints go below the leading comments, keywords in any case', () => {
   const p3 = G.planGhost({ user, ref, template: user, stage: 2, stages: 2, lang: 'sql' });
   assert.deepStrictEqual(p3.remove, [4, 6]);
 });
+
+test('empty editor (setting „Pusty edytor”): the whole solution is hinted, starting on line 1', () => {
+  const empty = (stage) => G.planGhost({ user: [''], ref: REF, template: [''], stage, stages: 3, lang: 'python' });
+  const own = REF.filter((l) => l.trim()).length;
+  const p1 = empty(1);
+  assert.deepStrictEqual(p1.inline, { line: 1, text: REF[0], full: REF[0] });
+  assert.strictEqual(p1.zones.length, 0);
+  const p3 = empty(3);
+  assert.strictEqual(p3.total, own);
+  assert.strictEqual(p3.missing, own);
+  assert.deepStrictEqual(p3.remove, []);
+});

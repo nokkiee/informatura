@@ -70,6 +70,31 @@ module.exports = async (H) => {
   await H.waitFor(() => H.js(`document.querySelectorAll('.tc-row').length === 3`), 20000);
   await H.shot('25-settings');
 
+  // ---- starting code: the template or an empty editor (setting „Kod na start”) ---------------
+  const editorText = `window.monaco?.editor.getEditors().find((e) => e.getContainerDomNode().offsetParent !== null)?.getValue()`;
+  const openEditor = async (key) => {
+    await go('#/t/' + key + '?from=exam', 300);
+    await H.waitFor(() => H.js(`typeof (${editorText}) === 'string' && document.querySelector('.task-no')?.textContent.includes(${JSON.stringify(key.split('/')[1])})`), 15000);
+    await H.sleep(200);
+    return H.js(editorText);
+  };
+  await H.click('.seg-btn', 'Pusty edytor');
+  await H.waitFor(() => H.js(`import('./js/store.js').then((s) => s.getSettings().starter === 'empty')`), 3000);
+  H.assert((await openEditor('2024-maj/4.1')) === '', 'program task starts empty');
+  H.assert(await H.js(`document.querySelector('.ws-toolbar .icon-btn[title="Wyczyść edytor"]') !== null`), 'reset button clears the editor');
+  await H.js(`window.monaco.editor.getEditors().find((e) => e.getContainerDomNode().offsetParent !== null).setValue('print(1)\\n')`);
+  await H.sleep(800); // let the debounced save land
+  H.assert((await openEditor('2024-maj/3.1')) === '', 'algorithm task starts empty');
+  const io = await H.js(`document.querySelector('.algo-io')?.textContent || ''`);
+  H.assert(/Wejście/.test(io) && /Wynik/.test(io), 'algorithm task lists its input and output: ' + io);
+  H.assert((await openEditor('2024-maj/8.1')) === '', 'SQL task starts empty');
+  await go('#/settings', 800);
+  await H.click('.seg-btn', 'Szablon');
+  await H.waitFor(() => H.js(`import('./js/store.js').then((s) => s.getSettings().starter === 'template')`), 3000);
+  H.assert((await openEditor('2024-maj/4.2')).includes('dane'), 'program task starts with the template');
+  H.assert((await openEditor('2024-maj/8.2')).includes('SELECT'), 'SQL task starts with the starter query');
+  H.assert((await openEditor('2024-maj/4.1')) === 'print(1)\n', 'code written with an empty start is kept');
+
   // ---- spreadsheet tools ----------------------------------------------------------------------
   await go('#/t/2023-maj/6.1?from=exam', 300);
   await H.waitFor(() => H.js(`!!document.querySelector('.grid-canvas')`), 15000);

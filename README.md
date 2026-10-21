@@ -51,6 +51,9 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
 - **Test: dane przykładowe** uruchamia program na pliku przykładowym i porównuje wynik z odpowiedzią podaną w arkuszu.
 - Zadania z algorytmów (napisz funkcję, uzupełnij pseudokod) mają gotowy szablon w wybranym
   języku i testy: przykłady z arkusza i losowe przypadki.
+- Na start edytor ma szablon, który wczytuje plik z danymi i wypisuje wynik. W *Ustawieniach*
+  (**Kod na start → Pusty edytor**) można zamiast tego zaczynać od pustego pola, jak na maturze.
+  Dotyczy to też zapytań SQL. Kod już napisany w zadaniu zostaje.
 
 ### Bazy danych: SQL w stylu Accessa
 

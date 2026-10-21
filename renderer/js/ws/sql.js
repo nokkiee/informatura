@@ -5,6 +5,7 @@ import { h, btn, icon, clear, toast, splitter, modal, loadUmd } from '../ui.js';
 import { loadMonaco, editorOptions } from '../monaco.js';
 import { fetchData } from '../content.js';
 import { createGhost } from '../ghost.js';
+import { getSettings } from '../store.js';
 
 let sqlPromise = null;
 function loadSqlJs() {
@@ -407,16 +408,18 @@ export function createSqlWorkspace(container, ctx) {
     return text;
   }
 
-  const starter =
+  const fullStarter =
     ctx.starter ||
     `-- Zadanie ${entry.task.no}\n-- Tabele: ${Object.keys(group.tables || {})
       .concat(Object.keys(ctx.extraTables || {}))
       .join(', ')}\n\nSELECT *\nFROM ${Object.keys(group.tables || {})[0] || 'tabela'}\nLIMIT 10;\n`;
+  // setting „Kod na start”: the starter query, or an empty editor
+  const starter = getSettings().starter === 'empty' ? '' : fullStarter;
 
   loadMonaco().then((m) => {
     if (disposed) return;
     monaco = m;
-    editor = monaco.editor.create(editorBox, editorOptions({ value: state.sql ?? starter, language: 'sql', tabSize: 2 }));
+    editor = monaco.editor.create(editorBox, editorOptions({ value: state.sql == null || state.sql === fullStarter ? starter : state.sql, language: 'sql', tabSize: 2 }));
     editor.onDidChangeModelContent(() => {
       state.sql = editor.getValue();
       ctx.save();

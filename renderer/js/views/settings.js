@@ -50,6 +50,22 @@ export async function renderSettings(view) {
       'Programowanie',
       row('Domyślny język', seg(Object.entries(LANGS).map(([k, v]) => [k, v.label]), s.lang, (v) => setSettings({ lang: v }))),
       row(
+        'Kod na start',
+        seg(
+          [
+            ['template', 'Szablon (wczytanie danych)'],
+            ['empty', 'Pusty edytor'],
+          ],
+          s.starter,
+          (v) => setSettings({ starter: v }),
+        ),
+      ),
+      h(
+        'p',
+        { class: 'muted small set-note' },
+        'Szablon otwiera plik z danymi i wypisuje wynik, a algorytm piszesz sam. Pusty edytor to start od zera, jak na maturze. Dotyczy kodu i zapytań SQL w zadaniach, w których nic jeszcze nie napisałeś.',
+      ),
+      row(
         'Rozmiar czcionki w edytorze',
         seg(
           [12, 13, 14, 15, 16, 18].map((n) => [n, String(n)]),
