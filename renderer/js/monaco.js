@@ -7,16 +7,20 @@ let loading = null;
 export function loadMonaco() {
   if (loading) return loading;
   // the AMD loader defines `define.amd`, so it waits for UMD scripts that are still loading
-  loading = queueScript(
-    () =>
-      new Promise((resolve, reject) => {
-        const s = document.createElement('script');
-        s.src = 'vendor/monaco/vs/loader.js';
-        s.onload = resolve;
-        s.onerror = reject;
-        document.head.appendChild(s);
-      }),
-  ).then(
+  const script = (src) =>
+    new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  loading = queueScript(async () => {
+    // Polish menus and messages (Kopiuj, Wklej, …): the translation sets a global that the
+    // editor reads, so it goes in before the editor itself
+    await script('vendor/monaco/vs/nls/lang/pl.js').catch(() => console.warn('Monaco: no Polish translation'));
+    await script('vendor/monaco/vs/loader.js');
+  }).then(
     () =>
       new Promise((resolve, reject) => {
         window.require.config({ paths: { vs: 'vendor/monaco/vs' } });
@@ -68,6 +72,14 @@ function defineThemes(monaco) {
 
 export function editorTheme() {
   return getSettings().theme === 'light' ? 'ml-light' : 'ml-dark';
+}
+
+// Creates an editor in `box`. Monaco's theme colours are CSS variables set on the editor and on
+// `.monaco-component` elements; the right-click menu is drawn next to the editor (in `box`), so
+// the box gets that class too – otherwise the menu has no background and black text.
+export function createEditor(monaco, box, options) {
+  box.classList.add('monaco-component');
+  return monaco.editor.create(box, options);
 }
 
 export function editorOptions(extra = {}) {

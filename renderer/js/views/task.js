@@ -184,8 +184,20 @@ export async function renderTask(view, { key, from }) {
     if (task.rubric) solution.appendChild(h('details', { class: 'rubric', open: true }, h('summary', null, 'Zasady oceniania'), h('div', { class: 'md', html: md(task.rubric) })));
     solution.appendChild(h('div', { class: 'sol-actions' }, btn('Klucz odpowiedzi (PDF)', { icon: 'pdf', small: true, onClick: () => window.api.openPdf(exam.keyPdf) })));
     renderSelfGrade();
+    setRevealLabel(true);
     solution.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };
+  const hideSolution = () => {
+    state.revealed = false;
+    save();
+    solution.hidden = true;
+    setRevealLabel(false);
+  };
+  // the button shows the solution, and hides it again on the next click
+  function setRevealLabel(shown) {
+    if (!revealBtn) return;
+    clear(revealBtn).append(icon(shown ? 'eyeOff' : 'eye', 16), h('span', null, shown ? 'Ukryj rozwiązanie' : 'Pokaż rozwiązanie'));
+  }
 
   function finish(res, { silent } = {}) {
     if (sim) return;
@@ -248,7 +260,7 @@ export async function renderTask(view, { key, from }) {
   }
 
   const checkBtn = sim ? null : btn('Sprawdź', { icon: 'check', kind: 'primary', onClick: () => check() });
-  const revealBtn = sim ? null : btn('Pokaż rozwiązanie', { icon: 'eye', onClick: () => showSolution() });
+  const revealBtn = sim ? null : btn('Pokaż rozwiązanie', { icon: 'eye', onClick: () => (solution.hidden ? showSolution() : hideSolution()) });
 
   // ---- hints: vague first, then more specific; the last ones write the model solution into
   // the editor as faint text, one line first, then more. None during an exam simulation.
@@ -259,12 +271,12 @@ export async function renderTask(view, { key, from }) {
   const GHOST_STEPS =
     ghostTool === 'sql'
       ? [
-          '**Pierwsza linijka zapytania** jest w edytorze SQL – szarym tekstem, w miejscu, w którym powinna się znaleźć. Przepisz ją albo naciśnij **Tab**.',
+          '**Pierwsza linijka zapytania** jest w edytorze SQL, w podświetlonym pasku z żarówką, tam gdzie powinna się znaleźć. Przepisz ją w wierszu pod paskiem albo naciśnij **Tab**.',
           'W edytorze widać teraz **całe przykładowe zapytanie**. Linijki, które są już w Twoim zapytaniu, znikają z podpowiedzi' + (emptyStart ? '.' : ', a przekreślone linijki przykładu na start nie są potrzebne.'),
         ]
       : [
-          '**Pierwsza linijka rozwiązania** jest w edytorze – szarym tekstem, w miejscu, w którym powinna się znaleźć. Przepisz ją albo naciśnij **Tab**.',
-          'W edytorze widać teraz **mniej więcej połowę rozwiązania**. Linijki, które są już w Twoim kodzie, znikają z podpowiedzi.',
+          '**Pierwsza linijka rozwiązania** jest w edytorze, w podświetlonym pasku z żarówką, tam gdzie powinna się znaleźć. Przepisz ją w wierszu pod paskiem albo naciśnij **Tab**.',
+          'W edytorze widać teraz **mniej więcej połowę rozwiązania**. Linijki, które są już w Twoim kodzie, znikają z podpowiedzi, a **Tab** wpisuje kolejną.',
           'W edytorze widać **całe przykładowe rozwiązanie**.' + (emptyStart ? '' : ' Przekreślone linijki szablonu nie są w nim potrzebne.'),
         ];
   const hintLevels = [...hintTexts.map((text) => ({ text })), ...(hasModel ? GHOST_STEPS.map((text, i) => ({ text, ghost: i + 1 })) : [])];

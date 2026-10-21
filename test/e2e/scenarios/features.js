@@ -95,6 +95,42 @@ module.exports = async (H) => {
   H.assert((await openEditor('2024-maj/8.2')).includes('SELECT'), 'SQL task starts with the starter query');
   H.assert((await openEditor('2024-maj/4.1')) === 'print(1)\n', 'code written with an empty start is kept');
 
+  // the editor's right-click menu gets the theme's colours (it is drawn next to the editor)
+  H.assert(await H.js(`getComputedStyle(document.querySelector('.editor-box')).getPropertyValue('--vscode-menu-background').trim() !== ''`), 'menu colours reach the context menu');
+
+  // ---- console: keep earlier output or clear it before each run (setting) ----------------------
+  const runs = () => H.js(`document.querySelector('.console-body').textContent.split('Proces zakończony').length - 1`);
+  const runOnce = async () => {
+    const before = await runs();
+    await H.click('.ws-toolbar .btn', 'Uruchom');
+    await H.waitFor(async () => (await runs()) !== before || (await H.js(`document.querySelector('.console-body').textContent.includes('Proces zakończony') && !document.querySelector('.ws-code.running')`)), 30000);
+    await H.waitFor(() => H.js(`!document.querySelector('.ws-code.running')`), 30000);
+  };
+  await openEditor('2024-maj/4.3');
+  await runOnce();
+  await runOnce();
+  H.assert((await runs()) === 2, 'output of both runs kept: ' + (await runs()));
+  await go('#/settings', 800);
+  await H.click('.seg-btn', 'Wyczyść przed każdym uruchomieniem');
+  await openEditor('2024-maj/4.3');
+  await runOnce();
+  await runOnce();
+  H.assert((await runs()) === 1, 'console cleared before each run: ' + (await runs()));
+
+  // ---- „Pokaż rozwiązanie” shows the solution, and hides it on the next click --------------------
+  await go('#/t/2024-maj/1.1?from=exam', 800);
+  await H.click('.answer-actions .btn', 'Pokaż rozwiązanie');
+  await H.sleep(200);
+  H.assert(await H.js(`!document.querySelector('.solution-panel').hidden`), 'solution shown');
+  await H.click('.answer-actions .btn', 'Ukryj rozwiązanie');
+  await H.sleep(200);
+  H.assert(await H.js(`document.querySelector('.solution-panel').hidden`), 'solution hidden again');
+  H.assert(await H.js(`[...document.querySelectorAll('.answer-actions .btn')].some((b) => b.textContent === 'Pokaż rozwiązanie')`), 'button back to „Pokaż rozwiązanie”');
+  await H.sleep(800); // let the debounced save land
+  await go('#/t/2024-maj/1.2?from=exam', 500);
+  await go('#/t/2024-maj/1.1?from=exam', 800);
+  H.assert(await H.js(`document.querySelector('.solution-panel').hidden`), 'hidden solution stays hidden');
+
   // ---- spreadsheet tools ----------------------------------------------------------------------
   await go('#/t/2023-maj/6.1?from=exam', 300);
   await H.waitFor(() => H.js(`!!document.querySelector('.grid-canvas')`), 15000);

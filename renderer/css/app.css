@@ -1644,16 +1644,36 @@ body[data-view='t'] .view {
   }
 }
 
-/* model solution drawn faintly in the editor */
+/* model solution shown in the editor: a marked block between the student's lines (the line
+   under it is where its first line gets typed) */
 .ghost-zone {
   color: var(--ghost);
   white-space: pre;
   pointer-events: none;
-  font-style: italic;
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
 }
-.ghost-inline {
-  color: var(--ghost) !important;
-  font-style: italic;
+.ghost-done {
+  color: color-mix(in srgb, var(--ok) 75%, transparent);
+}
+.ghost-margin {
+  position: relative;
+  color: var(--accent);
+  pointer-events: none;
+}
+/* the block's marker: a bar a little left of the code, so it isn't taken for the cursor */
+.ghost-margin::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  right: 4px;
+  width: 3px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--accent) 75%, transparent);
+}
+.ghost-margin svg {
+  display: block;
+  margin: calc((var(--ghost-lh) - 14px) / 2) 0 0 6px;
 }
 .ghost-remove {
   text-decoration: line-through;

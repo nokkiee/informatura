@@ -66,6 +66,17 @@ export async function renderSettings(view) {
         'Szablon otwiera plik z danymi i wypisuje wynik, a algorytm piszesz sam. Pusty edytor to start od zera, jak na maturze. Dotyczy kodu i zapytań SQL w zadaniach, w których nic jeszcze nie napisałeś.',
       ),
       row(
+        'Konsola przy uruchomieniu',
+        seg(
+          [
+            [false, 'Zostaw poprzednie wyniki'],
+            [true, 'Wyczyść przed każdym uruchomieniem'],
+          ],
+          !!s.clearConsole,
+          (v) => setSettings({ clearConsole: v }),
+        ),
+      ),
+      row(
         'Rozmiar czcionki w edytorze',
         seg(
           [12, 13, 14, 15, 16, 18].map((n) => [n, String(n)]),

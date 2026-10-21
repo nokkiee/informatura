@@ -1,7 +1,7 @@
 // Code workspace: Monaco editor + terminal-like console that runs the program
 // with the exam's data files in its working folder.
 import { h, btn, icon, clear, toast, modal, splitter, esc } from '../ui.js';
-import { loadMonaco, editorOptions } from '../monaco.js';
+import { loadMonaco, editorOptions, createEditor } from '../monaco.js';
 import { getSettings, setSettings } from '../store.js';
 import { LANGS, dataTemplate, scratchTemplate, algoTemplate, buildTests, bannedUses } from '../algo.js';
 import { dataSrc, fetchData, examTitle } from '../content.js';
@@ -133,7 +133,7 @@ export function createCodeWorkspace(container, ctx) {
     monaco = m;
     clear(editorBox);
     const model = monaco.editor.createModel(codeFor(lang), LANGS[lang].monaco);
-    editor = monaco.editor.create(editorBox, editorOptions({ model }));
+    editor = createEditor(monaco, editorBox, editorOptions({ model }));
     editor.onDidChangeModelContent(() => {
       state.code[lang] = editor.getValue();
       ctx.save();
@@ -345,8 +345,12 @@ export function createCodeWorkspace(container, ctx) {
     if (markers[0]) editor.revealLineInCenter(markers[0].startLineNumber);
   }
 
+  // setting „Konsola przy uruchomieniu”: start every run with an empty console
+  const freshConsole = () => getSettings().clearConsole && clearConsole();
+
   async function run() {
     if (runId) return;
+    freshConsole();
     if (monaco && editor) monaco.editor.setModelMarkers(editor.getModel(), 'compile', []);
     showTab('console');
     if (mode === 'data') {
@@ -396,6 +400,7 @@ export function createCodeWorkspace(container, ctx) {
   async function runExample() {
     if (runId) return;
     const ex = task.example;
+    freshConsole();
     showTab('console');
     const mapNote = Object.entries(ex.map || {})
       .map(([to, from]) => `<span class="fname">${esc(from)}</span> → <span class="fname">${esc(to)}</span>`)
