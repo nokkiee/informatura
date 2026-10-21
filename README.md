@@ -17,8 +17,27 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
   - **Symulacja egzaminu:** zegar 210 minut, sprawdzanie dopiero na końcu i podsumowanie punktów według działów.
 - **Losowe zadanie:** losujesz z wybranych działów i matur.
 - **Przeglądanie:** wszystkie zadania z filtrami według działu, matury i postępu.
+- **Podpowiedzi** do każdego zadania: najpierw ogólne, potem coraz konkretniejsze, a przy kodzie i SQL –
+  przykładowe rozwiązanie wpisywane szarym tekstem prosto do edytora.
 - **Oryginał pod ręką:** przycisk *Arkusz PDF* otwiera oryginalny arkusz na stronie z danym zadaniem.
   Klucz odpowiedzi CKE też jest w programie.
+
+### Podpowiedzi
+
+![Podpowiedzi i przykładowe rozwiązanie w edytorze](docs/screenshots/podpowiedzi.png)
+
+- Przycisk **Podpowiedź** odsłania kolejne wskazówki. Pierwsze tylko naprowadzają (od czego zacząć,
+  na co uważać), następne mówią coraz dokładniej, co zrobić – w arkuszu kalkulacyjnym aż do gotowych formuł.
+- W zadaniach z programowaniem i SQL kolejne podpowiedzi pokazują w edytorze **przykładowe rozwiązanie
+  szarym tekstem**, dokładnie w miejscu, w którym powinno się znaleźć:
+  - najpierw jedna linijka, potem mniej więcej połowa, na końcu całe rozwiązanie (w SQL: pierwsza linijka, potem całe zapytanie);
+  - linijki, które już są w Twoim kodzie, znikają z podpowiedzi – odstępy, cudzysłowy i komentarze nie mają znaczenia;
+  - **Tab** wpisuje podpowiedzianą linijkę, na której stoi kursor;
+  - przy całym rozwiązaniu linijki szablonu, których ono nie potrzebuje, są przekreślone.
+- Przykładowe rozwiązania są w Pythonie, C++ i Javie – podpowiedź pokazuje kod w języku wybranym w edytorze.
+- Każde z 209 rozwiązań (171 programów i 38 zapytań) jest automatycznie uruchamiane na danych z matury
+  i daje wynik zgodny z kluczem CKE. Formuły z podpowiedzi do arkusza są sprawdzone tym samym silnikiem, którego używa program.
+- Podczas symulacji egzaminu podpowiedzi są wyłączone.
 
 ### Programowanie: Python, C++ lub Java
 
@@ -78,24 +97,41 @@ języka, w którym piszesz. Wystarczy jeden z nich.
 | C++ | g++ z obsługą C++17 lub nowszego | `sudo apt install g++` |
 | Java | JDK 11 lub nowszy | `sudo apt install default-jdk` |
 
-Na Windowsie: Python z [python.org](https://www.python.org/) (zaznacz *Add python.exe to PATH*),
-C++ z [MSYS2](https://www.msys2.org/) (`pacman -S mingw-w64-ucrt-x86_64-gcc`), a Java z [Adoptium](https://adoptium.net/).
+Na Windowsie najprościej przez *winget* w PowerShellu (albo instalatorami ze stron
+[python.org](https://www.python.org/), [winlibs.com](https://winlibs.com/) i [adoptium.net](https://adoptium.net/)):
+
+```bash
+winget install Python.Python.3.12
+```
+
+```bash
+winget install BrechtSanders.WinLibs.POSIX.UCRT
+```
+
+```bash
+winget install EclipseAdoptium.Temurin.21.JDK
+```
+
+Program sam znajduje kompilatory zainstalowane razem z Code::Blocks, Dev-C++ i MSYS2, a Javę w typowych folderach JDK.
 W *Ustawieniach* programu widać, co zostało wykryte. Można tam też wskazać ścieżkę ręcznie.
 
 Bazy danych, arkusz kalkulacyjny i zadania teoretyczne nie wymagają niczego dodatkowego.
 
 ## Instalacja
 
-### Z gotowej paczki (Linux)
+Gotowe pliki są na stronie [**Releases**](../../releases/latest).
 
-`npm run dist` buduje w folderze `dist/` dwa pliki:
+| System | Plik | Jak |
+|---|---|---|
+| Windows 10 / 11 | `Informatura-Setup-<wersja>.exe` | Uruchom – zainstaluje się w kilka sekund i doda skrót w menu Start i na pulpicie. |
+| Windows bez instalacji | `Informatura-<wersja>-Portable.exe` | Po prostu uruchom. |
+| Linux (dowolna dystrybucja) | `Informatura-<wersja>.AppImage` | Nadaj prawo do uruchamiania (`chmod +x`) i uruchom. |
+| Debian / Ubuntu | `informatura_<wersja>_amd64.deb` | `sudo apt install ./informatura_<wersja>_amd64.deb` |
 
-- `Informatura-<wersja>.AppImage` dla dowolnej dystrybucji. Nadaj mu prawo do uruchamiania (`chmod +x`) i uruchom.
-- `informatura_<wersja>_amd64.deb` dla Debiana i Ubuntu. Instalujesz go poleceniem:
+Pliki dla Windowsa nie są podpisane cyfrowo, więc Windows może pokazać komunikat
+*„System Windows ochronił ten komputer”*. Kliknij **Więcej informacji → Uruchom mimo to**.
 
-```bash
-sudo apt install ./dist/informatura_0.1.0_amd64.deb
-```
+Paczki zbudujesz też sam: `npm run dist` (Linux) i `npm run dist:win` (Windows).
 
 ### Ze źródeł
 
@@ -122,11 +158,14 @@ npm run install-desktop
 | `npm start` | uruchamia program |
 | `npm run dev` | uruchamia z narzędziami deweloperskimi (F12) |
 | `npm test` | testy jednostkowe: sprawdzanie odpowiedzi, kompletność treści, to, że oficjalne odpowiedzi z klucza dostają pełne punkty |
-| `npm run test:e2e` | testy całej aplikacji w Electronie: uruchamianie kodu w trzech językach, SQL, arkusz, symulacja, wyświetlanie każdego z 175 zadań |
-| `npm run verify-content` | skrypty w `tools/ref/` liczą odpowiedzi z plików danych i porównują je z kluczem CKE |
+| `npm run test:e2e` | testy całej aplikacji w Electronie: uruchamianie kodu w trzech językach, SQL, arkusz, symulacja, podpowiedzi, wyświetlanie każdego z 175 zadań razem z jego podpowiedziami |
+| `npm run verify-content` | skrypty w `tools/ref/` liczą odpowiedzi z plików danych i porównują je z kluczem CKE, a `tools/check-solutions.mjs` uruchamia wszystkie przykładowe rozwiązania z podpowiedzi |
 | `npm run pack` | buduje nierozpakowaną wersję do `dist/linux-unpacked` |
 | `npm run dist` | buduje AppImage i .deb |
 | `npm run dist:win` | buduje instalator i wersję przenośną dla Windowsa |
+
+`node tools/sheet-eval.mjs` liczy formuły arkusza (po polsku) na danych z matury tym samym silnikiem co program –
+tak sprawdzone są formuły z podpowiedzi. Testy działają na Linuksie i Windowsie (GitHub Actions).
 
 Gotową paczkę można szybko sprawdzić. To polecenie otwiera zadanie każdego rodzaju i wypisuje `SELFTEST OK`:
 
@@ -143,7 +182,10 @@ INFORMATURA_SELFTEST=1 dist/linux-unpacked/informatura --no-sandbox
   - `renderer/js/ws/`: edytor kodu, SQL i arkusz.
   - `renderer/js/sheet/`: silnik arkusza i siatka.
   - `renderer/js/check.js`: sprawdzanie odpowiedzi.
+  - `renderer/js/ghost.js`: przykładowe rozwiązanie wpisywane szarym tekstem do edytora.
 - `content/exams/<matura>.js`: treść zadań, klucz i zasady oceniania dla każdej matury.
+- `content/hints/<matura>.js`: podpowiedzi do każdego zadania.
+- `content/solutions/<matura>/<zadanie>.py|cpp|java|sql`: przykładowe rozwiązania, które pokazują podpowiedzi.
 - `content/data/<matura>/`: pliki z danymi. `content/pdf/`: oryginalne arkusze i klucze. `content/img/`: rysunki z arkuszy.
 - `sources/`: arkusze i załączniki w postaci pobranej z arkusze.pl.
 
@@ -152,6 +194,7 @@ INFORMATURA_SELFTEST=1 dist/linux-unpacked/informatura --no-sandbox
 Zadania, pliki z danymi, rysunki i klucze odpowiedzi pochodzą z matur z informatyki
 (poziom rozszerzony, formuła 2023) Centralnej Komisji Egzaminacyjnej. Pobrano je z
 [arkusze.pl](https://arkusze.pl/), a prawa do nich należą do CKE. Program służy wyłącznie do nauki.
+Podpowiedzi i przykładowe rozwiązania napisano dla programu.
 
 Kod programu jest udostępniony na licencji GNU GPL v3 (`LICENSE`), bo korzysta z biblioteki
 HyperFormula na licencji GPL. Pozostałe biblioteki i ich licencje są wymienione w
