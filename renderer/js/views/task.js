@@ -13,6 +13,19 @@ import { navigate, navContext } from '../app.js';
 // appendChild for several children, skipping empty ones
 const put = (el, ...kids) => kids.forEach((k) => k && el.appendChild(k));
 
+// Input and output of an algorithm task's program, in the order the tests use
+function algoIO(algo) {
+  const list = (vars) => h('ul', null, vars.map((v) => h('li', null, h('code', null, v.name), v.desc ? ' – ' + v.desc : '', v.type.endsWith('[]') ? ' (w jednym wierszu, oddzielone spacjami)' : '')));
+  return h(
+    'div',
+    { class: 'algo-io small' },
+    h('div', null, h('b', null, 'Wejście'), ', każda wartość w osobnym wierszu:'),
+    list(algo.inputs || []),
+    h('div', null, h('b', null, 'Wynik'), ', każda wartość w osobnym wierszu:'),
+    list(algo.outputs || []),
+  );
+}
+
 // Tables and figures that are still wider than the pane (it can be dragged quite narrow) are
 // shrunk to fit, so nothing in a task needs sideways scrolling and words stay whole.
 function fitWide(root) {
@@ -242,16 +255,17 @@ export async function renderTask(view, { key, from }) {
   const ghostTool = ['program', 'algorithm'].includes(task.kind) ? 'code' : ['sql', 'sqlwrite'].includes(task.kind) ? 'sql' : null;
   const hintTexts = sim ? [] : await getHints(exam, task.no);
   const hasModel = !sim && !!ghostTool && (await fetchSolution(exam, task.no, ghostTool === 'sql' ? 'sql' : 'python')) != null;
+  const emptyStart = getSettings().starter === 'empty'; // no template to strike through
   const GHOST_STEPS =
     ghostTool === 'sql'
       ? [
           '**Pierwsza linijka zapytania** jest w edytorze SQL – szarym tekstem, w miejscu, w którym powinna się znaleźć. Przepisz ją albo naciśnij **Tab**.',
-          'W edytorze widać teraz **całe przykładowe zapytanie**. Linijki, które są już w Twoim zapytaniu, znikają z podpowiedzi, a przekreślone linijki przykładu na start nie są potrzebne.',
+          'W edytorze widać teraz **całe przykładowe zapytanie**. Linijki, które są już w Twoim zapytaniu, znikają z podpowiedzi' + (emptyStart ? '.' : ', a przekreślone linijki przykładu na start nie są potrzebne.'),
         ]
       : [
           '**Pierwsza linijka rozwiązania** jest w edytorze – szarym tekstem, w miejscu, w którym powinna się znaleźć. Przepisz ją albo naciśnij **Tab**.',
           'W edytorze widać teraz **mniej więcej połowę rozwiązania**. Linijki, które są już w Twoim kodzie, znikają z podpowiedzi.',
-          'W edytorze widać **całe przykładowe rozwiązanie**. Przekreślone linijki szablonu nie są w nim potrzebne.',
+          'W edytorze widać **całe przykładowe rozwiązanie**.' + (emptyStart ? '' : ' Przekreślone linijki szablonu nie są w nim potrzebne.'),
         ];
   const hintLevels = [...hintTexts.map((text) => ({ text })), ...(hasModel ? GHOST_STEPS.map((text, i) => ({ text, ghost: i + 1 })) : [])];
   state.hintLevel = Math.min(state.hintLevel || 0, hintLevels.length);
@@ -460,8 +474,11 @@ export async function renderTask(view, { key, from }) {
         h(
           'p',
           { class: 'small' },
-          'Zapisz algorytm w wybranym języku po prawej. Program czyta dane z wejścia i wypisuje wynik – szablon już to robi. „Sprawdź testami” uruchomi go dla przykładów z arkusza i dodatkowych danych testowych.',
+          getSettings().starter === 'empty'
+            ? 'Zapisz algorytm w wybranym języku po prawej. Program ma czytać dane z wejścia i wypisać wynik w kolejności podanej niżej. „Sprawdź testami” uruchomi go dla przykładów z arkusza i dodatkowych danych testowych.'
+            : 'Zapisz algorytm w wybranym języku po prawej. Program czyta dane z wejścia i wypisuje wynik – szablon już to robi. „Sprawdź testami” uruchomi go dla przykładów z arkusza i dodatkowych danych testowych.',
         ),
+        algoIO(task.algo),
         task.algo.noBuiltins ? h('p', { class: 'small warn-text' }, 'Pamiętaj o ograniczeniach z treści zadania (bez funkcji wbudowanych) – testy tego nie sprawdzą, ale egzaminator tak.') : null,
         h('div', { class: 'tests-status' }),
       );

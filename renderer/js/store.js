@@ -8,6 +8,7 @@ const DEFAULT_SETTINGS = {
   fontSize: 14,
   sheetLang: 'pl',
   examTimer: true,
+  starter: 'template', // 'template' | 'empty': what a new code/SQL editor starts with
   toolchains: {},
 };
 

@@ -945,6 +945,14 @@ body[data-view='t'] .view {
   width: 230px;
   color: var(--muted);
 }
+.set-note {
+  margin: 0 0 6px 246px;
+}
+@media (max-width: 700px) {
+  .set-note {
+    margin-left: 0;
+  }
+}
 .tc-list {
   display: flex;
   flex-direction: column;
@@ -1591,6 +1599,10 @@ body[data-view='t'] .view {
 }
 .algo-info p {
   margin: 4px 0 8px;
+}
+.algo-io ul {
+  margin: 2px 0 8px;
+  padding-left: 20px;
 }
 
 /* hints */

@@ -32,12 +32,16 @@ export function createCodeWorkspace(container, ctx) {
   let ghostStage = ctx.ghostStage || 0;
 
   const mainFile = task?.mainFile || entry?.group.files?.[0];
-  const template = (l) => {
+  const fullTemplate = (l) => {
     if (mode === 'algo') return algoTemplate(l, task.algo, title);
     if (mode === 'scratch') return scratchTemplate(l);
     return dataTemplate(l, { file: mainFile, title });
   };
-  const codeFor = (l) => state.code[l] ?? template(l);
+  // what the editor starts with: the template, or nothing (setting „Kod na start”)
+  const emptyStart = getSettings().starter === 'empty';
+  const template = (l) => (emptyStart ? '' : fullTemplate(l));
+  // code left exactly as the template counts as not written yet
+  const codeFor = (l) => (state.code[l] == null || state.code[l] === fullTemplate(l) ? template(l) : state.code[l]);
 
   // ---- toolbar ---------------------------------------------------------------------------
   const langSel = h(
@@ -59,7 +63,7 @@ export function createCodeWorkspace(container, ctx) {
     runBtn.classList.remove('primary');
   }
   const prevBtn = ctx.previousCode ? btn('Kod z ' + ctx.previousCode.no, { icon: 'copy', small: true, title: `Wstaw kod napisany w zadaniu ${ctx.previousCode.no}`, onClick: () => usePrevious() }) : null;
-  const resetBtn = h('button', { class: 'icon-btn', title: 'Przywróć szablon', onclick: () => resetTemplate() }, icon('refresh'));
+  const resetBtn = h('button', { class: 'icon-btn', title: emptyStart ? 'Wyczyść edytor' : 'Przywróć szablon', onclick: () => resetTemplate() }, icon('refresh'));
   const folderBtn = mode === 'data' ? h('button', { class: 'icon-btn', title: 'Otwórz folder roboczy', onclick: () => window.api.openWorkspace(ctx.wsKey) }, icon('folder')) : null;
 
   const toolbar = h('div', { class: 'ws-toolbar' }, langSel, runBtn, testsBtn, exampleBtn, stopBtn, h('div', { class: 'grow' }), prevBtn, folderBtn, resetBtn);
@@ -205,6 +209,8 @@ export function createCodeWorkspace(container, ctx) {
       lines.push('<div class="con-info dim">Uruchom program – to, co wypisze na ekran, trafi do pola „Odpowiedź”.</div>');
     } else if (mode === 'algo') {
       lines.push('<div class="con-info">Program czyta dane z wejścia (stdin) i wypisuje wynik. „Sprawdź testami” uruchomi go dla przykładów z arkusza i dodatkowych testów.</div>');
+      const names = (vars) => (vars || []).map((v) => `<span class="fname">${esc(v.name)}</span>`).join(' ');
+      lines.push(`<div class="con-info dim">Wejście: ${names(task.algo.inputs)} · wynik: ${names(task.algo.outputs)} (każda wartość w osobnym wierszu)</div>`);
     } else {
       lines.push('<div class="con-info dim">Brudnopis – możesz tu policzyć cokolwiek potrzebujesz.</div>');
     }
