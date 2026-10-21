@@ -468,7 +468,7 @@ export default {
 
         Do Twojej dyspozycji jest także przykładowa mapa (Rysunek 1.), na której oznaczono położenie 10 miast (dane tych miast zapisano w Tabeli 1.). Odpowiedzi dla danych z tej mapy również umieszczono pod treściami zadań.
 
-        <img class="fig-img" style="max-width:420px" src="content/img/2026-czerwiec/mapa.png" alt="Przykładowa mapa z 10 miastami (dane w Tabeli 1.)">
+        <img class="fig-img" style="width:420px" src="content/img/2026-czerwiec/mapa.png" alt="Przykładowa mapa z 10 miastami (dane w Tabeli 1.)">
 
         *Rysunek 1.* Przykładowa mapa (mX oznacza miasto numer X)
 

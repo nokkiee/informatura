@@ -1208,6 +1208,8 @@ body[data-view='t'] .view {
 
 .stmt {
   padding: 18px 22px 60px;
+  /* long unbroken text (spreadsheet formulas, file names) wraps instead of widening the pane */
+  overflow-wrap: anywhere;
 }
 .group-title {
   font-size: 20px;
@@ -1327,6 +1329,9 @@ body[data-view='t'] .view {
   border-radius: 8px;
   padding: 10px 14px;
   overflow: auto;
+  /* long lines wrap: nothing in a task should need sideways scrolling */
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   font-size: 13px;
   line-height: 1.5;
 }
@@ -1358,6 +1363,7 @@ body[data-view='t'] .view {
   border: 1px solid var(--border2);
   padding: 4px 10px;
   text-align: left;
+  overflow-wrap: break-word;
 }
 .tbl th {
   background: var(--panel2);
@@ -1370,6 +1376,10 @@ body[data-view='t'] .view {
 .tbl.sample th {
   font-family: var(--mono);
   font-weight: 600;
+}
+.tbl.sample th,
+.tbl.sample td {
+  padding: 4px 7px;
 }
 .tbl.compact td {
   padding: 6px 12px;

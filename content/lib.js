@@ -6,16 +6,24 @@
 
 // Strips the common indentation so statements can be indented with the code.
 export function md(strings, ...values) {
+  // The common indentation is measured on the template's own lines only. Interpolated blocks
+  // (tables, figures) can have lines indented less; if they counted, the text around them
+  // would keep 4+ spaces and Markdown would turn it into a code block.
+  const indents = [];
+  strings.forEach((str, i) => {
+    const lines = str.split('\n').slice(1);
+    lines.forEach((l, j) => {
+      const valueFollows = j === lines.length - 1 && i < values.length;
+      if (l.trim() || valueFollows) indents.push(l.match(/^ */)[0].length);
+    });
+  });
+  const cut = indents.length ? Math.min(...indents) : 0;
+  const lead = new RegExp(`^ {0,${cut}}`);
   let s = strings.reduce((acc, str, i) => acc + str + (i < values.length ? values[i] : ''), '');
   s = s.replace(/^\n/, '').replace(/\n\s*$/, '');
-  const indents = s
-    .split('\n')
-    .filter((l) => l.trim())
-    .map((l) => l.match(/^ */)[0].length);
-  const cut = indents.length ? Math.min(...indents) : 0;
   return s
     .split('\n')
-    .map((l) => l.slice(cut))
+    .map((l) => l.replace(lead, ''))
     .join('\n');
 }
 
@@ -31,10 +39,19 @@ export function inline(s) {
     .replace(/\\\*/g, '*');
 }
 
+// Lets long column names wrap where it reads naturally – after "_" and before a capital in
+// camelCase (dostawa_⁠truskawek, Id⁠Transakcji) – instead of widening the table past the pane.
+function breakable(html) {
+  return html
+    .split(/(<[^>]+>|&[a-z]+;)/)
+    .map((part, i) => (i % 2 ? part : part.replace(/_(?=\S)/g, '_<wbr>').replace(/(\p{Ll})(\p{Lu})/gu, '$1<wbr>$2')))
+    .join('');
+}
+
 // rows: array of rows (arrays of cell HTML). The first row is the header unless head:false.
 export function table(rows, { head = true, cls = '', widths = null } = {}) {
   const colgroup = widths ? `<colgroup>${widths.map((w) => `<col style="width:${w}">`).join('')}</colgroup>` : '';
-  const tr = (r, tag) => `<tr>${r.map((c) => `<${tag}>${inline(c)}</${tag}>`).join('')}</tr>`;
+  const tr = (r, tag) => `<tr>${r.map((c) => `<${tag}>${tag === 'th' ? breakable(inline(c)) : inline(c)}</${tag}>`).join('')}</tr>`;
   const body = (head ? rows.slice(1) : rows).map((r) => tr(r, 'td')).join('');
   const thead = head ? `<thead>${tr(rows[0], 'th')}</thead>` : '';
   return `<table class="tbl ${cls}">${colgroup}${thead}<tbody>${body}</tbody></table>`;

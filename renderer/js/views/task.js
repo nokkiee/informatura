@@ -13,6 +13,19 @@ import { navigate, navContext } from '../app.js';
 // appendChild for several children, skipping empty ones
 const put = (el, ...kids) => kids.forEach((k) => k && el.appendChild(k));
 
+// Tables and figures that are still wider than the pane (it can be dragged quite narrow) are
+// shrunk to fit, so nothing in a task needs sideways scrolling and words stay whole.
+function fitWide(root) {
+  for (const el of root.querySelectorAll('.md table, .md .formula, .md .algo-lines, .md .board-input, .md figure')) {
+    if (el.parentElement.closest('table, figure, .formula')) continue;
+    el.style.zoom = '';
+    const box = el.parentElement;
+    const cs = getComputedStyle(box);
+    const avail = box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if (el.offsetWidth > avail + 1) el.style.zoom = String(Math.max(0.5, avail / el.offsetWidth));
+  }
+}
+
 const TOOL_INFO = {
   code: { label: 'Kod', icon: 'code' },
   sheet: { label: 'Arkusz kalkulacyjny', icon: 'grid' },
@@ -657,6 +670,19 @@ export async function renderTask(view, { key, from }) {
   };
   document.addEventListener('keydown', onKey);
   cleanups.push(() => document.removeEventListener('keydown', onKey));
+
+  // refit when the pane is resized or hints / the solution appear
+  let fitQueued = false;
+  const fitObserver = new ResizeObserver(() => {
+    if (fitQueued) return;
+    fitQueued = true;
+    requestAnimationFrame(() => {
+      fitQueued = false;
+      fitWide(stmt);
+    });
+  });
+  fitObserver.observe(stmt);
+  cleanups.push(() => fitObserver.disconnect());
 
   left.scrollTop = 0;
   return {
