@@ -19,6 +19,14 @@ module.exports = async (H) => {
   await H.waitFor(() => H.js(`document.querySelectorAll('.sql-side .tbl-item').length === 3 && !!window.monaco`), 15000);
   await H.sleep(1000); // let the editor's worker finish loading before leaving (an aborted load logs an error)
 
+  // ---- leaving a spreadsheet task while it is still starting must not throw
+  // (tasks whose data files haven't been loaded yet, so the import is still waiting for them)
+  for (const key of ['2024-maj/7.1', '2025-maj/6.1', '2026-czerwiec/7.1']) {
+    await H.js(`location.hash = '#/t/${key}?from=exam'`);
+    await H.sleep(15);
+  }
+  await go('#/exams', 1500);
+
   // ---- simulation -----------------------------------------------------------------------
   await go('#/exam/2024-czerwiec');
   await H.shot('20-exam-overview');
