@@ -10,6 +10,15 @@ module.exports = async (H) => {
     H.wc.sendInputEvent({ type: 'keyUp', keyCode, modifiers });
   };
 
+  // ---- libraries loading at the same time (SQL, editor, spreadsheet) must not break each other
+  await H.js(`location.hash = '#/t/2023-maj/7.1?from=exam'`);
+  await H.sleep(30);
+  await go('#/t/2023-maj/6.2?from=exam', 300);
+  await H.waitFor(() => H.js(`!!document.querySelector('.grid-canvas')`), 15000);
+  await go('#/t/2023-maj/7.1?from=exam', 300);
+  await H.waitFor(() => H.js(`document.querySelectorAll('.sql-side .tbl-item').length === 3 && !!window.monaco`), 15000);
+  await H.sleep(1000); // let the editor's worker finish loading before leaving (an aborted load logs an error)
+
   // ---- simulation -----------------------------------------------------------------------
   await go('#/exam/2024-czerwiec');
   await H.shot('20-exam-overview');
