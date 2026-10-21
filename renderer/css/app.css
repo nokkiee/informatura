@@ -1644,36 +1644,26 @@ body[data-view='t'] .view {
   }
 }
 
-/* model solution shown in the editor: a marked block between the student's lines (the line
-   under it is where its first line gets typed) */
+/* model solution hinted in the editor, like VS Code's suggestions: faint text at the cursor
+   and the following lines faintly under it; a bulb next to the line numbers marks a waiting hint */
+.ghost-text {
+  color: var(--ghost) !important;
+}
 .ghost-zone {
   color: var(--ghost);
   white-space: pre;
   pointer-events: none;
-  background: color-mix(in srgb, var(--accent) 9%, transparent);
 }
-.ghost-done {
-  color: color-mix(in srgb, var(--ok) 75%, transparent);
+.ghost-note {
+  color: var(--warn) !important;
+  font-family: var(--font);
+  font-style: italic;
+  opacity: 0.85;
 }
-.ghost-margin {
-  position: relative;
-  color: var(--accent);
-  pointer-events: none;
-}
-/* the block's marker: a bar a little left of the code, so it isn't taken for the cursor */
-.ghost-margin::after {
-  content: '';
-  position: absolute;
-  top: 1px;
-  bottom: 1px;
-  right: 4px;
-  width: 3px;
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--accent) 75%, transparent);
-}
-.ghost-margin svg {
-  display: block;
-  margin: calc((var(--ghost-lh) - 14px) / 2) 0 0 6px;
+.ghost-bulb {
+  cursor: pointer;
+  background: var(--accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 18h6'/%3E%3Cpath d='M10 21.5h4'/%3E%3Cpath d='M12 2.5a6.5 6.5 0 0 0-3.9 11.7c.6.5.9 1.2.9 2V16h6v-.1c0-.8.3-1.5.9-2A6.5 6.5 0 0 0 12 2.5z'/%3E%3C/svg%3E") center / 14px 14px no-repeat;
 }
 .ghost-remove {
   text-decoration: line-through;

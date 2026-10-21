@@ -268,16 +268,18 @@ export async function renderTask(view, { key, from }) {
   const hintTexts = sim ? [] : await getHints(exam, task.no);
   const hasModel = !sim && !!ghostTool && (await fetchSolution(exam, task.no, ghostTool === 'sql' ? 'sql' : 'python')) != null;
   const emptyStart = getSettings().starter === 'empty'; // no template to strike through
+  // how the hints in the editor work (renderer/js/ghost.js), told once with the first of them
+  const HOW = ' Szary tekst przy kursorze podpowiada, co pisać dalej – jak w VS Code. **Tab** wpisuje podpowiedzianą linijkę, **Esc** ją chowa, a żarówka przy numerach linii pokazuje, gdzie czeka podpowiedź.';
   const GHOST_STEPS =
     ghostTool === 'sql'
       ? [
-          '**Pierwsza linijka zapytania** jest w edytorze SQL, w podświetlonym pasku z żarówką, tam gdzie powinna się znaleźć. Przepisz ją w wierszu pod paskiem albo naciśnij **Tab**.',
-          'W edytorze widać teraz **całe przykładowe zapytanie**. Linijki, które są już w Twoim zapytaniu, znikają z podpowiedzi' + (emptyStart ? '.' : ', a przekreślone linijki przykładu na start nie są potrzebne.'),
+          '**Pierwsza linijka zapytania** czeka w edytorze SQL.' + HOW,
+          'Podpowiadane jest teraz **całe przykładowe zapytanie**: przy kursorze widać, co pisać dalej, a pod nim kolejne linijki' + (emptyStart ? '.' : '. Przekreślone linijki przykładu na start nie są potrzebne.'),
         ]
       : [
-          '**Pierwsza linijka rozwiązania** jest w edytorze, w podświetlonym pasku z żarówką, tam gdzie powinna się znaleźć. Przepisz ją w wierszu pod paskiem albo naciśnij **Tab**.',
-          'W edytorze widać teraz **mniej więcej połowę rozwiązania**. Linijki, które są już w Twoim kodzie, znikają z podpowiedzi, a **Tab** wpisuje kolejną.',
-          'W edytorze widać **całe przykładowe rozwiązanie**.' + (emptyStart ? '' : ' Przekreślone linijki szablonu nie są w nim potrzebne.'),
+          '**Pierwsza linijka rozwiązania** czeka w edytorze.' + HOW,
+          'Podpowiadana jest teraz **mniej więcej połowa rozwiązania**: przy kursorze widać, co pisać dalej, a pod nim kolejne linijki. Linijki, które już masz, nie są podpowiadane.',
+          'Podpowiadane jest **całe przykładowe rozwiązanie**.' + (emptyStart ? '' : ' Przekreślone linijki szablonu nie są w nim potrzebne.'),
         ];
   const hintLevels = [...hintTexts.map((text) => ({ text })), ...(hasModel ? GHOST_STEPS.map((text, i) => ({ text, ghost: i + 1 })) : [])];
   state.hintLevel = Math.min(state.hintLevel || 0, hintLevels.length);

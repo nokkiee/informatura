@@ -69,7 +69,7 @@ module.exports = async (H) => {
       return {
         cards: document.querySelectorAll('.hint-card').length,
         raw: /\\{\\{|\\$\\{|undefined|\\*\\*|\`/.test(txt),
-        ghost: !!document.querySelector('.ghost-zone, .ghost-inline'),
+        ghost: !!document.querySelector('.ghost-zone, .ghost-text'),
       };
     })()`);
     if (shown.cards !== hints.expected) problems.push(`${key}: ${shown.cards} hints shown, expected ${hints.expected}`);

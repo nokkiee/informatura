@@ -173,7 +173,7 @@ async function selfTest(w) {
   result.code = await until(`!!window.monaco && window.monaco.editor.getEditors().length > 0`);
   // hints: three of them reach the first line of the model solution in the editor
   await js(`(() => { for (let i = 0; i < 3; i++) [...document.querySelectorAll('.answer-actions .btn')].find((b) => /odpowied/i.test(b.textContent))?.click(); })()`);
-  result.hints = await until(`document.querySelectorAll('.hint-card').length >= 3 && !!document.querySelector('.ghost-zone')`);
+  result.hints = await until(`document.querySelectorAll('.hint-card').length >= 3 && !!document.querySelector('.ghost-text, .ghost-zone')`);
   await js(`location.hash = '#/t/2023-maj/7.1?from=exam'`);
   result.sql = await until(`document.querySelectorAll('.sql-side .tbl-item').length === 3`);
   await js(`location.hash = '#/t/2023-maj/6.2?from=exam'`);
