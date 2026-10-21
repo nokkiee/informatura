@@ -2,7 +2,7 @@
 // a query editor and a result grid. Several MySQL/Access functions are added so queries
 // written the way they are at the exam (YEAR(), LEFT(), TOP 5, #2020-01-01#, …) work too.
 import { h, btn, icon, clear, toast, splitter, modal, loadUmd } from '../ui.js';
-import { loadMonaco, editorOptions } from '../monaco.js';
+import { loadMonaco, editorOptions, createEditor } from '../monaco.js';
 import { fetchData } from '../content.js';
 import { createGhost } from '../ghost.js';
 import { getSettings } from '../store.js';
@@ -419,7 +419,7 @@ export function createSqlWorkspace(container, ctx) {
   loadMonaco().then((m) => {
     if (disposed) return;
     monaco = m;
-    editor = monaco.editor.create(editorBox, editorOptions({ value: state.sql == null || state.sql === fullStarter ? starter : state.sql, language: 'sql', tabSize: 2 }));
+    editor = createEditor(monaco, editorBox, editorOptions({ value: state.sql == null || state.sql === fullStarter ? starter : state.sql, language: 'sql', tabSize: 2 }));
     editor.onDidChangeModelContent(() => {
       state.sql = editor.getValue();
       ctx.save();

@@ -1,7 +1,9 @@
-// Ghost code for the hints: lines of the model solution drawn faintly in the student's
-// editor, right where they belong in the student's own code. Lines the student has already
-// written (spacing, quotes and comments don't matter) disappear from the ghost, and Tab
-// writes out the line the cursor is on.
+// Ghost code for the hints: lines of the model solution shown in the student's editor, in a
+// marked block right where they belong in the student's own code. The block is never mixed into
+// a line the student is typing (brackets the editor closes by itself would look doubled); the
+// line under the block is where its first line gets typed, and the part already typed there is
+// marked in the block. Lines the student has written (spacing, quotes and comments don't
+// matter) disappear from the ghost, and Tab writes out the next hinted line.
 
 const COMMENT = { python: '#', cpp: '//', java: '//', sql: '--' };
 const MAX_CELLS = 400000; // alignment table size limit (user lines × solution lines)
@@ -75,6 +77,19 @@ export function remainderOf(ref, typed, lang) {
   return ref.slice(pos);
 }
 
+// How much of `ref` is already typed in `typed`: the length of the beginning of `ref` that
+// `typed` covers, or null when `typed` isn't the beginning of `ref`. Brackets and quotes the
+// editor closed by itself at the end of the line don't count.
+export function typedLength(ref, typed, lang) {
+  let t = typed.replace(/\s+$/, '');
+  for (;;) {
+    const rest = remainderOf(ref, t, lang);
+    if (rest !== null) return ref.length - rest.length;
+    if (!/[)\]}"']$/.test(t)) return null;
+    t = t.slice(0, -1).replace(/\s+$/, '');
+  }
+}
+
 // How many solution lines each stage reveals.
 export function stageCount(stage, stages, total) {
   if (stage <= 0 || !total) return 0;
@@ -86,7 +101,11 @@ export function stageCount(stage, stages, total) {
 // Pure part: where each ghost line goes.
 //   user: the editor's lines; ref: the solution's lines; template: the starting code's lines
 //   stage / stages: which hint stage is shown (1 = one line … stages = whole solution)
-// Returns { inline: {line, text, full} | null, zones: [{after, lines}], remove: [line], missing, total }
+// Returns { zones: [{after, lines, typing}], remove: [line], missing, total }
+//   zones: blocks of hinted lines, each after line `after` (1-based, 0 = above the first line);
+//   typing: {line, done} when the line under the block is empty or the beginning of the
+//   block's first line – `done` characters of it are typed there
+//   remove: template lines the whole solution doesn't use
 export function planGhost({ user, ref, template, stage, stages, lang }) {
   const userNorms = user.map((l) => normLine(l, lang));
   const refLines = ref.filter((l) => normLine(l, lang) !== '');
@@ -126,25 +145,15 @@ export function planGhost({ user, ref, template, stage, stages, lang }) {
     else groups.push({ anchor, lines: [refLines[j]] });
   });
 
-  let inline = null;
-  const zones = [];
-  for (const g of groups) {
-    const next = g.anchor + 1; // 0-based index of the line right after the anchor
-    let lines = g.lines;
-    let after = g.anchor + 1; // 1-based line number the zone goes after
-    if (!inline && next < user.length && !matchedUser.has(next)) {
-      const typed = user[next];
-      const rest = remainderOf(lines[0], typed, lang);
-      if (rest !== null && rest !== '') {
-        // blank line: show the whole line, indented like the solution
-        const text = typed.trim() === '' ? lines[0].slice(Math.min(typed.length, lines[0].length - lines[0].trimStart().length)) : rest;
-        inline = { line: next + 1, text, full: lines[0] };
-        lines = lines.slice(1);
-        after = next + 1;
-      }
+  const zones = groups.map((g) => {
+    const next = g.anchor + 1; // 0-based index of the line under the block
+    let typing = null;
+    if (next < user.length && !matchedUser.has(next)) {
+      const done = typedLength(g.lines[0], user[next], lang);
+      if (done !== null) typing = { line: next + 1, done };
     }
-    if (lines.length) zones.push({ after, lines });
-  }
+    return { after: g.anchor + 1, lines: g.lines, typing };
+  });
 
   // with the whole solution shown: template lines the solution doesn't use
   const remove = [];
@@ -156,16 +165,19 @@ export function planGhost({ user, ref, template, stage, stages, lang }) {
     });
   }
   const missing = groups.reduce((s, g) => s + g.lines.length, 0);
-  return { inline, zones, remove, missing, total: own.length };
+  return { zones, remove, missing, total: own.length };
 }
 
 // Monaco part.
+const BULB =
+  '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21.5h4"/><path d="M12 2.5a6.5 6.5 0 0 0-3.9 11.7c.6.5.9 1.2.9 2V16h6v-.1c0-.8.3-1.5.9-2A6.5 6.5 0 0 0 12 2.5z"/></svg>';
+
 export function createGhost(monaco, editor) {
   let spec = null; // { ref, template, lang, stage, stages }
   let zoneIds = [];
   let plan = null;
   const decos = editor.createDecorationsCollection();
-  const atGhost = editor.createContextKey('informaturaGhostLine', false);
+  const canTab = editor.createContextKey('informaturaGhostLine', false);
   let timer = null;
 
   function fontStyle(el) {
@@ -190,27 +202,32 @@ export function createGhost(monaco, editor) {
     const lines = (text) => text.replace(/\r/g, '').split('\n');
     plan = planGhost({ user: model.getLinesContent(), ref: lines(spec.ref), template: lines(spec.template), stage: spec.stage, stages: spec.stages, lang: spec.lang });
 
+    const lineHeight = editor.getOption(monaco.editor.EditorOption.lineHeight);
     editor.changeViewZones((acc) => {
       for (const z of plan.zones) {
         const dom = document.createElement('div');
         dom.className = 'ghost-zone';
         fontStyle(dom);
-        for (const l of z.lines) {
+        z.lines.forEach((l, i) => {
           const line = document.createElement('div');
-          line.textContent = l || ' ';
+          const done = i === 0 && z.typing ? z.typing.done : 0;
+          if (done) {
+            const typed = document.createElement('span');
+            typed.className = 'ghost-done';
+            typed.textContent = l.slice(0, done);
+            line.append(typed, l.slice(done));
+          } else line.textContent = l || ' ';
           dom.appendChild(line);
-        }
-        zoneIds.push(acc.addZone({ afterLineNumber: z.after, heightInLines: z.lines.length, domNode: dom, suppressMouseDown: true }));
+        });
+        const margin = document.createElement('div');
+        margin.className = 'ghost-margin';
+        margin.style.height = z.lines.length * lineHeight + 'px';
+        margin.style.setProperty('--ghost-lh', lineHeight + 'px');
+        margin.innerHTML = BULB;
+        zoneIds.push(acc.addZone({ afterLineNumber: z.after, heightInLines: z.lines.length, domNode: dom, marginDomNode: margin, suppressMouseDown: true }));
       }
     });
     const list = [];
-    if (plan.inline) {
-      const col = model.getLineMaxColumn(plan.inline.line);
-      list.push({
-        range: new monaco.Range(plan.inline.line, col, plan.inline.line, col),
-        options: { after: { content: plan.inline.text, inlineClassName: 'ghost-inline' }, showIfCollapsed: true },
-      });
-    }
     for (const line of plan.remove) {
       list.push({
         range: new monaco.Range(line, model.getLineFirstNonWhitespaceColumn(line) || 1, line, model.getLineMaxColumn(line)),
@@ -221,25 +238,47 @@ export function createGhost(monaco, editor) {
     updateKey();
   }
 
-  function updateKey() {
+  // Where Tab writes the next hinted line: into the line under a block (when it's empty or
+  // its beginning is typed), or as a new line when the cursor is at the end of the line above.
+  function tabTarget() {
     const pos = editor.getPosition();
     const model = editor.getModel();
-    atGhost.set(!!(plan?.inline && pos && model && pos.lineNumber === plan.inline.line && pos.column === model.getLineMaxColumn(pos.lineNumber)));
+    if (!plan || !pos || !model) return null;
+    for (const z of plan.zones) {
+      const atLineAbove = z.after >= 1 ? pos.lineNumber === z.after && pos.column === model.getLineMaxColumn(z.after) : pos.lineNumber === 1 && pos.column === 1;
+      if (z.typing && (pos.lineNumber === z.typing.line || atLineAbove)) return { replace: z.typing.line, text: z.lines[0] };
+      if (atLineAbove) return { after: z.after, text: z.lines[0] };
+    }
+    return null;
   }
 
-  // Tab: write out the ghost line the cursor is on.
+  function updateKey() {
+    canTab.set(!!tabTarget());
+  }
+
   const action = editor.addAction({
     id: 'informatura.acceptGhostLine',
     label: 'Wpisz podpowiedzianą linijkę',
     keybindings: [monaco.KeyCode.Tab],
     precondition: 'informaturaGhostLine && !suggestWidgetVisible',
     run: () => {
-      if (!plan?.inline) return;
+      const t = tabTarget();
+      if (!t) return;
       const model = editor.getModel();
-      const ln = plan.inline.line;
-      const text = plan.inline.full;
+      const eol = model.getEOL();
+      let ln;
       editor.pushUndoStop();
-      editor.executeEdits('ghost', [{ range: new monaco.Range(ln, 1, ln, model.getLineMaxColumn(ln)), text }]);
+      if (t.replace) {
+        ln = t.replace;
+        editor.executeEdits('ghost', [{ range: new monaco.Range(ln, 1, ln, model.getLineMaxColumn(ln)), text: t.text }]);
+      } else if (t.after === 0) {
+        ln = 1;
+        editor.executeEdits('ghost', [{ range: new monaco.Range(1, 1, 1, 1), text: t.text + eol }]);
+      } else {
+        const col = model.getLineMaxColumn(t.after);
+        ln = t.after + 1;
+        editor.executeEdits('ghost', [{ range: new monaco.Range(t.after, col, t.after, col), text: eol + t.text }]);
+      }
       editor.pushUndoStop();
       editor.setPosition({ lineNumber: ln, column: model.getLineMaxColumn(ln) });
     },
@@ -261,15 +300,14 @@ export function createGhost(monaco, editor) {
       render();
       return plan;
     },
-    // Moves the cursor to where the ghost starts, so the student can type (or press Tab).
+    // Puts the cursor where the first hinted line gets typed, so Tab writes it right away.
     focus() {
-      if (!plan) return;
+      const z = plan?.zones[0];
+      if (!z) return;
       const model = editor.getModel();
-      const line = plan.inline?.line ?? plan.zones[0]?.after;
-      if (!line) return;
-      const ln = Math.max(1, Math.min(line, model.getLineCount()));
+      const ln = z.typing ? z.typing.line : Math.max(1, z.after);
       editor.revealLineInCenterIfOutsideViewport(ln);
-      if (plan.inline) editor.setPosition({ lineNumber: ln, column: model.getLineMaxColumn(ln) });
+      editor.setPosition({ lineNumber: ln, column: z.typing || z.after >= 1 ? model.getLineMaxColumn(ln) : 1 });
       editor.focus();
     },
     plan: () => plan,

@@ -9,6 +9,7 @@ const DEFAULT_SETTINGS = {
   sheetLang: 'pl',
   examTimer: true,
   starter: 'template', // 'template' | 'empty': what a new code/SQL editor starts with
+  clearConsole: false, // clear the console before every run
   toolchains: {},
 };
 

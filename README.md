@@ -20,21 +20,23 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
 - **Losowe zadanie:** losujesz z wybranych działów i matur.
 - **Przeglądanie:** wszystkie zadania z filtrami według działu, matury i postępu.
 - **Podpowiedzi** do każdego zadania: najpierw ogólne, potem coraz konkretniejsze, a przy kodzie i SQL –
-  przykładowe rozwiązanie wpisywane szarym tekstem prosto do edytora.
+  przykładowe rozwiązanie pokazane w edytorze, w miejscu, w którym powinno się znaleźć.
 - **Oryginał pod ręką:** przycisk *Arkusz PDF* otwiera oryginalny arkusz na stronie z danym zadaniem.
   Klucz odpowiedzi CKE też jest w programie.
 
 ### Podpowiedzi
 
-![Podpowiedzi i przykładowe rozwiązanie w edytorze](docs/screenshots/ekran-podpowiedzi.png)
+![Podpowiedzi i przykładowe rozwiązanie w edytorze](docs/screenshots/ekran-podpowiedzi-pasek.png)
 
 - Przycisk **Podpowiedź** odsłania kolejne wskazówki. Pierwsze tylko naprowadzają (od czego zacząć,
   na co uważać), następne mówią coraz dokładniej, co zrobić – w arkuszu kalkulacyjnym aż do gotowych formuł.
-- W zadaniach z programowaniem i SQL kolejne podpowiedzi pokazują w edytorze **przykładowe rozwiązanie
-  szarym tekstem**, dokładnie w miejscu, w którym powinno się znaleźć:
+- W zadaniach z programowaniem i SQL kolejne podpowiedzi pokazują w edytorze **przykładowe rozwiązanie**
+  w podświetlonym pasku z żarówką, dokładnie w miejscu, w którym powinno się znaleźć:
   - najpierw jedna linijka, potem mniej więcej połowa, na końcu całe rozwiązanie (w SQL: pierwsza linijka, potem całe zapytanie);
+  - podpowiedź nigdy nie miesza się z linijką, którą piszesz – piszesz w wierszu pod paskiem, a część już
+    przepisana robi się w pasku zielona (nawiasy domknięte przez edytor nie przeszkadzają);
   - linijki, które już są w Twoim kodzie, znikają z podpowiedzi – odstępy, cudzysłowy i komentarze nie mają znaczenia;
-  - **Tab** wpisuje podpowiedzianą linijkę, na której stoi kursor;
+  - **Tab** wpisuje kolejną podpowiedzianą linijkę (w wierszu pod paskiem albo na końcu linijki nad nim);
   - przy całym rozwiązaniu linijki szablonu, których ono nie potrzebuje, są przekreślone.
 - Przykładowe rozwiązania są w Pythonie, C++ i Javie – podpowiedź pokazuje kod w języku wybranym w edytorze.
 - Każde z 209 rozwiązań (171 programów i 38 zapytań) jest automatycznie uruchamiane na danych z matury
@@ -54,6 +56,8 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
 - Na start edytor ma szablon, który wczytuje plik z danymi i wypisuje wynik. W *Ustawieniach*
   (**Kod na start → Pusty edytor**) można zamiast tego zaczynać od pustego pola, jak na maturze.
   Dotyczy to też zapytań SQL. Kod już napisany w zadaniu zostaje.
+- Konsola domyślnie zostawia wyniki poprzednich uruchomień. W *Ustawieniach* (**Konsola przy uruchomieniu**)
+  można ją czyścić przed każdym uruchomieniem.
 
 ### Bazy danych: SQL w stylu Accessa
 
@@ -188,7 +192,7 @@ INFORMATURA_SELFTEST=1 dist/linux-unpacked/informatura --no-sandbox
   - `renderer/js/ws/`: edytor kodu, SQL i arkusz.
   - `renderer/js/sheet/`: silnik arkusza i siatka.
   - `renderer/js/check.js`: sprawdzanie odpowiedzi.
-  - `renderer/js/ghost.js`: przykładowe rozwiązanie wpisywane szarym tekstem do edytora.
+  - `renderer/js/ghost.js`: przykładowe rozwiązanie pokazywane jako podpowiedź w edytorze.
 - `content/exams/<matura>.js`: treść zadań, klucz i zasady oceniania dla każdej matury.
 - `content/hints/<matura>.js`: podpowiedzi do każdego zadania.
 - `content/solutions/<matura>/<zadanie>.py|cpp|java|sql`: przykładowe rozwiązania, które pokazują podpowiedzi.
