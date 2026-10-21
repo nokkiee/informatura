@@ -1,3 +1,5 @@
+<img src="build/icon.png" alt="" width="112" align="right">
+
 # Informatura
 
 **Ćwiczenie matury z informatyki (poziom rozszerzony, formuła 2023) na prawdziwych arkuszach.**
@@ -5,7 +7,7 @@ Rozwiązujesz zadania z egzaminów CKE w jednym programie. Kod piszesz i urucham
 C++ albo Javie, zapytania SQL wykonujesz na wbudowanej bazie, a obliczenia robisz we wbudowanym
 arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba pobierać.
 
-![Strona startowa](docs/screenshots/informatura-start.png)
+![Strona startowa](docs/screenshots/ekran-startowy.png)
 
 ## Co jest w środku
 
@@ -24,7 +26,7 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
 
 ### Podpowiedzi
 
-![Podpowiedzi i przykładowe rozwiązanie w edytorze](docs/screenshots/informatura-podpowiedzi.png)
+![Podpowiedzi i przykładowe rozwiązanie w edytorze](docs/screenshots/ekran-podpowiedzi.png)
 
 - Przycisk **Podpowiedź** odsłania kolejne wskazówki. Pierwsze tylko naprowadzają (od czego zacząć,
   na co uważać), następne mówią coraz dokładniej, co zrobić – w arkuszu kalkulacyjnym aż do gotowych formuł.
@@ -41,7 +43,7 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
 
 ### Programowanie: Python, C++ lub Java
 
-![Zadanie programistyczne](docs/screenshots/informatura-kod.png)
+![Zadanie programistyczne](docs/screenshots/ekran-kod.png)
 
 - Edytor z podświetlaniem składni (ten sam co w VS Code).
 - Konsola, w której widać wynik programu i w której można wpisywać dane wejściowe.
@@ -52,7 +54,7 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
 
 ### Bazy danych: SQL w stylu Accessa
 
-![Zadanie z bazą danych](docs/screenshots/informatura-sql.png)
+![Zadanie z bazą danych](docs/screenshots/ekran-sql.png)
 
 - Tabele z zadania są już zaimportowane, a schemat i powiązania widać z boku.
 - Silnik to SQLite. Działają też funkcje znane z Accessa i MySQL:
@@ -63,7 +65,7 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
 
 ### Arkusz kalkulacyjny z polskimi funkcjami
 
-![Arkusz kalkulacyjny z tabelą przestawną i wykresem](docs/screenshots/informatura-arkusz.png)
+![Arkusz kalkulacyjny z tabelą przestawną i wykresem](docs/screenshots/ekran-arkusz.png)
 
 - Formuły po polsku jak w Excelu (`SUMA`, `JEŻELI`, `LICZ.JEŻELI`, `WYSZUKAJ.PIONOWO`, `ROK`, `DZIEŃ.TYG` …)
   ze średnikiem jako separatorem. W ustawieniach można przełączyć na nazwy angielskie.
