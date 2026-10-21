@@ -35,7 +35,7 @@ export function renderHome(view) {
   window.api.detectToolchains().then((tc) => {
     tools.textContent = '';
     for (const [k, v] of Object.entries(tc)) {
-      tools.appendChild(h('span', { class: `tc ${v.ok ? 'ok' : 'bad'}`, title: v.ok ? v.version : v.error }, v.ok ? icon('check', 13) : icon('x', 13), ` ${LANGS[k].label}${v.ok ? ': ' + v.version : ' – brak'}`));
+      tools.appendChild(h('span', { class: `tc ${v.ok ? 'ok' : 'bad'}`, title: v.ok ? v.details || v.version : v.error }, v.ok ? icon('check', 13) : icon('x', 13), ` ${LANGS[k].label}${v.ok ? ': ' + v.version : ' – brak'}`));
     }
     if (Object.values(tc).some((v) => !v.ok)) tools.appendChild(h('a', { href: '#/settings', class: 'small' }, ' Jak zainstalować?'));
   });
