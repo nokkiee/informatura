@@ -16,6 +16,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: pdftotext for the audit against the original PDFs
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
       - run: npm ci
       - run: npm test
       - run: npm run verify-content
