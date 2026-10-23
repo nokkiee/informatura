@@ -24,6 +24,7 @@ export class Grid {
     this.copyRange = null;
     this.copyText = null;
     this.dirty = true;
+    this.fitted = new Set(); // sheets whose columns were fitted to their content
 
     this.wrap = document.createElement('div');
     this.wrap.className = 'grid-wrap';
@@ -170,6 +171,10 @@ export class Grid {
     const W = this.scroller.clientWidth;
     const H = this.scroller.clientHeight;
     if (!W || !H) return;
+    if (!this.fitted.has(this.sheet)) {
+      this.fitted.add(this.sheet);
+      this.fitColumns();
+    }
     this.updateSpacer();
     const colors = {
       bg: css('--sheet-bg') || '#fff',
@@ -216,7 +221,9 @@ export class Grid {
     const meta = this.meta;
     const editingCell = this.editing && !this.editing.hiddenEditor ? this.editing : null;
 
-    // cell contents
+    // cell contents; columns too narrow for what they show get wider afterwards
+    const grow = new Map();
+    const need = (c, tw, isNum) => grow.set(c, Math.max(grow.get(c) || 0, this.fitWidth(tw, isNum)));
     for (let r = r0; r <= r1; r++) {
       const y = HEAD_H + r * ROW_H - st;
       // text overflow: remember where a long left-aligned text may spill
@@ -235,13 +242,16 @@ export class Grid {
         let tw = ctx.measureText(text).width;
         let clipW = w;
         if (!isNum && !isErr && typeof v !== 'boolean' && tw > w - 6) {
-          // spill into empty neighbours on the right
+          // spill into empty neighbours on the right; cut off by a filled one: widen the column
           for (let j = i + 1; j < cols.length && tw > clipW - 6; j++) {
             const nv = this.hf.getCellValue({ sheet, row: r, col: cols[j].c });
-            if (nv !== null && nv !== undefined && nv !== '') break;
+            if (nv !== null && nv !== undefined && nv !== '') {
+              need(c, tw, false);
+              break;
+            }
             clipW += cols[j].w;
           }
-        }
+        } else if (tw > w - 6) need(c, tw, isNum);
         ctx.save();
         ctx.beginPath();
         ctx.rect(x + 1, y, clipW - 2, ROW_H);
@@ -256,6 +266,8 @@ export class Grid {
         ctx.restore();
       }
     }
+
+    if (grow.size) queueMicrotask(() => this.growColumns(grow));
 
     // grid lines
     ctx.strokeStyle = colors.grid;
@@ -561,10 +573,59 @@ export class Grid {
       this.dragging = false;
       document.removeEventListener('mousemove', move);
       document.removeEventListener('mouseup', up);
+      if (this.colW(c) !== startW) (this.meta.manualW ||= {})[c] = true; // sized by hand: no more automatic widening
       this.hooks.onMetaChange?.();
     };
     document.addEventListener('mousemove', move);
     document.addEventListener('mouseup', up);
+  }
+
+  // Columns grow by themselves so numbers and dates never turn into "###" and text isn't cut
+  // off by a filled cell next to it – unless the user set the column's width by hand. They only
+  // ever get wider (text up to 320 px, numbers up to 500 px).
+  fitWidth(textWidth, isNum) {
+    return Math.min(isNum ? 500 : 320, Math.ceil(textWidth + 12));
+  }
+
+  growColumns(widths) {
+    let changed = false;
+    for (const [c, w] of widths) {
+      if (this.meta.manualW?.[c] || w <= this.colW(c)) continue;
+      this.meta.colW[c] = w;
+      changed = true;
+    }
+    if (!changed) return;
+    this.requestDraw();
+    this.hooks.onMetaChange?.();
+  }
+
+  // the whole sheet (the first time it is shown): what's off screen fits too
+  fitColumns() {
+    const ctx = this.ctx;
+    ctx.font = FONT;
+    const d = this.dims();
+    const lim = Math.min(d.usedRows, 3000);
+    const filled = (r, c) => {
+      const v = this.hf.getCellValue({ sheet: this.sheet, row: r, col: c });
+      return v !== null && v !== undefined && v !== '';
+    };
+    const widths = new Map();
+    for (let c = 0; c < d.usedCols; c++) {
+      let w = 0;
+      for (let r = 0; r < lim; r++) {
+        const a = { sheet: this.sheet, row: r, col: c };
+        const v = this.hf.getCellValue(a);
+        if (v === null || v === undefined || v === '') continue;
+        const isNum = typeof v === 'number';
+        // text may spill into an empty cell on the right, so it only counts next to a filled one
+        if (!isNum && typeof v === 'string' && !filled(r, c + 1)) continue;
+        const fmt = this.meta.cellFmt[`${r},${c}`] || this.meta.colFmt[c];
+        const t = displayValue(v, isNum ? this.hf.getCellValueDetailedType(a) : null, fmt, this.wb.lang);
+        w = Math.max(w, this.fitWidth(ctx.measureText(t).width, isNum));
+      }
+      if (w) widths.set(c, w);
+    }
+    this.growColumns(widths);
   }
 
   autoFitColumn(c) {

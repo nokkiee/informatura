@@ -30,6 +30,7 @@ export function createCodeWorkspace(container, ctx) {
   let disposed = false;
   let ghost = null;
   let ghostStage = ctx.ghostStage || 0;
+  let ghostFocusPending = false;
 
   const mainFile = task?.mainFile || entry?.group.files?.[0];
   const fullTemplate = (l) => {
@@ -153,7 +154,8 @@ export function createCodeWorkspace(container, ctx) {
       toast('Zapisano', 'info', 1200);
     });
     ghost = createGhost(monaco, editor);
-    applyGhost();
+    applyGhost(ghostFocusPending); // a hint asked for before the editor was ready
+    ghostFocusPending = false;
     if (ctx.focus !== false) editor.focus();
   });
 
@@ -565,6 +567,11 @@ export function createCodeWorkspace(container, ctx) {
     // when there's no model solution in the current language).
     setGhostStage(stage, focus) {
       ghostStage = stage;
+      if (!ghost) {
+        // the editor is still loading: the hint shows (and gets the cursor) once it's there
+        ghostFocusPending ||= !!focus;
+        return undefined;
+      }
       return applyGhost(focus);
     },
   };
