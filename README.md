@@ -80,6 +80,8 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
 - Zaznaczanie, przeciąganie formuł, kopiuj/wklej i cofanie.
 - Sortowanie, tabela przestawna i wykresy.
 - Dane z pliku są już wczytane, a daty i godziny są rozpoznane.
+- Kolumny same się poszerzają, żeby liczby i daty nie zamieniały się w `###`, a tekst nie był ucinany przez sąsiednią komórkę.
+  Kolumna, której szerokość ustawisz ręcznie, zostaje taka, jaką ustawiłeś.
 
 ### Teoria
 

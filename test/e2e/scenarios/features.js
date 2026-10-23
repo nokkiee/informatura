@@ -215,6 +215,33 @@ module.exports = async (H) => {
   const avg10 = Number((await H.js(`document.querySelector('.fx-input').value`)).replace(',', '.'));
   H.assert(Math.abs(avg10 - 2.1241) < 0.00005, 'average generation at 10:00 = 2,1241, got ' + avg10);
 
+  // ---- columns fit what they show: dates are stored as numbers, so the width must come from the
+  // shown text ("2023-01-01"), never "###"
+  await go('#/t/2024-czerwiec/7.1?from=exam', 300);
+  await H.waitFor(() => H.js(`!!document.querySelector('.grid-canvas')`), 15000);
+  await H.sleep(1800); // let the debounced saves land
+  const fit = await H.js(`(async () => {
+    const st = await (await import('./js/store.js')).loadTaskState('2024-czerwiec/7.1');
+    const meta = st.sheet?.meta?.uzdrowisko;
+    const probe = document.createElement('canvas').getContext('2d');
+    probe.font = '13px system-ui, "Segoe UI", Ubuntu, "Noto Sans", sans-serif';
+    return { w: meta?.colW?.[0], need: Math.ceil(probe.measureText('2023-01-01').width + 6) };
+  })()`);
+  H.assert(fit.w >= fit.need, 'date column wide enough: ' + JSON.stringify(fit));
+  // a long number typed into a narrow column widens it too
+  await H.js(`(() => { const n = document.querySelector('.namebox'); n.focus(); n.value = 'E2'; })()`);
+  press('Return');
+  await H.sleep(100);
+  for (const ch of '1234567890123') {
+    H.wc.sendInputEvent({ type: 'keyDown', keyCode: ch });
+    H.wc.sendInputEvent({ type: 'char', keyCode: ch });
+    H.wc.sendInputEvent({ type: 'keyUp', keyCode: ch });
+  }
+  press('Return');
+  await H.sleep(1800);
+  const wE = await H.js(`(async () => (await (await import('./js/store.js')).loadTaskState('2024-czerwiec/7.1')).sheet.meta.uzdrowisko.colW[4])()`);
+  H.assert(wE > 92, 'column E widened for a long number: ' + wE);
+
   // ---- SQL dialect helpers --------------------------------------------------------------------
   await go('#/t/2025-maj/7.2?from=exam', 1800);
   await H.js(`window.monaco.editor.getEditors().find((e) => e.getContainerDomNode().offsetParent !== null).setValue("SELECT TOP 1 nazwa_lazika, MIN(data_pomiaru), MAX(data_pomiaru)\\nFROM Pomiary INNER JOIN Laziki ON Pomiary.nr_lazika = Laziki.nr_lazika\\nWHERE YEAR(data_pomiaru) > 2000\\nGROUP BY Laziki.nr_lazika\\nORDER BY DATEDIFF(MAX(data_pomiaru), MIN(data_pomiaru)) DESC;")`);

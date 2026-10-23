@@ -227,6 +227,7 @@ export function createSqlWorkspace(container, ctx) {
   let completion = null;
   let ghost = null;
   let ghostStage = ctx.ghostStage || 0;
+  let ghostFocusPending = false;
 
   const runBtn = btn('Wykonaj', { icon: 'play', kind: 'primary', kbd: 'Ctrl+⏎', onClick: () => runQuery() });
   const resetBtn = h('button', { class: 'icon-btn', title: 'Przywróć bazę do stanu początkowego (cofa INSERT/UPDATE/DELETE)', onclick: () => rebuild(true) }, icon('refresh'));
@@ -427,7 +428,8 @@ export function createSqlWorkspace(container, ctx) {
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => runQuery());
     registerCompletion();
     ghost = createGhost(monaco, editor);
-    applyGhost();
+    applyGhost(ghostFocusPending); // a hint asked for before the editor was ready
+    ghostFocusPending = false;
     if (ctx.focus !== false) editor.focus();
   });
   rebuild(false);
@@ -461,6 +463,11 @@ export function createSqlWorkspace(container, ctx) {
     run: () => runQuery(),
     setGhostStage(stage, focus) {
       ghostStage = stage;
+      if (!ghost) {
+        // the editor is still loading: the hint shows (and gets the cursor) once it's there
+        ghostFocusPending ||= !!focus;
+        return undefined;
+      }
       return applyGhost(focus);
     },
   };
