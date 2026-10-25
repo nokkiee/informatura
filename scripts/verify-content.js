@@ -1,7 +1,8 @@
 'use strict';
 // Recomputes the answers to the data tasks with the reference scripts in tools/ref and
 // checks them against the CKE keys, then runs every model solution the hints reveal
-// (tools/check-solutions.mjs), and compares the content with the original PDFs
+// (tools/check-solutions.mjs), checks the lessons – their model solutions, examples, queries and
+// formulas (tools/check-lessons.mjs) – and compares the content with the original PDFs
 // (tools/audit-pdf.mjs, when pdftotext is installed). Needs Python 3, g++ and a JDK.
 const fs = require('fs');
 const path = require('path');
@@ -23,6 +24,9 @@ if (failed) process.exit(1);
 
 const sol = spawnSync(process.execPath, [path.join(__dirname, '..', 'tools', 'check-solutions.mjs')], { stdio: 'inherit' });
 if (sol.status !== 0) process.exit(1);
+
+const lessons = spawnSync(process.execPath, [path.join(__dirname, '..', 'tools', 'check-lessons.mjs')], { stdio: 'inherit' });
+if (lessons.status !== 0) process.exit(1);
 
 // the content against the original PDFs (skipped without pdftotext)
 const audit = spawnSync(process.execPath, [path.join(__dirname, '..', 'tools', 'audit-pdf.mjs')], { stdio: 'inherit' });

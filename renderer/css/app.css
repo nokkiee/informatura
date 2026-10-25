@@ -597,7 +597,7 @@ body[data-view='t'] .view {
 
 .modes {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 14px;
   margin-top: 18px;
 }
@@ -3544,6 +3544,11 @@ a.lesson-row:hover {
   flex-wrap: wrap;
   align-items: center;
   gap: 6px;
+}
+@media (max-width: 1100px) {
+  .modes {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 @media (max-width: 900px) {
   .learn-hero,
