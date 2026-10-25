@@ -123,6 +123,19 @@ export async function evalFormula({ data, formula, cell, fill, lang = 'pl' }) {
   }
 }
 
+// The values a sheet shows: data that holds formulas (helper columns a lesson fills in for the
+// student) is computed; plain data comes back as it is.
+export async function sheetValues(data, lang = 'pl') {
+  if (!data.some((r) => r.some((v) => typeof v === 'string' && v.startsWith('=')))) return data;
+  const HF = await loadHyperFormula();
+  const hf = HF.buildFromArray(data.map((r) => r.slice()), hfConfig(lang));
+  try {
+    return hf.getSheetValues(0).map((r, i) => r.map((v, j) => (typeof data[i]?.[j] === 'string' && !data[i][j].startsWith('=') ? data[i][j] : v && typeof v === 'object' ? v.value : v)));
+  } finally {
+    hf.destroy();
+  }
+}
+
 // a formula's result on its own (e.g. =SUMA(B2:B11)), for the ~~~excel run examples
 export async function calcFormula({ data, formula, lang = 'pl' }) {
   const HF = await loadHyperFormula();
