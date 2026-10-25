@@ -1,7 +1,7 @@
 {
   "name": "informatura",
   "productName": "Informatura",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Informatura: ćwicz zadania z prawdziwych matur z informatyki (poziom rozszerzony, formuła 2023) — kod, SQL, arkusz kalkulacyjny i teoria.",
   "main": "main.js",
   "license": "GPL-3.0-only",
