@@ -82,6 +82,7 @@ async function route() {
     else if (a === 'browse') res = (await import('./views/browse.js')).renderBrowse(view, params);
     else if (a === 'random') res = (await import('./views/browse.js')).renderRandom(view, params);
     else if (a === 'settings') res = await (await import('./views/settings.js')).renderSettings(view);
+    else if (a === 'learn') res = await (await import('./views/learn.js')).renderLearn(view, [b, c]);
     else view.appendChild(h('div', { class: 'empty' }, 'Nie ma takiej strony.'));
   } catch (err) {
     console.error(err);
@@ -96,6 +97,7 @@ async function route() {
 
 const navItems = [
   { id: 'home', label: 'Start', icon: 'home', href: '#/' },
+  { id: 'learn', label: 'Lekcje', icon: 'cap', href: '#/learn' },
   { id: 'exams', label: 'Arkusze', icon: 'book', href: '#/exams' },
   { id: 'browse', label: 'Zadania', icon: 'list', href: '#/browse' },
   { id: 'random', label: 'Losuj', icon: 'shuffle', href: '#/random' },

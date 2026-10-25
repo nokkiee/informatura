@@ -8,7 +8,7 @@ import { createGhost } from '../ghost.js';
 import { getSettings } from '../store.js';
 
 let sqlPromise = null;
-function loadSqlJs() {
+export function loadSqlJs() {
   if (!sqlPromise) sqlPromise = loadUmd('vendor/sqljs/sql-wasm.js').then(() => window.initSqlJs({ locateFile: (f) => 'vendor/sqljs/' + f }));
   return sqlPromise;
 }
@@ -473,7 +473,7 @@ export function createSqlWorkspace(container, ctx) {
   };
 }
 
-function translateError(msg) {
+export function translateError(msg) {
   return msg
     .replace(/^no such table: (.*)/, 'Nie ma tabeli: $1')
     .replace(/^no such column: (.*)/, 'Nie ma pola (kolumny): $1')

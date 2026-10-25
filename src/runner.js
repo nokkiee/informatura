@@ -222,7 +222,9 @@ function prepareWorkspace(taskKey, files, dirOverride) {
   for (const f of files || []) {
     const target = path.join(dir, path.basename(f.name));
     // Fresh copies every run: a program that overwrote its input can't spoil later runs.
-    fs.copyFileSync(contentFile(f.src), target);
+    // A file is either copied from the content folder or (lessons) given as text.
+    if (f.text != null) fs.writeFileSync(target, String(f.text));
+    else fs.copyFileSync(contentFile(f.src), target);
   }
   return dir;
 }
