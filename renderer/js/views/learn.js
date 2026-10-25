@@ -6,11 +6,12 @@
 //   #/learn/<section>/<id>    a lesson
 //   #/learn/<section>/test    the section's test
 import { h, btn, icon, clear, toast } from '../ui.js';
-import { getLearn, updateLearn, onSettings, getProgress } from '../store.js';
+import { getLearn, updateLearn, onSettings, getProgress, getSettings, setSettings } from '../store.js';
 import { getTask, examTitle } from '../content.js';
-import { renderLessonText, syncLangs } from '../learn/render.js';
+import { renderLessonText } from '../learn/render.js';
 import { createQuestion } from '../learn/questions.js';
 import { pointsOf, plural } from '../learn/check.js';
+import { CODE_LANGS, LANG_LABEL, langOf, forLang, questionsFor, dependsOnLang } from '../learn/langs.js';
 
 const PASS = 0.7; // a section test is passed at 70%
 
@@ -33,11 +34,40 @@ function loadLesson(section, id) {
 }
 const loadSectionLessons = (s) => Promise.all(s.lessons.map((id) => loadLesson(s.id, id)));
 
-// ---- progress --------------------------------------------------------------------------------
+// ---- the reader's language and progress ------------------------------------------------------------
+
+// lessons are read in one programming language (see learn/langs.js)
+const readerLang = () => langOf(getSettings().lang);
+const say = (text) => forLang(text, readerLang());
+const quizOf = (lesson) => questionsFor(lesson.quiz, readerLang());
+
+function langSwitch() {
+  const box = h(
+    'div',
+    { class: 'lesson-lang', title: 'Lekcje pokazują kod, przykłady i zadania tylko w wybranym języku' },
+    h('span', { class: 'muted small' }, 'Język:'),
+    h(
+      'div',
+      { class: 'seg' },
+      CODE_LANGS.map((l) => h('button', { class: `seg-btn ${l === readerLang() ? 'active' : ''}`, dataset: { lang: l }, onclick: () => setSettings({ lang: l }) }, LANG_LABEL[l])),
+    ),
+  );
+  return box;
+}
+
+// re-renders the page when the reader picks another language
+function onLang(fn) {
+  let shown = readerLang();
+  return onSettings(() => {
+    if (readerLang() === shown) return;
+    shown = readerLang();
+    fn();
+  });
+}
 
 const lessonState = (learn, id) => learn.lessons[id] || { step: 0, seen: [], q: {} };
-const okCount = (lesson, st) => lesson.quiz.filter((_, i) => st.q?.[i]?.ok).length;
-const isDone = (lesson, st) => lesson.quiz.length > 0 && okCount(lesson, st) === lesson.quiz.length;
+const okCount = (lesson, st) => quizOf(lesson).filter(({ i }) => st.q?.[i]?.ok).length;
+const isDone = (lesson, st) => quizOf(lesson).length > 0 && okCount(lesson, st) === quizOf(lesson).length;
 
 function breadcrumb(...items) {
   return h(
@@ -51,10 +81,19 @@ export async function renderLearn(view, parts) {
   const [sectionId, lessonId] = parts;
   const sections = await loadSections();
   const learn = await getLearn();
-  if (!sectionId) return renderOverview(view, sections, learn);
   const section = sections.find((s) => s.id === sectionId);
-  if (!section) return view.appendChild(h('div', { class: 'empty' }, 'Nie ma takiego działu.'));
-  if (!lessonId) return renderSection(view, section, learn);
+  if (sectionId && !section) return view.appendChild(h('div', { class: 'empty' }, 'Nie ma takiego działu.'));
+  if (!lessonId) {
+    // the lists show lesson titles and quiz counts of the reader's language
+    const draw = () => (section ? renderSection(view, section, learn) : renderOverview(view, sections, learn));
+    await draw();
+    const unsub = onLang(() => {
+      const top = view.scrollTop;
+      clear(view);
+      draw().then(() => (view.scrollTop = top));
+    });
+    return { destroy: unsub };
+  }
   if (lessonId === 'test') return renderTest(view, section, learn);
   return renderLesson(view, section, lessonId, learn);
 }
@@ -80,7 +119,7 @@ async function renderOverview(view, sections, learn) {
       'button',
       { class: `learn-card cat-${s.id === 'algorytmy' ? 'algorytmy' : s.id}`, onclick: () => (location.hash = `#/learn/${s.id}`) },
       h('div', { class: 'learn-card-head' }, h('span', { class: 'learn-card-icon' }, icon(s.icon, 20)), h('b', null, s.title)),
-      h('p', { class: 'small muted' }, s.desc),
+      h('p', { class: 'small muted' }, say(s.desc)),
       h('div', { class: 'bar' }, h('div', { class: 'bar-fill', style: { width: list.length ? (100 * done) / list.length + '%' : '0' } })),
       h(
         'div',
@@ -107,23 +146,24 @@ async function renderOverview(view, sections, learn) {
             'Każdy dział matury z informatyki wyjaśniony krok po kroku: do czego służy dane narzędzie, kiedy po nie sięgnąć i jak użyć go w zadaniu. Przykłady uruchomisz od razu w lekcji. Na końcu każdej lekcji sprawdzisz się w krótkim teście, a na końcu działu – w teście z całego działu. Są w nich pytania zamknięte i zadania praktyczne: piszesz program, zapytanie SQL albo formułę, a program od razu je sprawdza.',
           ),
           h('div', { class: 'hero-stats' }, stat(doneTotal, 'ukończonych lekcji', `z ${total}`), stat(sections.filter((s) => learn.tests[s.id]?.best >= PASS).length, 'zdanych testów działów', `z ${sections.length}`)),
+          h('div', { class: 'learn-lang-note' }, langSwitch(), h('span', { class: 'small muted' }, 'Kod, przykłady i zadania w lekcjach są tylko w wybranym języku. Zmienisz go tutaj, w lekcji albo u góry okna.')),
         ),
         next
           ? h(
               'div',
               { class: 'learn-next' },
               h('div', { class: 'side-label' }, doneTotal ? 'Kontynuuj' : 'Zacznij od'),
-              h('div', { class: 'learn-next-title' }, next.title),
+              h('div', { class: 'learn-next-title' }, say(next.title)),
               h('div', { class: 'small muted' }, sections.find((s) => s.id === next.section).title),
               btn('Otwórz lekcję', { icon: 'right', kind: 'primary', onClick: () => (location.hash = `#/learn/${next.section}/${next.id}`) }),
             )
           : null,
       ),
       h('section', { class: 'learn-cards' }, cards),
+
       h('p', { class: 'small muted learn-note' }, 'Lekcje, przykłady i ćwiczenia napisano dla programu. Pod każdą lekcją są linki do prawdziwych zadań z matur na jej temat.'),
     ),
   );
-  return null;
 }
 
 function stat(n, label, sub) {
@@ -144,8 +184,8 @@ async function renderSection(view, section, learn) {
       'a',
       { class: `lesson-row ${done ? 'done' : ''}`, href: `#/learn/${section.id}/${l.id}` },
       h('span', { class: 'lesson-no' }, done ? icon('check', 16) : String(i + 1)),
-      h('div', { class: 'lesson-row-main' }, h('b', null, l.title), h('div', { class: 'small muted' }, l.summary || '')),
-      h('div', { class: 'lesson-row-meta small muted' }, h('span', null, icon('clock', 13), ` ${l.minutes} min`), h('span', null, done ? 'ukończona' : st.seen?.length || ok ? `test: ${ok} / ${l.quiz.length}` : `${l.steps.length} kroków`)),
+      h('div', { class: 'lesson-row-main' }, h('b', null, say(l.title)), h('div', { class: 'small muted' }, say(l.summary || ''))),
+      h('div', { class: 'lesson-row-meta small muted' }, h('span', null, icon('clock', 13), ` ${l.minutes} min`), h('span', null, done ? 'ukończona' : st.seen?.length || ok ? `test: ${ok} / ${quizOf(l).length}` : `${l.steps.length} kroków`)),
     );
   });
   const t = learn.tests[section.id];
@@ -154,7 +194,7 @@ async function renderSection(view, section, learn) {
       'div',
       { class: 'page learn' },
       breadcrumb({ label: 'Lekcje', href: '#/learn' }, { label: section.title }),
-      h('div', { class: 'page-head' }, h('span', { class: 'learn-card-icon big' }, icon(section.icon, 24)), h('div', null, h('h1', null, section.title), h('p', { class: 'muted' }, section.desc))),
+      h('div', { class: 'page-head' }, h('span', { class: 'learn-card-icon big' }, icon(section.icon, 24)), h('div', { class: 'grow' }, h('h1', null, section.title), h('p', { class: 'muted' }, say(section.desc))), list.some((l) => l && dependsOnLang(l)) ? langSwitch() : null),
       h('div', { class: 'lesson-list' }, rows),
       h(
         'a',
@@ -165,7 +205,6 @@ async function renderSection(view, section, learn) {
       ),
     ),
   );
-  return null;
 }
 
 // ---- a lesson ------------------------------------------------------------------------------------
@@ -175,7 +214,7 @@ async function renderLesson(view, section, lessonId, learn) {
   if (!lesson) return view.appendChild(h('div', { class: 'empty' }, 'Nie ma takiej lekcji.'));
   const index = section.lessons.indexOf(lessonId);
   const nextId = section.lessons[index + 1];
-  const ctx = { files: lesson.files, db: lesson.db, sheet: lesson.sheet };
+  const ctx = { files: lesson.files, db: lesson.db, sheet: lesson.sheet, lang: readerLang() };
   const st = (learn.lessons[lesson.id] ||= { step: 0, seen: [], q: {} });
   const save = () => updateLearn(() => {});
   const QUIZ = lesson.steps.length;
@@ -185,13 +224,25 @@ async function renderLesson(view, section, lessonId, learn) {
 
   const side = h('nav', { class: 'lesson-steps' });
   const main = h('div', { class: 'lesson-main' });
-  const head = h(
-    'div',
-    { class: 'lesson-head' },
-    breadcrumb({ label: 'Lekcje', href: '#/learn' }, { label: section.title, href: `#/learn/${section.id}` }, { label: `Lekcja ${index + 1}` }),
-    h('h1', null, lesson.title),
-    h('div', { class: 'small muted' }, icon('clock', 13), ` ok. ${lesson.minutes} min · ${lesson.steps.length} ${plural(lesson.steps.length, 'krok', 'kroki', 'kroków')} · test: ${lesson.quiz.length} ${plural(lesson.quiz.length, 'pytanie', 'pytania', 'pytań')}`),
-  );
+  const head = h('div', { class: 'lesson-head' });
+  function renderHead() {
+    const n = quizOf(lesson).length;
+    clear(head).append(
+      breadcrumb({ label: 'Lekcje', href: '#/learn' }, { label: section.title, href: `#/learn/${section.id}` }, { label: `Lekcja ${index + 1}` }),
+      h(
+        'div',
+        { class: 'lesson-title-row' },
+        h(
+          'div',
+          { class: 'grow' },
+          h('h1', null, say(lesson.title)),
+          h('div', { class: 'small muted' }, icon('clock', 13), ` ok. ${lesson.minutes} min · ${lesson.steps.length} ${plural(lesson.steps.length, 'krok', 'kroki', 'kroków')} · test: ${n} ${plural(n, 'pytanie', 'pytania', 'pytań')}`),
+        ),
+        dependsOnLang(lesson) ? langSwitch() : null,
+      ),
+    );
+  }
+  renderHead();
   const page = h('div', { class: 'page learn lesson' }, head, h('div', { class: 'lesson-grid' }, side, main));
   view.appendChild(page);
 
@@ -208,7 +259,7 @@ async function renderLesson(view, section, lessonId, learn) {
         'button',
         { class: `step-link quiz ${cur === QUIZ ? 'current' : ''} ${isDone(lesson, st) ? 'seen' : ''}`, onclick: () => go(QUIZ) },
         h('span', { class: 'step-no' }, icon(isDone(lesson, st) ? 'check' : 'flask', 12)),
-        h('span', null, 'Sprawdź się', h('span', { class: 'muted small' }, ` ${ok}/${lesson.quiz.length}`)),
+        h('span', null, 'Sprawdź się', h('span', { class: 'muted small' }, ` ${ok}/${quizOf(lesson).length}`)),
       ),
     );
     if (lesson.practice?.length) {
@@ -221,7 +272,7 @@ async function renderLesson(view, section, lessonId, learn) {
     questions = [];
   }
 
-  function go(i) {
+  function go(i, keepScroll = false) {
     cur = i;
     st.step = i;
     if (i < QUIZ && !st.seen.includes(i)) st.seen.push(i);
@@ -232,7 +283,7 @@ async function renderLesson(view, section, lessonId, learn) {
     else if (i === QUIZ) showQuiz();
     else showPractice();
     renderSide();
-    view.scrollTop = 0;
+    if (!keepScroll) view.scrollTop = 0;
   }
 
   const navRow = (...items) => h('div', { class: 'lesson-nav' }, ...items);
@@ -246,16 +297,17 @@ async function renderLesson(view, section, lessonId, learn) {
   }
 
   function showQuiz() {
+    const quiz = quizOf(lesson);
     const done = h('div', { class: 'lesson-done', hidden: !isDone(lesson, st) }, h('div', null, icon('check', 18), h('b', null, ' Lekcja ukończona!'), ' Wszystkie odpowiedzi są dobre.'), h('div', { class: 'grow' }), lesson.practice?.length ? btn('Zadania z matur', { icon: 'book', onClick: () => go(PRACTICE) }) : null, nextLessonBtn());
     main.append(
       h('h2', { class: 'step-title' }, 'Sprawdź się'),
-      h('p', { class: 'muted' }, `Odpowiedz na ${lesson.quiz.length} ${plural(lesson.quiz.length, 'pytanie', 'pytania', 'pytań')}. Każde możesz sprawdzać tyle razy, ile chcesz – po sprawdzeniu zobaczysz wyjaśnienie. Lekcja jest ukończona, gdy wszystkie odpowiedzi są dobre.`),
+      h('p', { class: 'muted' }, `Odpowiedz na ${quiz.length} ${plural(quiz.length, 'pytanie', 'pytania', 'pytań')}. Każde możesz sprawdzać tyle razy, ile chcesz – po sprawdzeniu zobaczysz wyjaśnienie. Lekcja jest ukończona, gdy wszystkie odpowiedzi są dobre.`),
       done,
     );
     st.q ||= {};
-    lesson.quiz.forEach((q, i) => {
+    quiz.forEach(({ q, i }, k) => {
       const qq = createQuestion(q, {
-        no: i + 1,
+        no: k + 1,
         mode: 'quiz',
         ctx,
         saved: (st.q[i] ||= {}),
@@ -298,7 +350,14 @@ async function renderLesson(view, section, lessonId, learn) {
     main.append(list, navRow(btn('Wstecz', { icon: 'left', onClick: () => go(QUIZ) }), h('div', { class: 'grow' }), nextLessonBtn()));
   }
 
-  const unsub = onSettings(() => syncLangs(main));
+  // another language: the same step, its text and examples in that language
+  const unsub = onLang(() => {
+    ctx.lang = readerLang();
+    renderHead();
+    const top = view.scrollTop;
+    go(cur, true);
+    view.scrollTop = top;
+  });
   go(cur);
   return {
     destroy() {
@@ -318,8 +377,9 @@ async function renderTest(view, section, learn) {
   const t = (learn.tests[section.id] ||= {});
   t.answers ||= {};
   const save = () => updateLearn(() => {});
-  const ctx = { files: test.files, db: test.db, sheet: test.sheet };
-  const max = test.questions.reduce((s, q) => s + pointsOf(q), 0);
+  const ctx = { files: test.files, db: test.db, sheet: test.sheet, lang: readerLang() };
+  const listed = () => questionsFor(test.questions, readerLang());
+  const maxPoints = () => listed().reduce((s, { q }) => s + pointsOf(q), 0);
   let questions = [];
 
   const summary = h('div', { class: 'test-summary', hidden: true });
@@ -332,11 +392,11 @@ async function renderTest(view, section, learn) {
       'div',
       { class: 'page learn lesson test' },
       breadcrumb({ label: 'Lekcje', href: '#/learn' }, { label: section.title, href: `#/learn/${section.id}` }, { label: 'Test' }),
-      h('h1', null, `Test: ${section.title}`),
+      h('div', { class: 'lesson-title-row' }, h('h1', { class: 'grow' }, `Test: ${section.title}`), test.questions.some((q) => q.type === 'code' || q.langs) ? langSwitch() : null),
       h(
         'p',
-        { class: 'muted' },
-        `${test.questions.length} ${plural(test.questions.length, 'pytanie', 'pytania', 'pytań')}, razem ${max} pkt. Zaliczenie od ${Math.round(PASS * 100)}%. Odpowiedzi na pytania zamknięte sprawdzisz na końcu („Zakończ test”); programy, zapytania i formuły możesz sprawdzać testami w trakcie, jak na sprawdzarce. ` +
+        { class: 'muted test-intro' },
+        `${listed().length} ${plural(listed().length, 'pytanie', 'pytania', 'pytań')}, razem ${maxPoints()} pkt. Zaliczenie od ${Math.round(PASS * 100)}%. Odpowiedzi na pytania zamknięte sprawdzisz na końcu („Zakończ test”); programy, zapytania i formuły możesz sprawdzać testami w trakcie, jak na sprawdzarce. ` +
           (t.best != null ? `Twój najlepszy wynik: ${Math.round(t.best * 100)}%.` : ''),
       ),
       summary,
@@ -348,8 +408,8 @@ async function renderTest(view, section, learn) {
   function build() {
     questions.forEach((q) => q.dispose());
     clear(body);
-    questions = test.questions.map((q, i) => {
-      const qq = createQuestion(q, { no: i + 1, mode: 'test', ctx, saved: (t.answers[i] ||= {}), onSave: save });
+    questions = listed().map(({ q, i }, k) => {
+      const qq = createQuestion(q, { no: k + 1, mode: 'test', ctx, saved: (t.answers[i] ||= {}), onSave: save });
       body.appendChild(qq.el);
       return qq;
     });
@@ -365,6 +425,7 @@ async function renderTest(view, section, learn) {
         got += r.points;
         if (!r.ok && q.q.lesson) wrong.add(q.q.lesson);
       }
+      const max = maxPoints();
       const score = max ? got / max : 0;
       t.last = score;
       t.best = Math.max(t.best ?? 0, score);
@@ -380,7 +441,7 @@ async function renderTest(view, section, learn) {
               h('div', { class: 'small muted' }, 'Warto powtórzyć:'),
               [...wrong].map((id) => {
                 const l = lessonById.get(id);
-                return l ? h('a', { class: 'chip', href: `#/learn/${section.id}/${id}` }, l.title) : null;
+                return l ? h('a', { class: 'chip', href: `#/learn/${section.id}/${id}` }, say(l.title)) : null;
               }),
             )
           : null,
@@ -405,7 +466,13 @@ async function renderTest(view, section, learn) {
   }
 
   build();
-  const unsub = onSettings(() => syncLangs(body));
+  // another language: its version of the questions (answers are kept)
+  const unsub = onLang(() => {
+    ctx.lang = readerLang();
+    const intro = view.querySelector('.test-intro');
+    if (intro) intro.textContent = intro.textContent.replace(/^\d+ \S+, razem \d+ pkt/, `${listed().length} ${plural(listed().length, 'pytanie', 'pytania', 'pytań')}, razem ${maxPoints()} pkt`);
+    build();
+  });
   return {
     destroy() {
       unsub();

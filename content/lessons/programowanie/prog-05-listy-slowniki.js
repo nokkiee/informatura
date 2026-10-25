@@ -24,7 +24,15 @@ export default {
         | element i (od 0) | \`t[i]\` | \`t[i]\` | \`t.get(i)\` |
         | n zer | \`[0] * n\` | \`vector<int> t(n, 0);\` | \`new int[n]\` (tablica) |
 
-        W Javie dla znanej z góry liczby elementów wygodniejsza jest zwykła tablica \`int[] t = new int[n];\` (dostęp \`t[i]\`). W C++ \`vector\` wymaga \`#include <vector>\`.
+        :::python
+        Tak jak w napisach, \`t[-1]\` to ostatni element, a \`t[1:4]\` – wycinek: elementy o indeksach 1, 2 i 3.
+        :::
+        :::cpp
+        \`vector\` wymaga \`#include <vector>\`. Ostatni element to \`t.back()\` (albo \`t[t.size() - 1]\`). \`vector<int> t(n, 0);\` tworzy od razu \`n\` zer – przydaje się, gdy znasz liczbę elementów.
+        :::
+        :::java
+        \`ArrayList\` (z \`java.util\`) przechowuje obiekty, dlatego piszesz \`Integer\`, a nie \`int\`. Dla znanej z góry liczby elementów wygodniejsza jest zwykła tablica \`int[] t = new int[n];\` (dostęp \`t[i]\`, długość \`t.length\`).
+        :::
 
         ~~~python run
         t = []
@@ -128,7 +136,15 @@ export default {
         | rosnąco | \`t.sort()\` lub \`sorted(t)\` | \`sort(t.begin(), t.end());\` | \`Collections.sort(t);\` / \`Arrays.sort(t);\` |
         | malejąco | \`t.sort(reverse=True)\` | \`sort(t.rbegin(), t.rend());\` | \`t.sort(Collections.reverseOrder());\` |
 
-        Uwaga w Pythonie: \`t.sort()\` sortuje listę **w miejscu** i zwraca \`None\`, a \`sorted(t)\` zwraca **nową** posortowaną listę. Pisanie \`t = t.sort()\` to błąd – zgubisz listę.
+        :::python
+        Uwaga: \`t.sort()\` sortuje listę **w miejscu** i zwraca \`None\`, a \`sorted(t)\` zwraca **nową** posortowaną listę. Pisanie \`t = t.sort()\` to błąd – zgubisz listę.
+        :::
+        :::cpp
+        \`sort\` wymaga \`#include <algorithm>\` i sortuje wektor **w miejscu** – niczego nie zwraca. \`t.rbegin()\` i \`t.rend()\` to wektor „czytany od końca”, więc sortowanie od tyłu rosnąco daje kolejność malejącą.
+        :::
+        :::java
+        \`Collections.sort(t)\` sortuje listę (\`ArrayList\`), a \`Arrays.sort(t)\` – zwykłą tablicę. Oba sortują **w miejscu** i niczego nie zwracają. Malejąco posortujesz listę obiektów (\`Integer\`), a nie tablicę \`int[]\`.
+        :::
 
         ### Sortowanie według klucza
         Słowa najpierw według długości, a przy równej długości alfabetycznie:
@@ -168,11 +184,9 @@ export default {
         }
         ~~~
 
-        - **Python:** \`key=lambda s: (len(s), s)\` – sortuj według pary (długość, słowo); pary porównuje się najpierw po pierwszym elemencie.
-        - **C++:** trzeci argument \`sort\` to funkcja „czy \`a\` ma być przed \`b\`”.
-        - **Java:** \`Comparator.comparing(...).thenComparing(...)\`.
+        [[python: \`key=lambda s: (len(s), s)\` znaczy: sortuj według pary (długość, słowo). Pary porównuje się najpierw po pierwszym elemencie, a przy remisie – po drugim.]][[cpp: Trzeci argument \`sort\` to funkcja (tu zapisana w miejscu, jako *lambda*), która odpowiada na pytanie „czy \`a\` ma być przed \`b\`”: najpierw krótsze, a przy równej długości – wcześniejsze alfabetycznie.]][[java: \`Comparator.comparing(String::length)\` porównuje słowa według długości, a \`.thenComparing(...)\` rozstrzyga remisy – tu porządkiem alfabetycznym.]]
 
-        > **Wskazówka:** „k-ta największa liczba” to po prostu \`sorted(t, reverse=True)[k - 1]\`. Zwróć uwagę, czy zadanie liczy powtórzenia – jeśli liczby mają być różne, najpierw usuń duplikaty (zbiór, następny krok).
+        > **Wskazówka:** „k-ta największa liczba” to po prostu [[python: \`sorted(t, reverse=True)[k - 1]\`]][[cpp java: element o indeksie \`k - 1\` po posortowaniu malejąco]]. Zwróć uwagę, czy zadanie liczy powtórzenia – jeśli liczby mają być różne, najpierw usuń duplikaty (zbiór, następny krok).
       `,
     },
     {
@@ -180,7 +194,7 @@ export default {
       body: md`
         **Słownik** (mapa) przechowuje pary *klucz → wartość*. Idealnie nadaje się do **zliczania**: kluczem jest to, co liczysz (słowo, liczba, para znaków), a wartością – liczba wystąpień. Tablica 26 liczników z lekcji o napisach to szczególny przypadek: działa tylko dla liter, a słownik – dla czegokolwiek.
 
-        **Zbiór** (set) przechowuje elementy **bez powtórzeń** – \`len(set(t))\` to liczba różnych elementów.
+        **Zbiór** (set) przechowuje elementy **bez powtórzeń** – jego rozmiar to liczba różnych elementów ([[python: \`len(set(t))\`]][[cpp: \`set<int>(t.begin(), t.end()).size()\`]][[java: \`new HashSet<>(t).size()\`]]).
 
         | | Python | C++ | Java |
         |---|---|---|---|
@@ -234,9 +248,17 @@ export default {
         }
         ~~~
 
-        W C++ \`map\` trzyma klucze **posortowane**, a w Javie \`TreeMap\` też (\`HashMap\` – w nieokreślonej kolejności). W Pythonie słownik pamięta kolejność dodawania; posortowane klucze daje \`sorted(d)\`.
+        :::python
+        Słownik pamięta kolejność dodawania kluczy; posortowane klucze daje \`sorted(d)\`. Odczytanie \`d[k]\` dla klucza, którego nie ma, to błąd *KeyError* – dlatego przy zliczaniu piszemy \`d.get(k, 0)\` („wartość albo 0, gdy klucza nie ma”).
+        :::
+        :::cpp
+        \`map\` trzyma klucze **posortowane** (wymaga \`#include <map>\`), więc pętla po mapie idzie alfabetycznie.
 
-        > **Uwaga:** W C++ samo odczytanie \`d[k]\` dla nieistniejącego klucza **dodaje** go do mapy z wartością 0. Do sprawdzania, czy klucz jest, używaj \`d.count(k)\`.
+        > **Uwaga:** Samo odczytanie \`d[k]\` dla nieistniejącego klucza **dodaje** go do mapy z wartością 0. Do sprawdzania, czy klucz jest, używaj \`d.count(k)\`.
+        :::
+        :::java
+        \`TreeMap\` trzyma klucze **posortowane**, a \`HashMap\` – w nieokreślonej kolejności. Gdy wynik zależy od kolejności (np. remis rozstrzygany alfabetycznie), wybierz \`TreeMap\`. \`d.get(k)\` dla klucza, którego nie ma, zwraca \`null\` – dlatego do zliczania wygodne jest \`d.merge(k, 1, Integer::sum)\`.
+        :::
       `,
     },
     {
@@ -259,16 +281,28 @@ export default {
     {
       type: 'input',
       q: md`
-        Co wypisze ten program w Pythonie?
+        Co wypisze ten fragment programu?
         ~~~python
         t = [3, 1, 2]
         t.append(5)
         t.sort()
         print(t[1])
         ~~~
+        ~~~cpp
+        vector<int> t = {3, 1, 2};
+        t.push_back(5);
+        sort(t.begin(), t.end());
+        cout << t[1] << endl;
+        ~~~
+        ~~~java
+        List<Integer> t = new ArrayList<>(List.of(3, 1, 2));
+        t.add(5);
+        Collections.sort(t);
+        System.out.println(t.get(1));
+        ~~~
       `,
       answer: '2',
-      explain: md`Po \`append\` lista to [3, 1, 2, 5], po sortowaniu [1, 2, 3, 5]. Indeks 1 to drugi element: 2.`,
+      explain: md`Po dopisaniu lista to [3, 1, 2, 5], po sortowaniu [1, 2, 3, 5]. Indeks 1 to drugi element: 2.`,
     },
     {
       type: 'choice',
@@ -282,15 +316,15 @@ export default {
       q: md`Oceń prawdziwość zdań.`,
       items: [
         { text: 'Zbiór (set) nie przechowuje powtórzeń.', answer: true },
-        { text: 'W Pythonie `t = t.sort()` zostawia w `t` posortowaną listę.', answer: false },
-        { text: 'Elementy `vector` w C++ i listy w Pythonie mają indeksy od 0.', answer: true },
-        { text: 'W C++ odczytanie `d[k]` z mapy nigdy jej nie zmienia.', answer: false },
+        { text: '[[python: `t = t.sort()` zostawia w `t` posortowaną listę.]][[cpp: `sort(t.begin(), t.end())` zwraca nowy, posortowany wektor, a `t` zostaje bez zmian.]][[java: `Collections.sort(t)` zwraca nową posortowaną listę, a `t` zostaje bez zmian.]]', answer: false },
+        { text: 'Elementy [[python: listy]][[cpp: `vector`]][[java: `ArrayList`]] mają indeksy od 0.', answer: true },
+        { text: '[[python: Odczytanie `d[k]` dla klucza, którego nie ma w słowniku, daje 0.]][[cpp: Odczytanie `d[k]` z mapy nigdy jej nie zmienia.]][[java: `d.get(k)` dla klucza, którego nie ma w mapie, daje 0.]]', answer: false },
       ],
       explain: md`
         - Tak – dodanie elementu, który już jest, nic nie zmienia.
-        - Nie – \`sort()\` zwraca \`None\`, więc w \`t\` będzie \`None\`. Wystarczy samo \`t.sort()\` albo \`t = sorted(t)\`.
+        - Nie – [[python: \`sort()\` sortuje w miejscu i zwraca \`None\`, więc w \`t\` będzie \`None\`. Wystarczy samo \`t.sort()\` albo \`t = sorted(t)\`.]][[cpp: \`sort\` sortuje \`t\` w miejscu i niczego nie zwraca.]][[java: \`Collections.sort\` sortuje \`t\` w miejscu i niczego nie zwraca.]]
         - Tak.
-        - Nie – \`d[k]\` dla brakującego klucza wstawia go z wartością domyślną (0).
+        - Nie – [[python: to błąd *KeyError*; wartość albo 0 daje \`d.get(k, 0)\`.]][[cpp: \`d[k]\` dla brakującego klucza wstawia go z wartością domyślną (0).]][[java: zwraca \`null\`; wartość albo 0 daje \`d.getOrDefault(k, 0)\`.]]
       `,
     },
     {
@@ -431,7 +465,8 @@ export default {
           }
         `,
       },
-      explain: md`Słownik zlicza wystąpienia. Remis rozstrzyga kolejność przeglądania: w C++ \`map\` i w Javie \`TreeMap\` klucze idą alfabetycznie, więc warunek \`>\` zostawia pierwsze alfabetycznie słowo. W Pythonie \`min(d, key=lambda w: (-d[w], w))\` szuka słowa z największą liczbą wystąpień (minus odwraca kolejność), a przy remisie – najmniejszego alfabetycznie.`,
+      explain: md`Słownik zlicza wystąpienia. [[python: \`min(d, key=lambda w: (-d[w], w))\` szuka słowa z największą liczbą wystąpień (minus odwraca kolejność), a przy remisie – najmniejszego alfabetycznie.]][[cpp: Remis rozstrzyga kolejność przeglądania: w \`map\` klucze idą alfabetycznie, więc warunek \`>\` zostawia pierwsze alfabetycznie słowo.]][[java: Remis rozstrzyga kolejność przeglądania: w \`TreeMap\` klucze idą alfabetycznie, więc warunek \`>\` zostawia pierwsze alfabetycznie słowo.]]`,
+
     },
   ],
   practice: ['2023-maj/3.2', '2025-czerwiec/3.2', '2024-maj/4.2', '2026-czerwiec/3.3', '2026-maj/4.3', '2023-czerwiec/3.2', '2023-maj/3.4'],

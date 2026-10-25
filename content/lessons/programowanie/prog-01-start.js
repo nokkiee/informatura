@@ -5,8 +5,8 @@ export default {
   summary: 'Jak zbudowany jest program, zmienne i typy, wczytywanie danych, dzielenie całkowite i reszta z dzielenia.',
   minutes: 25,
   intro: md`
-    - jak wygląda najprostszy program w Pythonie, C++ i Javie i jak go uruchomić,
-    - czym są zmienne i typy oraz dlaczego w C++ i Javie trzeba uważać na zbyt duże liczby,
+    - jak wygląda najprostszy program w [[python: Pythonie]][[cpp: C++]][[java: Javie]] i jak go uruchomić,
+    - czym są zmienne i typy[[cpp java:  oraz dlaczego trzeba uważać na zbyt duże liczby]],
     - jak wczytać liczby i wypisać wynik,
     - dzielenie całkowite i reszta z dzielenia (\`div\` i \`mod\`) – działania, które są w prawie każdym zadaniu maturalnym.
   `,
@@ -16,7 +16,7 @@ export default {
       body: md`
         Na maturze z informatyki część zadań brzmi: *„Napisz program, który…”*. Dostajesz plik z danymi (np. \`liczby.txt\`), a Twój program ma policzyć odpowiedź – na przykład ile liczb jest parzystych albo która liczba jest największa. Oceniana jest **odpowiedź**, którą zapiszesz w pliku z wynikami, więc program jest narzędziem: ma być poprawny, nie musi być piękny.
 
-        Program piszesz w jednym z języków: **Python**, **C++** albo **Java**. Język wybierasz u góry okna Informatury – wszystkie przykłady w lekcjach przełączą się na niego. Możesz też kliknąć zakładkę nad przykładem.
+        Ta lekcja pokazuje wszystko w języku **[[python: Python]][[cpp: C++]][[java: Java]]**. Jeśli na maturze chcesz pisać w innym języku, zmień go przełącznikiem **Język** nad lekcją (albo u góry okna) – wtedy cała lekcja, przykłady i zadania będą w tamtym języku.
 
         Oto najkrótszy sensowny program – wypisuje jeden wiersz tekstu:
 
@@ -43,9 +43,24 @@ export default {
         Kliknij **Uruchom** – pod przykładem zobaczysz, co program wypisał.
 
         ### Co tu jest czym
-        - **Python** wykonuje instrukcje po kolei, od góry. \`print(...)\` wypisuje to, co jest w nawiasie, i przechodzi do nowego wiersza.
-        - **C++** zaczyna od funkcji \`main\`. \`#include <iostream>\` dołącza obsługę wejścia i wyjścia, \`cout << ...\` wypisuje, a \`endl\` kończy wiersz. Każda instrukcja kończy się średnikiem \`;\`.
-        - **Java** wymaga klasy (tu \`Main\`) i metody \`main\`. Wypisuje się przez \`System.out.println(...)\`.
+        :::python
+        - Python wykonuje instrukcje po kolei, od góry – program to po prostu lista poleceń.
+        - \`print(...)\` wypisuje to, co jest w nawiasie, i przechodzi do nowego wiersza.
+        - Tekst (napis) piszesz w cudzysłowie: \`"Witaj, maturo!"\`.
+        :::
+        :::cpp
+        - \`#include <iostream>\` dołącza obsługę wejścia i wyjścia (\`cin\` i \`cout\`).
+        - \`using namespace std;\` pozwala pisać \`cout\` zamiast \`std::cout\`.
+        - Program zaczyna się w funkcji \`main\` – to, co między \`{\` a \`}\`, wykonuje się po kolei.
+        - \`cout << ...\` wypisuje, a \`endl\` kończy wiersz. \`return 0;\` kończy program („wszystko w porządku”).
+        - Każda instrukcja kończy się średnikiem \`;\`.
+        :::
+        :::java
+        - Każdy program w Javie to **klasa** – w Informaturze nazywa się \`Main\` (tak jak plik \`Main.java\`).
+        - Program zaczyna się w metodzie \`public static void main(String[] args)\` – to, co między \`{\` a \`}\`, wykonuje się po kolei.
+        - \`System.out.println(...)\` wypisuje to, co w nawiasie, i przechodzi do nowego wiersza.
+        - Każda instrukcja kończy się średnikiem \`;\`.
+        :::
 
         > **Wskazówka:** W zadaniach z arkuszy w Informaturze program piszesz w edytorze po prawej i uruchamiasz przyciskiem **Uruchom** (albo Ctrl+Enter). To, co wypisze, trafia do pola „Odpowiedź”.
       `,
@@ -64,7 +79,7 @@ export default {
         | napis (tekst) | \`str\` | \`string\` | \`String\` |
         | prawda / fałsz | \`bool\` | \`bool\` | \`boolean\` |
 
-        W Pythonie typu nie piszesz – zmienna dostaje go razem z wartością. W C++ i Javie typ podajesz przy pierwszym użyciu zmiennej (deklaracji):
+        [[python: Typu nie piszesz – zmienna dostaje go razem z wartością (\`a = 7\` to od razu \`int\`, \`x = 2.5\` to \`float\`).]][[cpp java: Typ podajesz przy pierwszym użyciu zmiennej, czyli w **deklaracji**: \`int a = 7;\`. Potem piszesz już samo \`a\`.]]
 
         ~~~python run
         a = 7
@@ -98,10 +113,16 @@ export default {
         }
         ~~~
 
+        :::python
+        ### Duże liczby
+        Liczby całkowite w Pythonie **nie mają górnej granicy** – suma czy iloczyn bardzo dużych liczb wyjdzie dokładnie. Na maturze dane często mają liczby do miliarda, a ich iloczyn ma kilkanaście cyfr – w Pythonie nie musisz się tym przejmować.
+        :::
+        :::cpp java
         ### Uwaga na duże liczby
-        W C++ i Javie typ \`int\` mieści liczby tylko do około **2,1 miliarda** (dokładnie 2 147 483 647). Jeśli wynik będzie większy, zmienna się „przekręci” i dostaniesz bzdurę – bez żadnego komunikatu o błędzie. Na maturze dane często mają liczby do miliarda, a ich suma czy iloczyn łatwo przekracza tę granicę.
+        Typ \`int\` mieści liczby tylko do około **2,1 miliarda** (dokładnie 2 147 483 647). Jeśli wynik będzie większy, zmienna się „przekręci” i dostaniesz bzdurę – bez żadnego komunikatu o błędzie. Na maturze dane często mają liczby do miliarda, a ich suma czy iloczyn łatwo przekracza tę granicę.
 
-        > **Zapamiętaj:** W C++ do sum i iloczynów używaj \`long long\`, a w Javie \`long\` (mieszczą liczby do około 9·10¹⁸). W Pythonie liczby całkowite nie mają limitu.
+        > **Zapamiętaj:** Do sum i iloczynów używaj typu [[cpp: \`long long\`]][[java: \`long\`]] – mieści liczby do około 9·10¹⁸. [[cpp: Liczbę większą niż \`int\` zapisaną wprost w kodzie kończ literami \`LL\`.]][[java: Liczbę większą niż \`int\` zapisaną wprost w kodzie kończ literą \`L\`.]]
+        :::
 
         ~~~python run
         n = 3000000000
@@ -132,20 +153,25 @@ export default {
       body: md`
         Dzielenie na maturze najczęściej jest **całkowite**: 17 podzielone przez 5 to 3 i reszta 2. W pseudokodzie z arkuszy zapisuje się to jako \`17 div 5 = 3\` i \`17 mod 5 = 2\`.
 
-        | Działanie | pseudokod | Python | C++ / Java (dla liczb całkowitych) |
+        | Działanie | pseudokod | Python | C++ / Java (dla liczb typu \`int\`) |
         |---|---|---|---|
         | dzielenie całkowite | \`a div b\` | \`a // b\` | \`a / b\` |
         | reszta z dzielenia | \`a mod b\` | \`a % b\` | \`a % b\` |
         | dzielenie „zwykłe” | \`a / b\` | \`a / b\` (daje np. 3.4) | \`(double) a / b\` |
 
-        > **Uwaga:** W C++ i Javie \`7 / 2\` dla liczb typu \`int\` daje **3**, nie 3,5 – ułamek jest obcinany. Jeśli potrzebujesz wyniku z przecinkiem, zamień jedną z liczb na \`double\`, np. \`(double) a / b\` albo \`a / 2.0\`. W Pythonie odwrotnie: \`/\` zawsze daje liczbę z przecinkiem, a dzielenie całkowite to \`//\`.
+        :::python
+        > **Uwaga:** W Pythonie są **dwa** dzielenia: \`/\` zawsze daje liczbę z przecinkiem (\`7 / 2 = 3.5\`, a nawet \`6 / 2 = 3.0\`), a \`//\` – dzielenie całkowite (\`7 // 2 = 3\`). Gdy liczysz na liczbach całkowitych (cyfry, indeksy, połowa liczby), używaj \`//\`.
+        :::
+        :::cpp java
+        > **Uwaga:** \`7 / 2\` dla liczb typu \`int\` daje **3**, nie 3,5 – ułamek jest obcinany. Jeśli potrzebujesz wyniku z przecinkiem, zamień jedną z liczb na \`double\`, np. \`(double) a / b\` albo \`a / 2.0\`.
+        :::
 
         ### Do czego to się przydaje
         Reszta z dzielenia odpowiada na mnóstwo pytań z zadań:
         - \`n % 2 == 0\` – czy liczba jest **parzysta**,
         - \`n % k == 0\` – czy \`n\` jest **podzielna** przez \`k\`,
         - \`n % 10\` – **ostatnia cyfra** liczby (\`4728 % 10 = 8\`),
-        - \`n // 10\` (w C++/Javie \`n / 10\`) – liczba **bez ostatniej cyfry** (\`4728 // 10 = 472\`).
+        - [[python: \`n // 10\`]][[cpp java: \`n / 10\`]] – liczba **bez ostatniej cyfry** ([[python: \`4728 // 10 = 472\`]][[cpp java: \`4728 / 10 = 472\`]]).
 
         Z dwóch ostatnich zrobisz w kolejnych lekcjach rozkładanie liczby na cyfry – to jeden z najczęstszych motywów na maturze.
 
@@ -181,7 +207,12 @@ export default {
         }
         ~~~
 
-        > **Uwaga:** Dla liczb **ujemnych** języki się różnią: w Pythonie \`-7 // 2 = -4\` i \`-7 % 2 = 1\`, a w C++ i Javie \`-7 / 2 = -3\` i \`-7 % 2 = -1\`. Dlatego parzystość lepiej sprawdzać przez \`n % 2 == 0\` (działa wszędzie), a nie przez \`n % 2 == 1\`.
+        :::python
+        > **Uwaga:** Dla liczb **ujemnych** \`//\` zaokrągla **w dół**: \`-7 // 2 = -4\`, a reszta ma znak dzielnika: \`-7 % 2 = 1\`. W zadaniach maturalnych liczby są zwykle nieujemne, ale gdy nie są – sprawdź wynik na przykładzie.
+        :::
+        :::cpp java
+        > **Uwaga:** Dla liczb **ujemnych** ułamek jest obcinany w stronę zera, a reszta ma znak dzielnej: \`-7 / 2 = -3\` i \`-7 % 2 = -1\`. Dlatego parzystość sprawdzaj przez \`n % 2 == 0\` (działa zawsze), a nie nieparzystość przez \`n % 2 == 1\` (dla \`-7\` daje fałsz!) – lepiej \`n % 2 != 0\`.
+        :::
       `,
     },
     {
@@ -189,7 +220,15 @@ export default {
       body: md`
         Program zwykle coś **wczytuje**, liczy i **wypisuje** wynik. Na maturze dane są w pliku (tym zajmiemy się w lekcji o plikach), ale zasada jest ta sama, co przy wczytywaniu z klawiatury – czyli ze **standardowego wejścia**. Ćwiczenia w lekcjach właśnie tak dostają dane.
 
-        W Pythonie \`input()\` wczytuje **cały wiersz jako napis**. Żeby dostać liczbę, trzeba go zamienić: \`int(input())\`. Dwie liczby w jednym wierszu rozdzielisz metodą \`split()\`. W C++ \`cin >> x\` i w Javie \`sc.nextInt()\` same odczytują kolejną liczbę – nie ma znaczenia, czy są w jednym wierszu, czy w kilku.
+        :::python
+        \`input()\` wczytuje **cały wiersz jako napis**. Żeby dostać liczbę, trzeba go zamienić: \`int(input())\`. Dwie liczby w jednym wierszu rozdzielisz metodą \`split()\`.
+        :::
+        :::cpp
+        \`cin >> x\` odczytuje kolejną wartość i zapisuje ją w zmiennej \`x\` – typ zmiennej mówi, czego się spodziewać (liczby, napisu). Nie ma znaczenia, czy liczby są w jednym wierszu, czy w kilku: \`cin\` pomija spacje i znaki końca wiersza.
+        :::
+        :::java
+        Do czytania służy \`Scanner\` (z pakietu \`java.util\`, stąd \`import java.util.*;\`). \`sc.nextInt()\` i \`sc.nextLong()\` odczytują kolejną liczbę, \`sc.next()\` – kolejne słowo. Nie ma znaczenia, czy liczby są w jednym wierszu, czy w kilku: \`Scanner\` pomija spacje i znaki końca wiersza.
+        :::
 
         ~~~python run
         a, b = map(int, input().split())
@@ -225,9 +264,14 @@ export default {
         12 5
         ~~~
 
+        :::python
         \`map(int, input().split())\` czytaj tak: weź wiersz, potnij go na kawałki w miejscach spacji (\`split\`) i każdy kawałek zamień na liczbę (\`map(int, …)\`).
 
-        > **Uwaga:** Najczęstszy błąd początkujących w Pythonie: zapomnieć o \`int(...)\`. Wtedy \`"12" + "5"\` daje napis \`"125"\` zamiast liczby 17, a porównanie \`"9" > "10"\` jest prawdziwe, bo napisy porównuje się znak po znaku.
+        > **Uwaga:** Najczęstszy błąd początkujących: zapomnieć o \`int(...)\`. Wtedy \`"12" + "5"\` daje napis \`"125"\` zamiast liczby 17, a porównanie \`"9" > "10"\` jest prawdziwe, bo napisy porównuje się znak po znaku.
+        :::
+        :::cpp java
+        Zmienne są typu [[cpp: \`long long\`]][[java: \`long\`]], bo iloczyn dwóch dużych liczb nie zmieściłby się w \`int\`.
+        :::
       `,
     },
     {
@@ -235,12 +279,20 @@ export default {
       body: md`
         Zanim przejdziesz do testu, lista pułapek, w które najłatwiej wpaść na początku:
 
-        1. **Napis zamiast liczby** (Python) – wynik \`input()\` albo wiersza z pliku to napis. Zamień go przez \`int(...)\` przed liczeniem.
-        2. **Przepełnienie** (C++, Java) – suma wielu liczb albo iloczyn dwóch dużych nie mieści się w \`int\`. Używaj \`long long\` / \`long\`.
-        3. **Obcięte dzielenie** (C++, Java) – \`5 / 2\` to 2. Do średniej potrzebujesz \`double\`.
-        4. **\`=\` zamiast \`==\`** – \`=\` przypisuje, \`==\` porównuje. W C++ \`if (x = 5)\` skompiluje się i zawsze będzie prawdą!
-        5. **Brak średnika** (C++, Java) – kompilator pokaże błąd w wierszu *po* tym, w którym go zabrakło.
-        6. **Wielkość liter** – \`Print\`, \`COUT\` czy \`system.out\` nie zadziałają. Języki programowania rozróżniają wielkie i małe litery.
+        :::python
+        1. **Napis zamiast liczby** – wynik \`input()\` albo wiersza z pliku to napis. Zamień go przez \`int(...)\` przed liczeniem.
+        2. **\`/\` zamiast \`//\`** – \`/\` daje liczbę z przecinkiem (\`10 / 2 = 5.0\`). Do cyfr, indeksów i połówek używaj \`//\`.
+        3. **\`=\` zamiast \`==\`** – \`=\` przypisuje, \`==\` porównuje. \`if x = 5:\` to błąd składni.
+        4. **Złe wcięcia** – w Pythonie wcięcie jest częścią programu (zobaczysz to w lekcji o warunkach). Pilnuj, by instrukcje na tym samym poziomie miały tyle samo spacji.
+        5. **Wielkość liter** – \`Print\` czy \`INPUT\` nie zadziałają. Python rozróżnia wielkie i małe litery.
+        :::
+        :::cpp java
+        1. **Przepełnienie** – suma wielu liczb albo iloczyn dwóch dużych nie mieści się w \`int\`. Używaj [[cpp: \`long long\`]][[java: \`long\`]].
+        2. **Obcięte dzielenie** – \`5 / 2\` to 2. Do średniej potrzebujesz \`double\`.
+        3. **\`=\` zamiast \`==\`** – \`=\` przypisuje, \`==\` porównuje. [[cpp: \`if (x = 5)\` skompiluje się i zawsze będzie prawdą!]][[java: \`if (x = 5)\` się nie skompiluje – kompilator zgłosi błąd typu.]]
+        4. **Brak średnika** – kompilator pokaże błąd w wierszu *po* tym, w którym go zabrakło.
+        5. **Wielkość liter** – [[cpp: \`COUT\` czy \`Main\` zamiast \`main\`]][[java: \`system.out\` czy \`string\` zamiast \`String\`]] nie zadziałają. Język rozróżnia wielkie i małe litery.
+        :::
 
         > **Na maturze:** Zanim zapiszesz odpowiedź, uruchom program na pliku przykładowym (w Informaturze: **Test: dane przykładowe**) i porównaj wynik z tym podanym w treści zadania. To najszybszy sposób, żeby wyłapać błąd.
       `,
@@ -249,10 +301,10 @@ export default {
   quiz: [
     {
       type: 'choice',
-      q: md`Jaki będzie wynik działań \`17 // 5\` i \`17 % 5\` w Pythonie?`,
+      q: md`Jaki będzie wynik działań [[python: \`17 // 5\`]][[cpp java: \`17 / 5\`]] i \`17 % 5\`[[cpp java:  (liczby typu \`int\`)]]?`,
       options: ['3 i 2', '3,4 i 0', '3 i 5', '2 i 3'],
       answer: 0,
-      explain: md`17 = 5 · 3 + 2, więc dzielenie całkowite daje 3, a reszta to 2. W C++ i Javie to samo zapisujesz jako \`17 / 5\` i \`17 % 5\`.`,
+      explain: md`17 = 5 · 3 + 2, więc dzielenie całkowite daje 3, a reszta to 2.`,
     },
     {
       type: 'input',
@@ -262,26 +314,61 @@ export default {
     },
     {
       type: 'tf',
+      langs: ['python'],
       q: md`Oceń prawdziwość zdań.`,
       items: [
-        { text: 'W C++ wynik `7 / 2` dla zmiennych typu `int` wynosi 3.', answer: true },
-        { text: 'W Pythonie `7 / 2` daje 3.', answer: false },
-        { text: 'W C++ zmienna typu `int` pomieści liczbę 5 000 000 000.', answer: false },
-        { text: 'W Pythonie `"12" + "3"` daje napis `"123"`.', answer: true },
+        { text: '`7 / 2` daje 3.', answer: false },
+        { text: '`7 // 2` daje 3.', answer: true },
+        { text: 'Liczba 5 000 000 000 jest za duża, żeby zapisać ją w zmiennej.', answer: false },
+        { text: '`"12" + "3"` daje napis `"123"`.', answer: true },
       ],
       explain: md`
-        - W C++ i Javie dzielenie dwóch liczb całkowitych obcina ułamek: \`7 / 2 = 3\`.
-        - W Pythonie \`/\` daje liczbę z przecinkiem (3.5); dzielenie całkowite to \`//\`.
-        - \`int\` w C++ mieści liczby do ok. 2,1 mld – na 5 mld potrzebny jest \`long long\`.
-        - Dodawanie napisów skleja je, a nie dodaje liczb.
+        - Nie – \`/\` daje liczbę z przecinkiem: 3.5.
+        - Tak – \`//\` to dzielenie całkowite.
+        - Nie – liczby całkowite w Pythonie nie mają górnej granicy.
+        - Tak – dodawanie napisów skleja je, a nie dodaje liczb.
+      `,
+    },
+    {
+      type: 'tf',
+      langs: ['cpp'],
+      q: md`Oceń prawdziwość zdań.`,
+      items: [
+        { text: '`7 / 2` dla zmiennych typu `int` daje 3.', answer: true },
+        { text: '`7 / 2.0` daje 3.5.', answer: true },
+        { text: 'Zmienna typu `int` pomieści liczbę 5 000 000 000.', answer: false },
+        { text: '`if (x = 5)` sprawdza, czy `x` jest równe 5.', answer: false },
+      ],
+      explain: md`
+        - Tak – dzielenie dwóch liczb całkowitych obcina ułamek.
+        - Tak – gdy jedna z liczb jest rzeczywista (\`2.0\`), wynik też jest rzeczywisty.
+        - Nie – \`int\` mieści liczby do ok. 2,1 mld; na 5 mld potrzebny jest \`long long\`.
+        - Nie – \`=\` przypisuje 5 do \`x\`, a warunek jest zawsze prawdziwy. Porównanie to \`==\`.
+      `,
+    },
+    {
+      type: 'tf',
+      langs: ['java'],
+      q: md`Oceń prawdziwość zdań.`,
+      items: [
+        { text: '`7 / 2` dla zmiennych typu `int` daje 3.', answer: true },
+        { text: '`(double) 7 / 2` daje 3.5.', answer: true },
+        { text: 'Zmienna typu `int` pomieści liczbę 5 000 000 000.', answer: false },
+        { text: '`"12" + 3` daje napis `"123"`.', answer: true },
+      ],
+      explain: md`
+        - Tak – dzielenie dwóch liczb całkowitych obcina ułamek.
+        - Tak – rzutowanie na \`double\` sprawia, że dzielenie jest rzeczywiste.
+        - Nie – \`int\` mieści liczby do ok. 2,1 mld; na 5 mld potrzebny jest \`long\`.
+        - Tak – gdy jedna strona \`+\` jest napisem, druga też zamienia się na napis i są sklejane.
       `,
     },
     {
       type: 'choice',
-      q: md`Który warunek sprawdza, czy liczba całkowita \`n\` jest parzysta – i działa także dla liczb ujemnych we wszystkich trzech językach?`,
-      options: ['`n % 2 == 0`', '`n / 2 == 0`', '`n % 2 == 1`', '`n // 2 == 0`'],
+      q: md`Który warunek sprawdza, czy liczba całkowita \`n\` jest parzysta (także gdy jest ujemna)?`,
+      options: ['`n % 2 == 0`', '`n / 2 == 0`', '`n % 2 == 1`', '[[python: `n // 2 == 0`]][[cpp java: `n / 2 * 2 == 1`]]'],
       answer: 0,
-      explain: md`Liczba jest parzysta, gdy reszta z dzielenia przez 2 jest zerem. \`n % 2 == 1\` sprawdza nieparzystość, ale w C++ i Javie dla ujemnych nieparzystych liczb reszta to -1, więc ten warunek by je przeoczył. \`n / 2 == 0\` jest prawdziwe tylko dla 0 i 1.`,
+      explain: md`Liczba jest parzysta, gdy reszta z dzielenia przez 2 jest zerem. \`n % 2 == 1\` sprawdza nieparzystość[[cpp java: , i to tylko dla liczb nieujemnych: dla ujemnych nieparzystych reszta to -1]]. [[python: \`n / 2 == 0\` i \`n // 2 == 0\` są prawdziwe tylko dla 0 (i \`n // 2\` – także dla 1).]][[cpp java: \`n / 2 == 0\` jest prawdziwe tylko dla -1, 0 i 1, a \`n / 2 * 2\` to \`n\` bez reszty – nigdy nie jest równe 1.]]`,
     },
     {
       type: 'code',
@@ -328,14 +415,14 @@ export default {
           }
         `,
       },
-      explain: md`W Pythonie dzielenie całkowite to \`//\`, w C++ i Javie \`/\` na liczbach całkowitych. Resztę daje \`%\` we wszystkich trzech językach.`,
+      explain: md`[[python: Dzielenie całkowite to \`//\` (a nie \`/\`, które dałoby liczbę z przecinkiem), resztę daje \`%\`.]][[cpp java: Dzielenie całkowite to \`/\` na liczbach całkowitych, resztę daje \`%\`. Typ [[cpp: \`long long\`]][[java: \`long\`]] nie jest tu konieczny, ale nie zaszkodzi.]]`,
     },
     {
       type: 'code',
       q: md`
         Wczytaj liczbę całkowitą \`n\` (1 ≤ \`n\` ≤ 1 000 000 000) i wypisz sumę \`1 + 2 + … + n\`.
 
-        Podpowiedź: suma ta wynosi \`n · (n + 1) / 2\`. Zastanów się, czy wynik zmieści się w typie \`int\`.
+        Podpowiedź: suma ta wynosi \`n · (n + 1) / 2\`. [[python: Pamiętaj, że wynik ma być liczbą całkowitą.]][[cpp java: Zastanów się, czy wynik zmieści się w typie \`int\`.]]
       `,
       tests: [
         { input: '10\n', output: '55\n' },
@@ -371,7 +458,7 @@ export default {
           }
         `,
       },
-      explain: md`Dla \`n\` = 1 000 000 000 suma to ok. 5·10¹⁷ – dużo więcej niż mieści \`int\`. W C++ trzeba użyć \`long long\` (także dla samego \`n\`, bo \`n * (n + 1)\` liczy się w typie \`n\`), w Javie \`long\`. W Pythonie użyj \`//\`, żeby wynik był liczbą całkowitą, a nie np. \`5e+17\`.`,
+      explain: md`[[python: Użyj \`//\`, żeby wynik był liczbą całkowitą – \`/\` dałoby liczbę z przecinkiem, np. \`5e+17\`, a dla dużych \`n\` nawet niedokładną.]][[cpp java: Dla \`n\` = 1 000 000 000 suma to ok. 5·10¹⁷ – dużo więcej niż mieści \`int\`. Trzeba użyć [[cpp: \`long long\`]][[java: \`long\`]] także dla samego \`n\`, bo \`n * (n + 1)\` liczy się w typie \`n\` i przepełniłoby się, zanim wynik trafi do zmiennej.]]`,
     },
   ],
   practice: ['2023-maj/3.1', '2024-czerwiec/4.2', '2026-czerwiec/4.1'],

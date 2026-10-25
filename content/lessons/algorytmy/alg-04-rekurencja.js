@@ -66,7 +66,12 @@ export default {
         }
         ~~~
 
+        :::python
         > **Uwaga:** Python domyślnie pozwala na około 1000 zagnieżdżonych wywołań – \`silnia(5000)\` skończy się błędem *RecursionError*. Głębokość można zwiększyć (\`sys.setrecursionlimit\`), ale przy głębokiej rekurencji zwykle lepiej napisać pętlę.
+        :::
+        :::cpp java
+        > **Uwaga:** Każde wywołanie zajmuje miejsce na **stosie**, a stos jest ograniczony. Rekurencja głęboka na setki tysięcy wywołań może go przepełnić – program zakończy się [[cpp: błędem, zwykle bez żadnego komunikatu]][[java: błędem \`StackOverflowError\`]]. Przy bardzo głębokiej rekurencji lepiej napisać pętlę.
+        :::
       `,
     },
     {
@@ -391,7 +396,8 @@ export default {
           }
         `,
       },
-      explain: md`Funkcję przepisujemy wprost z definicji i dokładamy licznik zwiększany na początku każdego wywołania. W C++ wynik trzeba policzyć **przed** wypisaniem licznika (\`long long w = T(n);\`) – w jednej instrukcji \`cout << T(n) << licznik\` kolejność obliczenia nie jest zagwarantowana w starszych standardach. Głębokość rekurencji to tylko ok. 60, więc nie ma ryzyka przepełnienia stosu.`,
+      explain: md`Funkcję przepisujemy wprost z definicji i dokładamy licznik zwiększany na początku każdego wywołania. [[cpp: Wynik trzeba policzyć **przed** wypisaniem licznika (\`long long w = T(n);\`) – w jednej instrukcji \`cout << T(n) << licznik\` kolejność obliczenia nie jest zagwarantowana w starszych standardach. ]][[java: Wynik trzeba policzyć **przed** wypisaniem licznika (\`long w = T(n);\`), żeby licznik był już pełny. ]][[python: Wynik trzeba policzyć **przed** wypisaniem licznika (\`w = T(n)\`), żeby licznik był już pełny. ]]Głębokość
+ rekurencji to tylko ok. 60, więc nie ma ryzyka przepełnienia stosu.`,
     },
     {
       type: 'code',
@@ -451,7 +457,8 @@ export default {
           }
         `,
       },
-      explain: md`To ciąg Fibonacciego przesunięty o jeden (S(n) = F(n + 1)). Rekurencja wprost z definicji dla \`n = 90\` liczyłaby się latami – trzeba liczyć pętlą od dołu albo z zapamiętywaniem. Wynik dla 90 to prawie 4,7·10¹⁸ – jeszcze mieści się w \`long long\` / \`long\`.`,
+      explain: md`To ciąg Fibonacciego przesunięty o jeden (S(n) = F(n + 1)). Rekurencja wprost z definicji dla \`n = 90\` liczyłaby się latami – trzeba liczyć pętlą od dołu albo z zapamiętywaniem. Wynik dla 90 to prawie 4,7·10¹⁸[[cpp java:  – jeszcze mieści się w [[cpp: \`long long\`]][[java: \`long\`]]]].`,
+
     },
   ],
   practice: ['2026-maj/1.1', '2026-maj/1.3', '2025-czerwiec/1.2', '2025-maj/1.1', '2024-czerwiec/2.1', '2024-czerwiec/2.2', '2023-czerwiec/1.1', '2023-maj/1.3'],

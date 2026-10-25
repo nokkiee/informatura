@@ -46,7 +46,7 @@ export default {
     {
       title: 'Co zdąży się policzyć',
       body: md`
-        Zwykły komputer wykonuje około **10⁸ prostych operacji na sekundę** (w Pythonie raczej 10⁷). To pozwala szybko ocenić, czy algorytm ma szansę:
+        Zwykły komputer wykonuje około **10⁸ prostych operacji na sekundę**[[python:  – ale program w Pythonie raczej 10⁷]]. To pozwala szybko ocenić, czy algorytm ma szansę:
 
         | rozmiar danych | wystarczy | za wolne |
         |---|---|---|
@@ -55,7 +55,7 @@ export default {
         | n ≤ 10⁶ | n log n, n | n² |
         | n ≤ 10¹⁸ (jedna liczba) | log n, √n (do ~10¹²) | n |
 
-        Pliki maturalne mają zwykle od kilkuset do kilku tysięcy wierszy, więc prawie każdy rozsądny algorytm zdąży. Ale zdarzają się wyjątki: wszystkie fragmenty długiego ciągu, wszystkie pary w 10 000 liczb (to już 50 milionów par – w Pythonie kilka–kilkanaście sekund), duże liczby do rozłożenia na czynniki.
+        Pliki maturalne mają zwykle od kilkuset do kilku tysięcy wierszy, więc prawie każdy rozsądny algorytm zdąży. Ale zdarzają się wyjątki: wszystkie fragmenty długiego ciągu, wszystkie pary w 10 000 liczb (to już 50 milionów par – [[python: w Pythonie kilka–kilkanaście sekund]][[cpp java: około sekundy]]), duże liczby do rozłożenia na czynniki.
 
         > **Wskazówka:** Jeśli program „myśli” dłużej niż minutę, zatrzymaj go i policz złożoność. Zwykle winna jest niepotrzebna pętla w pętli albo pętla do \`n\` zamiast do \`√n\`.
       `,
@@ -155,7 +155,7 @@ export default {
         4. **Ograniczenia** – jeśli treść zabrania funkcji wbudowanych albo tablic, nie używaj ich nawet „pomocniczo”.
         5. **Sprawdź na komputerze** – na maturze masz komputer; w Informaturze zadania tego typu mają przycisk **Sprawdź testami**.
 
-        Algorytm możesz zapisać w pseudokodzie (jak w arkuszach) albo jako fragment programu w Pythonie, C++ lub Javie – liczy się logika, a nie konkretna składnia.
+        Algorytm możesz zapisać w pseudokodzie (jak w arkuszach) albo jako fragment programu w języku programowania, w którym piszesz – liczy się logika, a nie konkretna składnia.
       `,
     },
   ],
@@ -352,7 +352,8 @@ export default {
           }
         `,
       },
-      explain: md`Każdy element „łączy się w parę” ze wszystkimi wcześniejszymi elementami równymi \`x − v\` – a ich liczbę daje słownik. Kolejność (najpierw dolicz pary, potem dodaj \`v\` do słownika) sprawia, że element nie łączy się sam ze sobą i każda para jest liczona raz. Wynik może przekroczyć 2 miliardy (dla 100 000 jednakowych liczb to prawie 5·10⁹), stąd \`long long\` / \`long\`. W Javie przy dużych danych szybciej czyta \`BufferedReader\` niż \`Scanner\`.`,
+      explain: md`Każdy element „łączy się w parę” ze wszystkimi wcześniejszymi elementami równymi \`x − v\` – a ich liczbę daje słownik. Kolejność (najpierw dolicz pary, potem dodaj \`v\` do słownika) sprawia, że element nie łączy się sam ze sobą i każda para jest liczona raz. Wynik może przekroczyć 2 miliardy (dla 100 000 jednakowych liczb to prawie 5·10⁹)[[cpp java: , stąd [[cpp: \`long long\`]][[java: \`long\`]]]].[[java:  Przy dużych danych szybciej czyta \`BufferedReader\` niż \`Scanner\`.]]`,
+
     },
   ],
   practice: ['2023-maj/2.1', '2024-maj/3.1', '2025-maj/1.3', '2026-maj/2.2', '2026-czerwiec/2.2', '2024-maj/4.4', '2023-czerwiec/1.3'],

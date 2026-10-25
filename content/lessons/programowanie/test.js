@@ -7,10 +7,20 @@ export default {
     {
       lesson: 'prog-01-start',
       type: 'choice',
-      q: md`Program w C++ sumuje 1000 liczb, z których każda może mieć wartość do 10⁹. Jakiego typu powinna być zmienna z sumą?`,
-      options: ['`long long`', '`int`', '`double`', '`char`'],
+      langs: ['cpp', 'java'],
+      q: md`Program sumuje 1000 liczb, z których każda może mieć wartość do 10⁹. Jakiego typu powinna być zmienna z sumą?`,
+      options: ['[[cpp: `long long`]][[java: `long`]]', '`int`', '`double`', '`char`'],
       answer: 0,
-      explain: md`Suma może dojść do 10¹² – dużo więcej niż mieści \`int\` (ok. 2,1·10⁹). \`long long\` mieści liczby do ok. 9·10¹⁸. \`double\` też pomieści taką wartość, ale liczy z zaokrągleniami – do liczb całkowitych używaj typów całkowitych.`,
+      explain: md`Suma może dojść do 10¹² – dużo więcej niż mieści \`int\` (ok. 2,1·10⁹). [[cpp: \`long long\`]][[java: \`long\`]] mieści liczby do ok. 9·10¹⁸. \`double\` też pomieści taką wartość, ale liczy z zaokrągleniami – do liczb całkowitych używaj typów całkowitych.`,
+    },
+    {
+      lesson: 'prog-01-start',
+      type: 'choice',
+      langs: ['python'],
+      q: md`Co wypisze \`print(10 / 4, 10 // 4)\`?`,
+      options: ['`2.5 2`', '`2 2`', '`2.5 2.5`', '`2 2.5`'],
+      answer: 0,
+      explain: md`\`/\` zawsze daje liczbę z przecinkiem (2.5), a \`//\` to dzielenie całkowite (2).`,
     },
     {
       lesson: 'prog-01-start',
@@ -22,7 +32,7 @@ export default {
     {
       lesson: 'prog-02-warunki-petle',
       type: 'input',
-      q: md`Ile razy wykona się ciało pętli \`for i in range(3, 30, 4):\`?`,
+      q: md`Ile razy wykona się ciało pętli [[python: \`for i in range(3, 30, 4):\`]][[cpp java: \`for (int i = 3; i < 30; i += 4)\`]]?`,
       answer: '7',
       explain: md`\`i\` = 3, 7, 11, 15, 19, 23, 27 – siedem wartości (31 byłoby już poza zakresem).`,
     },
@@ -37,6 +47,18 @@ export default {
             if i % 2 == 1:
                 x += i
         ~~~
+        ~~~cpp
+        int x = 0;
+        for (int i = 1; i < 6; i++)
+            if (i % 2 == 1)
+                x += i;
+        ~~~
+        ~~~java
+        int x = 0;
+        for (int i = 1; i < 6; i++)
+            if (i % 2 == 1)
+                x += i;
+        ~~~
       `,
       options: ['9', '15', '6', '5'],
       answer: 0,
@@ -47,28 +69,40 @@ export default {
       type: 'tf',
       q: md`Oceń prawdziwość zdań o czytaniu plików.`,
       items: [
-        { text: 'W Pythonie wiersz pliku wczytany w pętli `for wiersz in plik` kończy się zwykle znakiem nowego wiersza.', answer: true },
-        { text: 'W C++ `ifstream` zgłasza błąd i przerywa program, jeśli pliku nie ma.', answer: false },
-        { text: 'Otwarcie pliku w Pythonie w trybie `"w"` usuwa jego dotychczasową zawartość.', answer: true },
+        { text: '[[python: Wiersz pliku wczytany w pętli `for wiersz in plik` kończy się zwykle znakiem nowego wiersza.]][[cpp: `plik >> s` (dla `string s`) wczytuje jedno słowo, a nie cały wiersz.]][[java: `plik.next()` zwraca jedno słowo, a nie cały wiersz.]]', answer: true },
+        { text: '[[python: Wiersz `"45\\n"` wczytany z pliku można od razu dodać do liczby, bez zamiany.]][[cpp: `ifstream` zgłasza błąd i przerywa program, jeśli pliku nie ma.]][[java: Gdy pliku nie ma, `Scanner` po cichu nic nie wczyta i program działa dalej.]]', answer: false },
+        { text: '[[python: Otwarcie pliku w trybie `"w"` usuwa jego dotychczasową zawartość.]][[cpp: Otwarcie pliku przez `ofstream` usuwa jego dotychczasową zawartość.]][[java: Otwarcie pliku przez `new PrintWriter(...)` usuwa jego dotychczasową zawartość.]]', answer: true },
       ],
       explain: md`
+        :::python
         - Tak – dlatego przy słowach używa się \`strip()\`.
-        - Nie – \`ifstream\` po cichu nie wczyta nic. Gdy wynik jest podejrzanie zerowy, sprawdź nazwę pliku.
+        - Nie – to napis; liczbą stanie się po \`int(...)\`.
         - Tak – \`"w"\` to zapis od nowa.
+        :::
+        :::cpp
+        - Tak – \`>>\` kończy czytanie na spacji albo końcu wiersza; cały wiersz wczytuje \`getline\`.
+        - Nie – \`ifstream\` po cichu nie wczyta nic. Gdy wynik jest podejrzanie zerowy, sprawdź nazwę pliku.
+        - Tak – \`ofstream\` otwiera plik do zapisu od nowa.
+        :::
+        :::java
+        - Tak – \`next()\` kończy na spacji albo końcu wiersza; cały wiersz zwraca \`nextLine()\`.
+        - Nie – \`new Scanner(new File(...))\` zgłasza wyjątek \`FileNotFoundException\` i program się kończy.
+        - Tak – \`PrintWriter\` otwiera plik do zapisu od nowa.
+        :::
       `,
     },
     {
       lesson: 'prog-04-napisy',
       type: 'input',
-      q: md`Co wypisze w Pythonie \`print("programowanie"[3:7])\`?`,
+      q: md`Co wypisze [[python: \`print("programowanie"[3:7])\`]][[cpp: \`cout << s.substr(3, 4)\` dla \`string s = "programowanie"\`]][[java: \`System.out.println("programowanie".substring(3, 7))\`]]?`,
       answer: ['gram'],
       exact: true,
-      explain: md`Indeksy od 0: p(0) r(1) o(2) **g(3) r(4) a(5) m(6)** o(7)… Wycinek \`[3:7]\` to indeksy 3–6.`,
+      explain: md`Indeksy od 0: p(0) r(1) o(2) **g(3) r(4) a(5) m(6)** o(7)… [[python: Wycinek \`[3:7]\` to indeksy 3–6.]][[cpp: \`substr(3, 4)\` to 4 znaki od indeksu 3.]][[java: \`substring(3, 7)\` to indeksy 3–6.]]`,
     },
     {
       lesson: 'prog-04-napisy',
       type: 'choice',
-      q: md`Ile wynosi w C++ wyrażenie \`'d' - 'a'\` (w Pythonie \`ord("d") - ord("a")\`)?`,
+      q: md`Ile wynosi wyrażenie [[python: \`ord("d") - ord("a")\`]][[cpp java: \`'d' - 'a'\`]]?`,
       options: ['3', '4', '100', "to błąd – nie można odejmować znaków"],
       answer: 0,
       explain: md`Litery mają kolejne kody: a = 97, b = 98, c = 99, d = 100. Różnica to 3 – czyli numer litery d w alfabecie liczony od 0.`,
@@ -84,8 +118,9 @@ export default {
     {
       lesson: 'prog-05-listy-slowniki',
       type: 'input',
-      q: md`Co wypisze w Pythonie \`print(sorted([5, 3, 9, 3, 1], reverse=True)[2])\`?`,
+      q: md`[[python: Co wypisze \`print(sorted([5, 3, 9, 3, 1], reverse=True)[2])\`?]][[cpp: Wektor \`{5, 3, 9, 3, 1}\` posortowano malejąco (\`sort(t.rbegin(), t.rend())\`). Ile wynosi \`t[2]\`?]][[java: Listę \`[5, 3, 9, 3, 1]\` posortowano malejąco (\`t.sort(Collections.reverseOrder())\`). Ile wynosi \`t.get(2)\`?]]`,
       answer: '3',
+
       explain: md`Po posortowaniu malejąco: [9, 5, 3, 3, 1]. Indeks 2 to trzeci element – 3. Powtórzenia zostają na liście.`,
     },
     {

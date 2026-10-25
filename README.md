@@ -28,14 +28,16 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
 
 ### Lekcje
 
-![Lekcja z przykładem uruchomionym w Pythonie](docs/screenshots/ekran-lekcje.png)
+![Lekcja czytana w Pythonie, z przełącznikiem języka](docs/screenshots/ekran-lekcja-jezyk.png)
 
 - Każdy dział matury wyjaśniony krok po kroku: do czego służy dane narzędzie, kiedy po nie sięgnąć
   i jak użyć go w zadaniu – od pierwszego programu, przez rekurencję, SQL i symulacje w arkuszu,
   po systemy liczbowe, sieci i bezpieczeństwo.
-- Przykłady kodu są w Pythonie, C++ i Javie (pokazuje się język wybrany u góry okna) i można je
-  **uruchomić** w lekcji. Zapytania SQL wykonasz na przykładowej bazie, a formuły policzysz na
-  przykładowych danych.
+- Lekcję czytasz w **jednym języku**: Python, C++ albo Java, do wyboru przełącznikiem w nagłówku
+  lekcji (albo u góry okna). Tekst, tabele, przykłady, pytania i rozwiązania dotyczą wtedy tylko tego
+  języka – jakby lekcja była napisana tylko dla niego.
+- Przykłady kodu można **uruchomić** w lekcji. Zapytania SQL wykonasz na przykładowej bazie, a formuły
+  policzysz na przykładowych danych.
 - Na końcu lekcji jest **test**: pytania ABCD, prawda/fałsz, krótkie odpowiedzi i zadania praktyczne –
   napisz program (sprawdzany testami, także ukrytymi), zapytanie SQL (porównywane z wynikiem wzorcowego
   zapytania) albo formułę (liczoną na danych i kopiowaną w dół jak w arkuszu). Po sprawdzeniu widać
@@ -195,7 +197,8 @@ npm run install-desktop
 | `npm run dev` | uruchamia z narzędziami deweloperskimi (F12) |
 | `npm test` | testy jednostkowe: sprawdzanie odpowiedzi, kompletność treści, to, że oficjalne odpowiedzi z klucza dostają pełne punkty |
 | `npm run test:e2e` | testy całej aplikacji w Electronie: uruchamianie kodu w trzech językach, SQL, arkusz, symulacja, podpowiedzi, lekcje i ich testy, wyświetlanie każdego z 175 zadań razem z jego podpowiedziami |
-| `npm run verify-content` | skrypty w `tools/ref/` liczą odpowiedzi z plików danych i porównują je z kluczem CKE, `tools/check-solutions.mjs` uruchamia wszystkie przykładowe rozwiązania z podpowiedzi, `tools/check-lessons.mjs` – wszystkie rozwiązania, przykłady, zapytania i formuły z lekcji (w trzech językach), a `tools/audit-pdf.mjs` porównuje treść z oryginalnymi PDF-ami (strony, punkty, liczby w treści, odpowiedzi z klucza) |
+| `npm run verify-content` | skrypty w `tools/ref/` liczą odpowiedzi z plików danych i porównują je z kluczem CKE, `tools/check-solutions.mjs` uruchamia wszystkie przykładowe rozwiązania z podpowiedzi, `tools/check-lessons.mjs` – wszystkie rozwiązania, przykłady, zapytania i formuły z lekcji (w trzech językach; sprawdza też, że czytelnik każdego języka nie dostaje kodu ani wzmianek o pozostałych), a
+ `tools/audit-pdf.mjs` porównuje treść z oryginalnymi PDF-ami (strony, punkty, liczby w treści, odpowiedzi z klucza) |
 | `node scripts/e2e.js solveall` | rozwiązuje każde ze 175 zadań przez interfejs programu (pola, przyciski, uruchomienie kodu i zapytań) i sprawdza, czy dostaje pełne punkty; trwa kilka minut |
 | `npm run pack` | buduje nierozpakowaną wersję do `dist/linux-unpacked` |
 | `npm run dist` | buduje AppImage i .deb |

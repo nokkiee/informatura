@@ -58,12 +58,34 @@ export default {
 
         Reszty od dołu: \`10110011₂\`. Ta sama metoda działa dla każdej podstawy – dla szesnastkowego reszty 10–15 zapisujesz literami A–F.
 
-        Na maturze możesz sprawdzić wynik na komputerze, np. w Pythonie:
+        Na maturze możesz sprawdzić wynik na komputerze, np. takim programem:
 
-        ~~~python run only
+        ~~~python run differs
         print(int("10110011", 2), int("2101", 3), int("B3", 16))
         print(bin(179), oct(179), hex(179))
         ~~~
+        ~~~cpp run
+        #include <iostream>
+        #include <string>
+        #include <bitset>
+        using namespace std;
+
+        int main() {
+            cout << stoi("10110011", nullptr, 2) << " " << stoi("2101", nullptr, 3) << " " << stoi("B3", nullptr, 16) << endl;
+            cout << bitset<8>(179) << " " << oct << 179 << " " << hex << 179 << endl;
+            return 0;
+        }
+        ~~~
+        ~~~java run
+        public class Main {
+            public static void main(String[] args) {
+                System.out.println(Integer.parseInt("10110011", 2) + " " + Integer.parseInt("2101", 3) + " " + Integer.parseInt("B3", 16));
+                System.out.println(Integer.toBinaryString(179) + " " + Integer.toOctalString(179) + " " + Integer.toHexString(179));
+            }
+        }
+        ~~~
+
+        [[python: \`int(napis, p)\` zamienia zapis w systemie o podstawie \`p\` na liczbę, a \`bin\`, \`oct\` i \`hex\` – liczbę na zapis dwójkowy, ósemkowy i szesnastkowy (z przedrostkiem \`0b\`, \`0o\`, \`0x\`).]][[cpp: \`stoi(napis, nullptr, p)\` zamienia zapis w systemie o podstawie \`p\` na liczbę. \`bitset<8>(n)\` wypisze liczbę na 8 bitach, a \`oct\` i \`hex\` przełączają \`cout\` na system ósemkowy i szesnastkowy.]][[java: \`Integer.parseInt(napis, p)\` zamienia zapis w systemie o podstawie \`p\` na liczbę, a \`Integer.toBinaryString\`, \`toOctalString\` i \`toHexString\` – liczbę na zapis w systemie 2, 8 i 16.]]
       `,
     },
     {
@@ -100,8 +122,25 @@ export default {
         - liczba \`k\`-cyfrowa w systemie \`p\` jest z przedziału \`[pᵏ⁻¹, pᵏ − 1]\` – np. 4-cyfrowa trójkowa to 27…80,
         - \`2222₃ = 3⁴ − 1 = 80\` (wszystkie cyfry największe), \`1000₃ = 27\`.
 
-        ~~~python run only
+        ~~~python run
         print(int("134", 5), int("134", 6), int("2011", 3), int("2222", 3))
+        ~~~
+        ~~~cpp run
+        #include <iostream>
+        #include <string>
+        using namespace std;
+
+        int main() {
+            cout << stoi("134", nullptr, 5) << " " << stoi("134", nullptr, 6) << " " << stoi("2011", nullptr, 3) << " " << stoi("2222", nullptr, 3) << endl;
+            return 0;
+        }
+        ~~~
+        ~~~java run
+        public class Main {
+            public static void main(String[] args) {
+                System.out.println(Integer.parseInt("134", 5) + " " + Integer.parseInt("134", 6) + " " + Integer.parseInt("2011", 3) + " " + Integer.parseInt("2222", 3));
+            }
+        }
         ~~~
       `,
     },
@@ -218,7 +257,8 @@ export default {
           }
         `,
       },
-      explain: md`Najpierw na wartość (Horner albo gotowe \`int(s, a)\`), potem kolejne reszty z dzielenia przez \`b\` jako cyfry od końca. W Javie obie zamiany robią \`Long.parseLong(s, a)\` i \`Long.toString(n, b)\` (małe litery – stąd \`toUpperCase\`).`,
+      explain: md`Najpierw na wartość (Horner albo gotowe [[python: \`int(s, a)\`]][[cpp: \`stoll(s, nullptr, a)\`]][[java: \`Long.parseLong(s, a)\`]]), potem kolejne reszty z dzielenia przez \`b\` jako cyfry od końca.[[java:  Drugą zamianę robi też \`Long.toString(n, b)\` (małymi literami – stąd \`toUpperCase\`).]]`,
+
     },
   ],
   practice: ['2023-czerwiec/4', '2023-maj/5', '2024-czerwiec/1.1', '2026-maj/5', '2026-czerwiec/5'],

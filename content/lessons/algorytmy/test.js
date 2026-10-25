@@ -25,7 +25,8 @@ export default {
       items: [
         { text: 'W pseudokodzie `a ← a + 1` zwiększa wartość zmiennej a o 1.', answer: true },
         { text: 'Pętla `dla i = 3, 4, …, 10` wykonuje się 7 razy.', answer: false },
-        { text: 'Tablicę `T[1..n]` w Pythonie zwykle przechowuje się w liście o indeksach od 0 do n − 1.', answer: true },
+        { text: 'Tablicę `T[1..n]` z pseudokodu w programie zwykle przechowuje się w [[python: liście]][[cpp java: tablicy]] o indeksach od 0 do n − 1.', answer: true },
+
       ],
       explain: md`Pętla od 3 do 10 włącznie to 10 − 3 + 1 = **8** obrotów. Przesunięcie indeksów o jeden to typowa pułapka przy przepisywaniu pseudokodu.`,
     },
@@ -214,7 +215,8 @@ export default {
           }
         `,
       },
-      explain: md`Schemat Hornera po cyfrach od lewej: \`w = w·p + cyfra\`. Wartość cyfry ze znaku to \`c − '0'\`. Liczba z 60 jedynek binarnych to 2⁶⁰ − 1 – mieści się w \`long long\`.`,
+      explain: md`Schemat Hornera po cyfrach od lewej: \`w = w·p + cyfra\`. Wartość cyfry ze znaku to [[python: \`ord(c) − ord('0')\` (albo po prostu \`int(c)\`)]][[cpp java: \`c − '0'\`]].[[cpp java:  Liczba z 60 jedynek binarnych to 2⁶⁰ − 1 – mieści się w [[cpp: \`long long\`]][[java: \`long\`]].]]`,
+
     },
     {
       lesson: 'alg-03-liczby',
