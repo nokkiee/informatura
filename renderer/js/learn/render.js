@@ -7,7 +7,7 @@ import { md } from '../markdown.js';
 import { getSettings, setSettings } from '../store.js';
 import { LANGS } from '../algo.js';
 import { loadMonaco, editorTheme } from '../monaco.js';
-import { runExample, runSql, calcFormula, dbSchema } from './run.js';
+import { runExample, runSql, calcFormula, dbSchema, sheetValues } from './run.js';
 import { displayValue, colName } from '../sheet/engine.js';
 
 export const CODE_LANGS = ['python', 'cpp', 'java'];
@@ -37,7 +37,10 @@ function buildExamples(root, ctx) {
     if (used.has(pre)) continue;
     const lang = pre.dataset.lang;
     if (lang === 'sheet') {
-      pre.replaceWith(sheetGrid(ctx.sheet?.data || [], Number(flagsOf(pre)[0]) || 0));
+      const box = h('div');
+      pre.replaceWith(box);
+      const rows = Number(flagsOf(pre)[0]) || 0;
+      sheetValues(ctx.sheet?.data || []).then((v) => box.appendChild(sheetGrid(v, rows)));
       continue;
     }
     if (lang === 'db') {

@@ -11,7 +11,7 @@ import { getSettings, setSettings, onSettings } from '../store.js';
 import { LANGS } from '../algo.js';
 import { loadMonaco, editorOptions, createEditor } from '../monaco.js';
 import { inputOk, choiceOk, tfOk, sqlSame, sheetSame, pointsOf } from './check.js';
-import { runCode, runSql, evalFormula, dbSchema } from './run.js';
+import { runCode, runSql, evalFormula, dbSchema, sheetValues } from './run.js';
 import { renderLessonText, resultTable, sheetGrid, CODE_LANGS } from './render.js';
 
 const KIND = { choice: 'wybór', tf: 'prawda / fałsz', input: 'krótka odpowiedź', code: 'program', sql: 'zapytanie SQL', sheet: 'formuła w arkuszu' };
@@ -310,7 +310,9 @@ export function createQuestion(q, opts) {
   if (q.type === 'sheet') {
     const data = q.data || ctx.sheet?.data || [];
     body.appendChild(prompt(q.q));
-    body.appendChild(sheetGrid(data, q.rows || 0));
+    const grid = h('div');
+    body.appendChild(grid);
+    sheetValues(data).then((v) => grid.appendChild(sheetGrid(v, q.rows || 0)));
     const inp = h('input', { class: 'input q-formula mono', placeholder: `${q.cell}: wpisz formułę, np. =SUMA(B2:B5)`, spellcheck: false, autocomplete: 'off' });
     inp.value = saved.value || '';
     inp.addEventListener('input', () => {
