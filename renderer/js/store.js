@@ -116,6 +116,13 @@ export function updateLearn(fn) {
   saveLearn();
 }
 
+// forgets everything done in the lessons and section tests (answers and programs too)
+export async function resetLearn() {
+  learn = { lessons: {}, tests: {} };
+  await window.api.storeSet('learn', learn);
+}
+
+
 export function flushTaskState() {
   saveLearn.flush();
   for (const d of pending.values()) d.flush();
