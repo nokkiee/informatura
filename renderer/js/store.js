@@ -96,7 +96,28 @@ export function saveTaskState(key, state) {
   d();
 }
 
+// ---- lessons: { lessons: { [id]: { step, seen: [i], q: { [i]: { ok, value, tried } } } },
+//                tests: { [section]: { best, last, at, answers } } } -------------------------
+
+let learn = null;
+const saveLearn = debounce(() => window.api.storeSet('learn', learn), 300);
+
+export async function getLearn() {
+  if (!learn) learn = (await window.api.storeGet('learn')) || {};
+  learn.lessons ||= {};
+  learn.tests ||= {};
+  return learn;
+}
+
+// changes the lessons' progress (fn gets it) and saves it
+export function updateLearn(fn) {
+  if (!learn) return;
+  fn(learn);
+  saveLearn();
+}
+
 export function flushTaskState() {
+  saveLearn.flush();
   for (const d of pending.values()) d.flush();
 }
 

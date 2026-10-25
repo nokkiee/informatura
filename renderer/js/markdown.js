@@ -15,7 +15,9 @@ const renderer = {
         .replace(/←/g, '<span class="op">←</span>');
       return `<pre class="pseudo"><code>${body}</code></pre>`;
     }
-    return `<pre class="code ${lang ? 'lang-' + esc(lang) : ''}"><code>${esc(text)}</code></pre>`;
+    // "~~~python run": the language, then flags (used by the lessons)
+    const [l = '', ...flags] = String(lang || '').split(/\s+/);
+    return `<pre class="code ${l ? 'lang-' + esc(l) : ''}" data-lang="${esc(l)}" data-flags="${esc(flags.join(' '))}"><code>${esc(text)}</code></pre>`;
   },
 };
 marked.use({ renderer });
