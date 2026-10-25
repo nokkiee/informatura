@@ -168,7 +168,27 @@ function fences(src) {
   return groups;
 }
 
+// Markdown tables: every row as many cells as the header (an unescaped | inside `code` splits a cell)
+function checkTables(src, where) {
+  const lines = String(src).split('\n');
+  let head = null;
+  let inFence = false;
+  for (const l of lines) {
+    if (/^~~~/.test(l)) inFence = !inFence;
+    if (inFence) continue;
+    const t = l.trim();
+    if (!t.startsWith('|')) {
+      head = null;
+      continue;
+    }
+    const cells = t.replace(/\\\|/g, '').replace(/^\||\|$/g, '').split('|').length;
+    if (head === null) head = cells;
+    else if (cells !== head) fail(where, `table row has ${cells} cells, header ${head}: ${t.slice(0, 80)}`);
+  }
+}
+
 async function checkExamples(src, ctx, where) {
+  checkTables(src, where);
   for (const g of fences(src)) {
     const flags = g.flatMap((f) => f.flags);
     if (!flags.includes('run')) continue;
