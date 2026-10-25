@@ -10,7 +10,8 @@ export default [
     id: 'programowanie',
     title: 'Programowanie',
     icon: 'code',
-    desc: 'Od pierwszego programu do rozwiązania zadania maturalnego na plikach z danymi – w Pythonie, C++ albo Javie.',
+    desc: 'Od pierwszego programu do rozwiązania zadania maturalnego na plikach z danymi – w [[python: Pythonie]][[cpp: C++]][[java: Javie]].',
+
     lessons: ['prog-01-start', 'prog-02-warunki-petle', 'prog-03-pliki', 'prog-04-napisy', 'prog-05-listy-slowniki', 'prog-06-funkcje-cyfry', 'prog-07-zadanie-maturalne'],
   },
   {

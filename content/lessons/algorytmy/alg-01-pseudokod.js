@@ -21,18 +21,18 @@ export default {
 
         Pseudokod to zapis „prawie jak program”, ale bez szczegółów konkretnego języka. W arkuszach CKE wygląda tak:
 
-        | pseudokod | znaczenie | Python |
-        |---|---|---|
-        | \`x ← 5\` | przypisanie | \`x = 5\` |
-        | \`a div b\`, \`a mod b\` | dzielenie całkowite, reszta | \`a // b\`, \`a % b\` |
-        | \`jeżeli w to … w przeciwnym razie …\` | instrukcja warunkowa | \`if w: … else: …\` |
-        | \`dopóki w wykonuj …\` | pętla while | \`while w: …\` |
-        | \`dla i = 1, 2, …, n wykonuj …\` | pętla for (**włącznie z n**) | \`for i in range(1, n + 1): …\` |
-        | \`T[1..n]\`, \`T[i]\` | tablica numerowana **od 1** | lista numerowana od 0 |
-        | \`wynikiem jest x\`, \`zwróć x\` | zakończ i oddaj wynik | \`return x\` |
-        | \`oraz\`, \`lub\`, \`nie\` | spójniki logiczne | \`and\`, \`or\`, \`not\` |
+        | pseudokod | znaczenie | Python | C++ / Java |
+        |---|---|---|---|
+        | \`x ← 5\` | przypisanie | \`x = 5\` | \`x = 5;\` |
+        | \`a div b\`, \`a mod b\` | dzielenie całkowite, reszta | \`a // b\`, \`a % b\` | \`a / b\`, \`a % b\` |
+        | \`jeżeli w to … w przeciwnym razie …\` | instrukcja warunkowa | \`if w: … else: …\` | \`if (w) { … } else { … }\` |
+        | \`dopóki w wykonuj …\` | pętla while | \`while w: …\` | \`while (w) { … }\` |
+        | \`dla i = 1, 2, …, n wykonuj …\` | pętla for (**włącznie z n**) | \`for i in range(1, n + 1): …\` | \`for (int i = 1; i <= n; i++) { … }\` |
+        | \`T[1..n]\`, \`T[i]\` | tablica numerowana **od 1** | lista numerowana od 0 | tablica numerowana od 0 |
+        | \`wynikiem jest x\`, \`zwróć x\` | zakończ i oddaj wynik | \`return x\` | \`return x;\` |
+        | \`oraz\`, \`lub\`, \`nie\` | spójniki logiczne | \`and\`, \`or\`, \`not\` | \`&&\`, \`\|\|\`, \`!\` |
 
-        Bloki wyznaczają **wcięcia** – tak jak w Pythonie. Oto algorytm do powyższej specyfikacji:
+        Bloki wyznaczają **wcięcia**[[python:  – tak jak w Pythonie]][[cpp java:  (w programie zamiast nich są nawiasy klamrowe \`{ }\`)]]. Oto algorytm do powyższej specyfikacji:
 
         ~~~pseudo
         s ← 0
@@ -193,9 +193,9 @@ export default {
       body: md`
         Przepisując pseudokod na program, uważaj na trzy rzeczy:
 
-        1. **Tablice od 1.** W pseudokodzie \`T[1..n]\`, w programie lista ma indeksy od 0. Najprościej przesunąć wszystko o jeden (\`T[i]\` → \`t[i - 1]\`) albo dodać na początku listy nieużywany element, żeby indeksy się zgadzały.
-        2. **Zakres pętli \`dla\`.** \`dla i = 1, 2, …, n\` to w Pythonie \`range(1, n + 1)\`, a w C++/Javie \`i <= n\` – z **równością**.
-        3. **\`div\` i \`mod\`.** W C++ i Javie \`/\` na liczbach całkowitych to \`div\`, ale tylko dla nieujemnych liczb wynik jest taki sam jak w pseudokodzie z arkuszy (tam dane są zwykle dodatnie).
+        1. **Tablice od 1.** W pseudokodzie \`T[1..n]\`, w programie [[python: lista ma]][[cpp java: tablica ma]] indeksy od 0. Najprościej przesunąć wszystko o jeden (\`T[i]\` → \`t[i - 1]\`) albo dodać na początku listy nieużywany element, żeby indeksy się zgadzały.
+        2. **Zakres pętli \`dla\`.** \`dla i = 1, 2, …, n\` to [[python: \`range(1, n + 1)\` – z **plusem jeden**, bo koniec \`range\` nie wchodzi.]][[cpp java: \`for (int i = 1; i <= n; i++)\` – z **równością**.]]
+        3. **\`div\` i \`mod\`.** [[python: \`div\` to \`//\`, a nie \`/\` – zwykłe dzielenie dałoby liczbę z przecinkiem. Dla liczb ujemnych \`//\` zaokrągla w dół, ale w pseudokodzie z arkuszy dane są zwykle dodatnie.]][[cpp java: \`/\` na liczbach całkowitych to \`div\`, ale tylko dla nieujemnych liczb wynik jest taki sam jak w pseudokodzie z arkuszy (tam dane są zwykle dodatnie).]]
 
         Przykład – algorytm liczący pary \`(i, j)\`, \`i < j\`, w których \`T[i] > T[j]\` (tzw. **inwersje**):
 
@@ -394,7 +394,8 @@ export default {
           }
         `,
       },
-      explain: md`Instrukcja po instrukcji: \`←\` to \`=\`, \`mod\` to \`%\`, \`div\` to \`//\` (w C++/Javie \`/\`), \`dopóki\` to \`while\`. Liczba do 10¹⁸ wymaga typu \`long long\` / \`long\`.`,
+      explain: md`Instrukcja po instrukcji: \`←\` to \`=\`, \`mod\` to \`%\`, \`div\` to [[python: \`//\`]][[cpp java: \`/\`]], \`dopóki\` to \`while\`.[[cpp java:  Liczba do 10¹⁸ wymaga typu [[cpp: \`long long\`]][[java: \`long\`]].]]`,
+
     },
     {
       type: 'code',

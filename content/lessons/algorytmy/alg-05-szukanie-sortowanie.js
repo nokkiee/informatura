@@ -268,7 +268,8 @@ export default {
           }
         `,
       },
-      explain: md`Połowienie przedziału [0, 10⁹]: około 30 kroków. Górna granica 10⁹ jest dobrana tak, żeby \`s · s\` zmieściło się w \`long long\`. Test 999999999999999999 łapie rozwiązania z \`sqrt\`: liczba zmiennoprzecinkowa zaokrągla ją do 10¹⁸ i daje 10⁹ zamiast 999999999.`,
+      explain: md`Połowienie przedziału [0, 10⁹]: około 30 kroków. Górna granica 10⁹ wystarcza, bo (10⁹)² = 10¹⁸[[cpp java:  – i dzięki niej \`s · s\` zmieści się w [[cpp: \`long long\`]][[java: \`long\`]]]].
+ Test 999999999999999999 łapie rozwiązania z \`sqrt\`: liczba zmiennoprzecinkowa zaokrągla ją do 10¹⁸ i daje 10⁹ zamiast 999999999.`,
     },
     {
       type: 'code',

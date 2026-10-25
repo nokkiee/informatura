@@ -25,7 +25,7 @@ export default {
 
         Dla \`2101\` (p = 3): 0 → 0·3 + 2 = 2 → 2·3 + 1 = 7 → 7·3 + 0 = 21 → 21·3 + 1 = **64**.
 
-        To ten sam schemat, którym w lekcji o napisach zamienialiśmy tekst na liczbę, i to właśnie robi \`int("2101", 3)\` – ale w zadaniu „zapisz algorytm” trzeba umieć go napisać samemu.
+        To ten sam schemat, którym w lekcji o napisach zamienialiśmy tekst na liczbę, i to właśnie robi [[python: \`int("2101", 3)\`]][[cpp: \`stoll("2101", nullptr, 3)\`]][[java: \`Long.parseLong("2101", 3)\`]] – ale w zadaniu „zapisz algorytm” trzeba umieć go napisać samemu.
 
         ~~~python run
         def wartosc(cyfry, p):
@@ -242,9 +242,9 @@ export default {
       body: md`
         Zadania typu *„Zapisz w pseudokodzie lub w wybranym języku programowania algorytm…”* często mają uwagę: *„w zapisie algorytmu możesz korzystać tylko z operacji arytmetycznych, porównań, instrukcji sterujących i przypisań”*. Wtedy **nie wolno** używać m.in.:
 
-        - zamiany liczby na napis i z powrotem (\`str\`, \`int(s, 2)\`, \`to_string\`, \`Integer.parseInt\`),
-        - gotowych konwersji systemów (\`bin\`, \`Long.toString(n, p)\`),
-        - gotowego sortowania, \`max\`, \`sum\`, \`reverse\` itd. – jeśli uwaga ich zabrania,
+        - zamiany liczby na napis i z powrotem ([[python: \`str(n)\`, \`int(s)\`, \`int(s, 2)\`]][[cpp: \`to_string(n)\`, \`stoi(s)\`, \`stoll(s, nullptr, 2)\`]][[java: \`String.valueOf(n)\`, \`Integer.parseInt(s)\`, \`Long.parseLong(s, 2)\`]]),
+        - gotowych konwersji systemów ([[python: \`bin(n)\`]][[cpp: \`bitset\`]][[java: \`Long.toBinaryString(n)\`, \`Long.toString(n, p)\`]]),
+        - gotowego sortowania, [[python: \`max\`, \`sum\`, \`reversed\`]][[cpp: \`max_element\`, \`accumulate\`, \`reverse\`]][[java: \`Collections.max\`, \`reverse\`]] itd. – jeśli uwaga ich zabrania,
         - (czasem) list / tablic – czytaj treść.
 
         Wolno: \`+ − · div mod\`, porównania, \`jeżeli\`, \`dopóki\`, \`dla\`, przypisania i **własne funkcje** zbudowane z tych operacji. Dlatego wszystkie algorytmy z tej lekcji są napisane samymi \`div\` i \`mod\`.
@@ -278,11 +278,12 @@ export default {
       q: md`W zadaniu jest uwaga: *„możesz korzystać tylko z operacji arytmetycznych, porównań, instrukcji sterujących, przypisań i samodzielnie napisanych funkcji”*. Oceń, czy w zapisie algorytmu wolno użyć:`,
       items: [
         { text: '`n mod 2` i `n div 2`', answer: true },
-        { text: '`int(str(n)[::-1])` do odwrócenia liczby', answer: false },
+        { text: '[[python: `int(str(n)[::-1])`]][[cpp: zamiany `to_string(n)` na napis i odwrócenia go]][[java: `new StringBuilder(String.valueOf(n)).reverse()`]] do odwrócenia liczby', answer: false },
         { text: 'własnej funkcji `odwroc(n)` napisanej pętlą z `div` i `mod`', answer: true },
-        { text: '`bin(n).count("1")` do policzenia jedynek', answer: false },
+        { text: '[[python: `bin(n).count("1")`]][[cpp: `bitset<64>(n).count()`]][[java: `Long.bitCount(n)`]] do policzenia jedynek', answer: false },
       ],
-      explain: md`Operacje arytmetyczne i własne funkcje z nich zbudowane są dozwolone. Zamiana na napis (\`str\`, \`bin\`) i gotowe metody napisów to właśnie „funkcje wbudowane”, których uwaga zabrania.`,
+      explain: md`Operacje arytmetyczne i własne funkcje z nich zbudowane są dozwolone. Zamiana na napis ([[python: \`str\`, \`bin\`]][[cpp: \`to_string\`, \`bitset\`]][[java: \`String.valueOf\`, \`Long.bitCount\`]]) i gotowe metody to właśnie „funkcje wbudowane”, których uwaga zabrania.`,
+
     },
     {
       type: 'code',

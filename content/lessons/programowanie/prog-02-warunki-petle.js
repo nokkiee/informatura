@@ -14,7 +14,7 @@ export default {
     {
       title: 'Instrukcja warunkowa',
       body: md`
-        Instrukcja \`if\` wykonuje fragment programu tylko wtedy, gdy warunek jest prawdziwy. Część \`else\` wykonuje się w przeciwnym razie, a \`elif\` (w C++ i Javie \`else if\`) pozwala sprawdzić kolejny warunek.
+        Instrukcja \`if\` wykonuje fragment programu tylko wtedy, gdy warunek jest prawdziwy. Część \`else\` wykonuje się w przeciwnym razie, a [[python: \`elif\`]][[cpp java: \`else if\`]] pozwala sprawdzić kolejny warunek.
 
         ~~~python run
         n = int(input())
@@ -63,7 +63,12 @@ export default {
         -12
         ~~~
 
-        > **Uwaga:** W Pythonie to, co należy do \`if\`, poznaje się po **wcięciu** (4 spacje). W C++ i Javie decydują nawiasy klamrowe \`{ }\` – wcięcia są tylko dla czytelności, ale warto je robić.
+        :::python
+        > **Uwaga:** To, co należy do \`if\`, poznaje się po **wcięciu** (4 spacje) – a sam warunek kończy dwukropek \`:\`. Wcięcie jest częścią programu: instrukcja wcięta o mniej spacji już do \`if\` nie należy.
+        :::
+        :::cpp java
+        > **Uwaga:** To, co należy do \`if\`, wyznaczają nawiasy klamrowe \`{ }\`, a warunek musi być w nawiasach okrągłych: \`if (n > 0)\`. Wcięcia są tylko dla czytelności, ale warto je robić. Bez klamer do \`if\` należy tylko **jedna** następna instrukcja.
+        :::
 
         ### Porównania i łączenie warunków
         | znaczenie | Python | C++ / Java |
@@ -74,7 +79,12 @@ export default {
         | lub (co najmniej jeden) | \`or\` | \`\|\|\` |
         | nie | \`not\` | \`!\` |
 
-        Przykład: liczba należy do przedziału [10, 99] – \`n >= 10 and n <= 99\` (w Pythonie można też \`10 <= n <= 99\`, w C++/Javie **nie**).
+        :::python
+        Przykład: liczba należy do przedziału [10, 99] – \`n >= 10 and n <= 99\`, albo krócej \`10 <= n <= 99\`.
+        :::
+        :::cpp java
+        Przykład: liczba należy do przedziału [10, 99] – \`n >= 10 && n <= 99\`. Zapisu \`10 <= n <= 99\` nie używaj: [[cpp: skompiluje się, ale porówna z 99 wynik \`10 <= n\` (czyli 0 albo 1), więc będzie zawsze prawdziwy]][[java: nie skompiluje się]].
+        :::
       `,
     },
     {
@@ -82,7 +92,9 @@ export default {
       body: md`
         Pętla \`for\` powtarza instrukcje **znaną z góry liczbę razy** – np. dla każdej liczby od 1 do n albo dla każdego wiersza pliku.
 
-        W Pythonie \`range(a, b)\` daje liczby od \`a\` do \`b - 1\` (**bez** \`b\`!), a \`range(b)\` – od 0 do \`b - 1\`. Trzeci argument to krok: \`range(10, 0, -2)\` to 10, 8, 6, 4, 2.
+        :::python
+        \`for i in range(a, b)\` przechodzi po liczbach od \`a\` do \`b - 1\` (**bez** \`b\`!), a \`range(b)\` – od 0 do \`b - 1\`. Trzeci argument to krok: \`range(10, 0, -2)\` to 10, 8, 6, 4, 2.
+        :::
 
         ~~~python run
         n = 5
@@ -118,9 +130,16 @@ export default {
         }
         ~~~
 
-        W C++ i Javie \`for (int i = 1; i <= n; i++)\` czytaj: zacznij od \`i = 1\`, powtarzaj dopóki \`i <= n\`, po każdym obrocie zwiększ \`i\` o 1 (\`i++\`).
+        :::python
+        Żeby dojść do \`n\` **włącznie**, piszemy \`range(1, n + 1)\` – to najczęstsze miejsce pomyłki o jeden.
 
-        > **Wskazówka:** \`suma = suma + i\` można zapisać krócej: \`suma += i\` – działa we wszystkich trzech językach. Podobnie \`-=\`, \`*=\`.
+        > **Wskazówka:** \`suma = suma + i\` można zapisać krócej: \`suma += i\`. Podobnie \`-=\`, \`*=\`.
+        :::
+        :::cpp java
+        \`for (int i = 1; i <= n; i++)\` czytaj: zacznij od \`i = 1\`, powtarzaj dopóki \`i <= n\`, po każdym obrocie zwiększ \`i\` o 1 (\`i++\`). Trzy części oddziela średnik. Pętla od 0 do \`n - 1\` to \`for (int i = 0; i < n; i++)\`, a w dół co 2: \`for (int i = 10; i > 0; i -= 2)\`.
+
+        > **Wskazówka:** \`suma = suma + i\` można zapisać krócej: \`suma += i\`. Podobnie \`-=\`, \`*=\`, a \`i++\` to \`i += 1\`.
+        :::
       `,
     },
     {
@@ -311,14 +330,14 @@ export default {
   quiz: [
     {
       type: 'choice',
-      q: md`Jakie liczby da w Pythonie \`range(2, 10, 3)\`?`,
+      q: md`[[python: Jakie liczby da \`range(2, 10, 3)\`?]][[cpp java: Jakie wartości przyjmie \`i\` w pętli \`for (int i = 2; i < 10; i += 3)\`?]]`,
       options: ['2, 5, 8', '2, 5, 8, 11', '2, 3, …, 10', '3, 6, 9'],
       answer: 0,
-      explain: md`Od 2, co 3, dopóki liczba jest **mniejsza** od 10: 2, 5, 8. Następna byłaby 11, ale to już za dużo. Koniec przedziału w \`range\` nigdy nie jest włączony.`,
+      explain: md`Od 2, co 3, dopóki liczba jest **mniejsza** od 10: 2, 5, 8. Następna byłaby 11, ale to już za dużo. [[python: Koniec przedziału w \`range\` nigdy nie jest włączony.]][[cpp java: Warunek \`i < 10\` jest sprawdzany przed każdym obrotem.]]`,
     },
     {
       type: 'input',
-      q: md`Ile razy wykona się ciało pętli \`for i in range(5, 20):\`?`,
+      q: md`Ile razy wykona się ciało pętli [[python: \`for i in range(5, 20):\`]][[cpp java: \`for (int i = 5; i < 20; i++)\`]]?`,
       answer: '15',
       explain: md`\`i\` przyjmie wartości 5, 6, …, 19 – to 20 − 5 = 15 wartości.`,
     },
@@ -339,14 +358,14 @@ export default {
       type: 'tf',
       q: md`Oceń prawdziwość zdań.`,
       items: [
-        { text: 'W Pythonie wcięcie decyduje o tym, które instrukcje należą do bloku `if`.', answer: true },
-        { text: 'Warunek `x > 3 and x < 7` jest prawdziwy dla `x = 7`.', answer: false },
+        { text: '[[python: Wcięcie decyduje o tym, które instrukcje należą do bloku `if`.]][[cpp java: Nawiasy klamrowe `{ }` decydują o tym, które instrukcje należą do bloku `if`.]]', answer: true },
+        { text: 'Warunek [[python: `x > 3 and x < 7`]][[cpp java: `x > 3 && x < 7`]] jest prawdziwy dla `x = 7`.', answer: false },
         { text: 'Pętla `while` może nie wykonać się ani razu.', answer: true },
         { text: 'Instrukcja `break` kończy cały program.', answer: false },
       ],
       explain: md`
-        - Tak – w Pythonie wcięcia są częścią składni.
-        - Dla 7 część \`x < 7\` jest fałszywa, a \`and\` wymaga obu.
+        - Tak – [[python: wcięcia są częścią składni Pythona]][[cpp java: wcięcia są tylko dla czytelności]].
+        - Dla 7 część \`x < 7\` jest fałszywa, a [[python: \`and\`]][[cpp java: \`&&\`]] wymaga obu.
         - Tak – jeśli warunek jest fałszywy już na początku.
         - \`break\` kończy tylko najbliższą pętlę, w której się znajduje.
       `,
@@ -356,7 +375,7 @@ export default {
       q: md`Szukasz największej liczby w danych, w których mogą być **same liczby ujemne**. Od czego zacząć zmienną z maksimum?`,
       options: ['od pierwszego elementu danych', 'od 0', 'od -1', 'od 1'],
       answer: 0,
-      explain: md`Pierwszy element na pewno należy do danych, więc maksimum nigdy nie wyjdzie „spoza danych”. Start od 0 dałby wynik 0, gdy wszystkie liczby są ujemne. (Można też zacząć od bardzo małej liczby, np. \`-10**18\`, ale pierwszy element jest najprostszy.)`,
+      explain: md`Pierwszy element na pewno należy do danych, więc maksimum nigdy nie wyjdzie „spoza danych”. Start od 0 dałby wynik 0, gdy wszystkie liczby są ujemne. (Można też zacząć od bardzo małej liczby, np. [[python: \`-10**18\`]][[cpp: \`LLONG_MIN\` z \`<climits>\`]][[java: \`Long.MIN_VALUE\`]], ale pierwszy element jest najprostszy.)`,
     },
     {
       type: 'code',
@@ -422,7 +441,7 @@ export default {
           }
         `,
       },
-      explain: md`To trzy schematy naraz: licznik z warunkiem \`x % 3 == 0\` (działa też dla liczb ujemnych i zera), suma (w C++/Javie typu \`long long\`/\`long\` – 4 miliardy nie mieszczą się w \`int\`) i minimum zaczynane od pierwszego elementu. W Pythonie są gotowe funkcje \`sum\` i \`min\`.`,
+      explain: md`To trzy schematy naraz: licznik z warunkiem \`x % 3 == 0\` (działa też dla liczb ujemnych i zera), suma[[cpp java:  (typu [[cpp: \`long long\`]][[java: \`long\`]] – 4 miliardy nie mieszczą się w \`int\`)]] i minimum zaczynane od pierwszego elementu.[[python:  Zamiast pętli możesz użyć gotowych funkcji \`sum\` i \`min\`.]]`,
     },
     {
       type: 'code',
@@ -487,7 +506,7 @@ export default {
           }
         `,
       },
-      explain: md`Liczby kroków nie znamy z góry, więc to zadanie na pętlę \`while (n != 1)\`. Dla \`n = 1\` pętla nie wykona się ani razu i wynik to 0. Dla 837799 liczby po drodze dochodzą do prawie 3 miliardów – w C++ i Javie \`n\` musi być typu \`long long\` / \`long\`, inaczej wynik będzie zły albo pętla się nie skończy.`,
+      explain: md`Liczby kroków nie znamy z góry, więc to zadanie na pętlę [[python: \`while n != 1:\`]][[cpp java: \`while (n != 1)\`]]. Dla \`n = 1\` pętla nie wykona się ani razu i wynik to 0.[[cpp java:  Dla 837799 liczby po drodze dochodzą do prawie 3 miliardów – \`n\` musi być typu [[cpp: \`long long\`]][[java: \`long\`]], inaczej wynik będzie zły albo pętla się nie skończy.]][[python:  Pamiętaj o \`//\` – po \`n / 2\` liczba stałaby się rzeczywista.]]`,
     },
   ],
   practice: ['2026-czerwiec/4.1', '2024-czerwiec/4.2', '2023-maj/3.1', '2026-maj/4.2'],

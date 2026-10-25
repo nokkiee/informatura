@@ -34,7 +34,7 @@ export default {
 
         **Trójkowo:** \`1212₃ + 2201₃\`. Od prawej: 2 + 1 = 3 = \`10₃\` → zapisz 0, przenieś 1; 1 + 0 + 1 = 2; 2 + 2 = 4 = \`11₃\` → zapisz 1, przenieś 1; 1 + 2 + 1 = 4 = \`11₃\` → zapisz 1, przenieś 1. Wynik: **11120₃** (50 + 73 = 123 ✓).
 
-        > **Wskazówka:** Zawsze sprawdź wynik, przeliczając wszystko na dziesiętny. Na maturze masz komputer – np. \`int("1212", 3) + int("2201", 3)\` w Pythonie.
+        > **Wskazówka:** Zawsze sprawdź wynik, przeliczając wszystko na dziesiętny. Na maturze masz komputer – np. [[python: \`int("1212", 3) + int("2201", 3)\`]][[cpp: \`stoi("1212", nullptr, 3) + stoi("2201", nullptr, 3)\`]][[java: \`Integer.parseInt("1212", 3) + Integer.parseInt("2201", 3)\`]] da 123.
       `,
     },
     {
@@ -81,7 +81,7 @@ export default {
 
         Jeśli jeden system jest potęgą drugiego (3 i 9, 2 i 8, 2 i 16), możesz zamiast tego przepisać liczbę grupowaniem cyfr i dodawać pisemnie w jednym systemie.
 
-        ~~~python run only
+        ~~~python run
         print(int("2102", 3), int("57", 8), int("2102", 3) + int("57", 8))
         n, s = 112, ""
         while n > 0:
@@ -89,6 +89,34 @@ export default {
             n //= 3
         print(s)
         ~~~
+        ~~~cpp run
+        #include <iostream>
+        #include <string>
+        using namespace std;
+
+        int main() {
+            int a = stoi("2102", nullptr, 3), b = stoi("57", nullptr, 8);
+            cout << a << " " << b << " " << a + b << endl;
+            int n = 112;
+            string s = "";
+            while (n > 0) {
+                s = char('0' + n % 3) + s;
+                n /= 3;
+            }
+            cout << s << endl;
+            return 0;
+        }
+        ~~~
+        ~~~java run
+        public class Main {
+            public static void main(String[] args) {
+                int a = Integer.parseInt("2102", 3), b = Integer.parseInt("57", 8);
+                System.out.println(a + " " + b + " " + (a + b));
+                System.out.println(Integer.toString(112, 3));
+            }
+        }
+        ~~~
+
       `,
     },
     {

@@ -21,7 +21,12 @@ export default {
         - szyfrowanie: \`nowa = (stara + k) mod 26\`,
         - odszyfrowanie: \`stara = (nowa − k) mod 26\`, czyli to samo co szyfrowanie kluczem \`26 − k\`.
 
-        > **Uwaga:** W C++ i Javie \`(nowa − k) % 26\` może być **ujemne** (np. \`(0 − 3) % 26 = −3\`). Dodaj 26 przed resztą: \`(nowa − k + 26) % 26\`. W Pythonie \`%\` zawsze daje wynik nieujemny.
+        :::python
+        > **Wskazówka:** W Pythonie \`(nowa − k) % 26\` zawsze daje wynik z przedziału 0–25, także gdy \`nowa − k\` jest ujemne (\`(0 − 3) % 26 = 23\`) – zawijanie dzieje się samo.
+        :::
+        :::cpp java
+        > **Uwaga:** \`(nowa − k) % 26\` może być **ujemne** (np. \`(0 − 3) % 26 = −3\`). Dodaj 26 przed resztą: \`(nowa − k + 26) % 26\`.
+        :::
 
         **ROT13** to Cezar z \`k = 13\`. Ponieważ 13 + 13 = 26, zaszyfrowanie dwa razy daje tekst wyjściowy – ta sama operacja szyfruje i odszyfrowuje.
 
@@ -107,7 +112,7 @@ export default {
                 wypisz i           ⟵ wzorzec zaczyna się na pozycji i
         ~~~
 
-        Wystąpienia mogą się **nakładać**: w \`aaaa\` wzorzec \`aa\` zaczyna się na pozycjach 1, 2 i 3. Gotowe funkcje typu \`s.count("aa")\` w Pythonie liczą tylko **rozłączne** wystąpienia (dadzą 2) – uważaj, czego chce zadanie!
+        Wystąpienia mogą się **nakładać**: w \`aaaa\` wzorzec \`aa\` zaczyna się na pozycjach 1, 2 i 3. [[python: Gotowa funkcja \`s.count("aa")\` liczy tylko **rozłączne** wystąpienia (da 2) – uważaj, czego chce zadanie!]][[cpp: Szukanie przez \`s.find("aa", i)\` w pętli też znajdzie nakładające się wystąpienia, jeśli następne szukasz od \`i + 1\`, a nie od końca poprzedniego – uważaj, czego chce zadanie!]][[java: Szukanie przez \`s.indexOf("aa", i)\` w pętli też znajdzie nakładające się wystąpienia, jeśli następne szukasz od \`i + 1\`, a nie od końca poprzedniego – uważaj, czego chce zadanie!]]
 
         ~~~python run
         def wystapienia(s, p):
@@ -204,7 +209,7 @@ export default {
       type: 'input',
       q: md`Ile razy (licząc wystąpienia nakładające się) wzorzec \`aba\` występuje w tekście \`abababa\`?`,
       answer: '3',
-      explain: md`Na pozycjach 1, 3 i 5. Funkcja \`"abababa".count("aba")\` w Pythonie dałaby tylko 2, bo liczy rozłączne wystąpienia.`,
+      explain: md`Na pozycjach 1, 3 i 5.[[python:  Funkcja \`"abababa".count("aba")\` dałaby tylko 2, bo liczy rozłączne wystąpienia.]][[cpp java:  Gdyby po znalezieniu wzorca szukać dalej od jego końca, wyszłyby tylko 2 (rozłączne wystąpienia).]]`,
     },
     {
       type: 'tf',
@@ -267,7 +272,8 @@ export default {
           }
         `,
       },
-      explain: md`Odejmujemy klucz i zawijamy modulo 26. W C++ i Javie przed resztą dodajemy 26, żeby nie dostać liczby ujemnej (np. dla \`a\` z kluczem 1). W Pythonie \`%\` od razu daje wynik z przedziału 0–25.`,
+      explain: md`Odejmujemy klucz i zawijamy modulo 26. [[python: \`%\` od razu daje wynik z przedziału 0–25, także dla liczb ujemnych.]][[cpp java: Przed resztą dodajemy 26, żeby nie dostać liczby ujemnej (np. dla \`a\` z kluczem 1).]]`,
+
     },
     {
       type: 'code',

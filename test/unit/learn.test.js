@@ -9,8 +9,41 @@ const { pathToFileURL } = require('url');
 const ROOT = path.join(__dirname, '..', '..');
 const load = (p) => import(pathToFileURL(path.join(ROOT, p)).href);
 let C;
+let LG;
 test.before(async () => {
   C = await load('renderer/js/learn/check.js');
+  LG = await load('renderer/js/learn/langs.js');
+});
+
+test('a lesson is read in one language: blocks, inline pieces and table columns', () => {
+  const src = [
+    'Dzielenie: [[python: `a // b`]][[cpp java: `a / b`]].',
+    ':::python',
+    'Tylko Python.',
+    ':::',
+    ':::cpp java',
+    'C++ i Java[[java: , a tu tylko Java]].',
+    ':::',
+    '| działanie | Python | C++ / Java (liczby `int`) |',
+    '|---|---|---|',
+    '| lub | `or` | `\\|\\|` |',
+  ].join('\n');
+  const py = LG.forLang(src, 'python');
+  assert.match(py, /`a \/\/ b`/);
+  assert.match(py, /Tylko Python/);
+  assert.doesNotMatch(py, /C\+\+|Java|:::|\[\[/);
+  assert.match(py, /\| działanie \| Python \|\n/);
+  const java = LG.forLang(src, 'java');
+  assert.match(java, /Dzielenie: `a \/ b`\./);
+  assert.match(java, /C\+\+ i Java, a tu tylko Java\./);
+  assert.match(java, /\| działanie \| Java \(liczby `int`\) \|/);
+  assert.match(java, /\| lub \| `\\\|\\\|` \|/);
+  assert.doesNotMatch(LG.forLang(src, 'cpp'), /tylko Java|Tylko Python/);
+  // questions only for some languages keep their place in the full list
+  const qs = [{ q: 'a' }, { q: 'b', langs: ['cpp'] }, { q: 'c' }];
+  assert.deepStrictEqual(LG.questionsFor(qs, 'python').map((x) => x.i), [0, 2]);
+  assert.deepStrictEqual(LG.questionsFor(qs, 'cpp').map((x) => x.i), [0, 1, 2]);
+  assert.strictEqual(LG.langOf('sql'), 'python');
 });
 
 test('short answers: numbers as numbers, text without case and extra spaces', () => {
@@ -65,7 +98,8 @@ test('every lesson and section test is complete', async () => {
       const l = (await load(`content/lessons/${s.id}/${id}.js`)).default;
       assert.ok(l.title && l.summary && l.intro && l.minutes > 0, `${id}: title, summary, intro, minutes`);
       assert.ok(l.steps.length >= 2 && l.steps.every((st) => st.title && st.body), `${id}: steps`);
-      assert.ok(l.quiz.length >= 4, `${id}: quiz`);
+      for (const lang of LG.CODE_LANGS) assert.ok(LG.questionsFor(l.quiz, lang).length >= 4, `${id}: quiz in ${lang}`);
+
       for (const q of l.quiz) assert.ok(q.type && q.q && q.explain, `${id}: a question without text or explanation`);
       assert.ok(l.practice.length > 0, `${id}: practice tasks`);
     }

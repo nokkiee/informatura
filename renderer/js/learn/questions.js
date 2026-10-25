@@ -7,12 +7,13 @@
 // formulas can still be run and checked while solving, like on a judge.
 import { h, btn, icon, clear } from '../ui.js';
 import { md, renderWithFields } from '../markdown.js';
-import { getSettings, setSettings, onSettings } from '../store.js';
+import { getSettings } from '../store.js';
 import { LANGS } from '../algo.js';
 import { loadMonaco, editorOptions, createEditor } from '../monaco.js';
 import { inputOk, choiceOk, tfOk, sqlSame, sheetSame, pointsOf } from './check.js';
 import { runCode, runSql, evalFormula, dbSchema, sheetValues } from './run.js';
-import { renderLessonText, resultTable, sheetGrid, CODE_LANGS } from './render.js';
+import { renderLessonText, resultTable, sheetGrid, readerLang } from './render.js';
+import { forLang } from './langs.js';
 
 const KIND = { choice: 'wybór', tf: 'prawda / fałsz', input: 'krótka odpowiedź', code: 'program', sql: 'zapytanie SQL', sheet: 'formuła w arkuszu' };
 const LETTERS = 'ABCDEFGH';
@@ -23,9 +24,12 @@ const STARTER = {
   java: 'import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        \n    }\n}\n',
 };
 
-// q: the question; opts: { no, mode, saved, onSave, ctx (lesson files/db/sheet), onResult }
+// q: the question; opts: { no, mode, saved, onSave, ctx (lesson files/db/sheet, the reader's
+// language), onResult }
 export function createQuestion(q, opts) {
   const { mode = 'quiz', ctx = {} } = opts;
+  const lang = readerLang(ctx);
+  const text = (src) => forLang(src, lang);
   const saved = opts.saved || {};
   const save = () => opts.onSave?.(saved);
   const quiz = mode === 'quiz';
@@ -80,7 +84,7 @@ export function createQuestion(q, opts) {
     body.appendChild(prompt(q.q));
     if (multi) body.appendChild(h('div', { class: 'muted small' }, 'Zaznacz wszystkie poprawne odpowiedzi.'));
     const list = h('div', { class: 'choice-list' });
-    q.options.forEach((text, i) => {
+    q.options.forEach((option, i) => {
       const o = h(
         'button',
         {
@@ -96,7 +100,7 @@ export function createQuestion(q, opts) {
           },
         },
         h('span', { class: 'opt-letter' }, LETTERS[i] + '.'),
-        h('span', { class: 'md', html: md(text) }),
+        h('span', { class: 'md', html: md(text(option)) }),
       );
       list.appendChild(o);
     });
@@ -132,7 +136,7 @@ export function createQuestion(q, opts) {
           },
           val ? 'P' : 'F',
         );
-      return h('tr', null, h('td', { class: 'tf-no' }, `${i + 1}.`), h('td', { class: 'md', html: md(it.text) }), h('td', { class: 'tf-cell' }, cell(true)), h('td', { class: 'tf-cell' }, cell(false)));
+      return h('tr', null, h('td', { class: 'tf-no' }, `${i + 1}.`), h('td', { class: 'md', html: md(text(it.text)) }), h('td', { class: 'tf-cell' }, cell(true)), h('td', { class: 'tf-cell' }, cell(false)));
     });
     body.appendChild(h('table', { class: 'tf-table' }, h('tbody', null, rows)));
     judge = () => {
@@ -152,7 +156,7 @@ export function createQuestion(q, opts) {
     let inputs = {};
     if (multiField) {
       const box = h('div', { class: 'md lesson-md' });
-      inputs = renderWithFields(box, q.q, {
+      inputs = renderWithFields(box, text(q.q), {
         values: saved.value,
         onInput: (id, v) => {
           saved.value[id] = v;
@@ -194,23 +198,13 @@ export function createQuestion(q, opts) {
     const ex = q.tests.slice(0, q.examples ?? 2);
     if (ex.length) body.appendChild(examplesTable(ex));
     const editorBox = h('div', { class: 'q-editor' }, h('div', { class: 'loading-line' }, 'Ładowanie edytora…'));
-    const langBar = h(
-      'div',
-      { class: 'seg small q-langs' },
-      CODE_LANGS.map((l) => h('button', { class: 'seg-btn', dataset: { lang: l }, onclick: () => setSettings({ lang: l }) }, LANGS[l].label)),
-    );
-    body.append(h('div', { class: 'q-editor-head' }, h('span', { class: 'muted small' }, 'Twój program'), h('div', { class: 'grow' }), langBar), editorBox);
+    body.append(h('div', { class: 'q-editor-head' }, h('span', { class: 'muted small' }, 'Twój program'), h('div', { class: 'grow' }), h('span', { class: 'q-lang' }, LANGS[lang].label)), editorBox);
     const results = h('div', { class: 'q-results' });
     body.appendChild(results);
     let editor = null;
-    let monaco = null;
-    let lang = getSettings().lang;
     const starter = (l) => (getSettings().starter === 'empty' ? '' : q.starter?.[l] ?? STARTER[l]);
-    const syncBar = () => langBar.querySelectorAll('.seg-btn').forEach((b) => b.classList.toggle('active', b.dataset.lang === lang));
-    syncBar();
-    loadMonaco().then((m) => {
+    loadMonaco().then((monaco) => {
       if (disposers === null) return;
-      monaco = m;
       clear(editorBox);
       editor = createEditor(monaco, editorBox, editorOptions({ value: saved.code[lang] ?? starter(lang), language: LANGS[lang].monaco, lineNumbersMinChars: 3 }));
       editor.onDidChangeModelContent(() => {
@@ -220,18 +214,6 @@ export function createQuestion(q, opts) {
       });
       disposers.push(() => editor.dispose());
     });
-    disposers.push(
-      onSettings((s) => {
-        if (s.lang === lang || !CODE_LANGS.includes(s.lang)) return;
-        lang = s.lang;
-        syncBar();
-        if (editor) {
-          const old = editor.getModel();
-          editor.setModel(monaco.editor.createModel(saved.code[lang] ?? starter(lang), LANGS[lang].monaco));
-          old.dispose();
-        }
-      }),
-    );
     const getCode = () => (editor ? editor.getValue() : saved.code[lang] ?? starter(lang));
 
     const runTests = async (tests, all) => {
@@ -329,8 +311,8 @@ export function createQuestion(q, opts) {
         results.appendChild(h('div', { class: 'bad-text small' }, 'Formuła zaczyna się od znaku „=”.'));
         return false;
       }
-      const lang = getSettings().sheetLang === 'en' ? 'en' : 'pl';
-      const [mine, model] = await Promise.all([evalFormula({ data, formula: f, cell: q.cell, fill: q.fill, lang }), evalFormula({ data, formula: q.solution, cell: q.cell, fill: q.fill, lang: 'pl' })]);
+      const sheetLang = getSettings().sheetLang === 'en' ? 'en' : 'pl';
+      const [mine, model] = await Promise.all([evalFormula({ data, formula: f, cell: q.cell, fill: q.fill, lang: sheetLang }), evalFormula({ data, formula: q.solution, cell: q.cell, fill: q.fill, lang: 'pl' })]);
       if (mine.error) {
         results.appendChild(h('div', { class: 'bad-text small' }, mine.error));
         return false;
@@ -357,8 +339,8 @@ export function createQuestion(q, opts) {
     solBox.hidden = !solBox.hidden;
     if (solBox.hidden || solBox.childElementCount) return;
     if (q.type === 'code') {
-      const src = CODE_LANGS.filter((l) => q.solution[l]).map((l) => `~~~${l}\n${q.solution[l].replace(/\n$/, '')}\n~~~`).join('\n');
-      solBox.appendChild(renderLessonText(src, ctx));
+      const l = q.solution[lang] ? lang : Object.keys(q.solution)[0];
+      solBox.appendChild(renderLessonText(`~~~${l}\n${q.solution[l].replace(/\n$/, '')}\n~~~`, ctx));
     } else solBox.appendChild(renderLessonText(`~~~${q.type === 'sql' ? 'sql' : 'excel'}\n${q.solution}\n~~~`, ctx));
   }
 

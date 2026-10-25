@@ -1,23 +1,27 @@
-// Lesson text: Markdown plus what the lessons need on top of it – one code example in several
-// languages shown as tabs (the reader's language first), syntax colouring, examples that run
-// right in the lesson (programs, SQL on the lesson's database, formulas on the lesson's sheet),
-// coloured boxes, the lesson's tables and sheet.
+// Lesson text: Markdown plus what the lessons need on top of it – the text for the reader's
+// programming language only (see langs.js), syntax colouring, examples that run right in the
+// lesson (programs, SQL on the lesson's database, formulas on the lesson's sheet), coloured
+// boxes, the lesson's tables and sheet.
 import { h, icon, clear, esc } from '../ui.js';
 import { md } from '../markdown.js';
-import { getSettings, setSettings } from '../store.js';
+import { getSettings } from '../store.js';
 import { LANGS } from '../algo.js';
+import { CODE_LANGS, forLang, langOf } from './langs.js';
 import { loadMonaco, editorTheme } from '../monaco.js';
 import { runExample, runSql, calcFormula, dbSchema, sheetValues } from './run.js';
 import { displayValue, colName } from '../sheet/engine.js';
 
-export const CODE_LANGS = ['python', 'cpp', 'java'];
+export { CODE_LANGS };
 const LABEL = { python: 'Python', cpp: 'C++', java: 'Java', sql: 'SQL', excel: 'Formuła', pseudo: 'Pseudokod', text: 'Tekst', stdin: 'Wejście' };
 const CALLOUTS = { 'Uwaga:': 'warn', 'Wskazówka:': 'tip', 'Na maturze:': 'exam', 'Zapamiętaj:': 'key' };
 
-// ctx: { files, db, sheet } of the lesson
+// the reader's programming language
+export const readerLang = (ctx = {}) => langOf(ctx.lang ?? getSettings().lang);
+
+// ctx: { files, db, sheet, lang } of the lesson
 export function renderLessonText(src, ctx = {}) {
   const el = h('div', { class: 'md lesson-md' });
-  el.innerHTML = md(src);
+  el.innerHTML = md(forLang(src, readerLang(ctx)));
   for (const bq of el.querySelectorAll('blockquote')) {
     const kind = CALLOUTS[bq.querySelector('p > strong:first-child')?.textContent.trim()];
     if (kind) bq.classList.add('callout', 'callout-' + kind);
@@ -53,7 +57,8 @@ function buildExamples(root, ctx) {
       continue;
     }
     if (lang === 'stdin') continue; // taken by the example before it
-    // the same example in several languages: consecutive python / cpp / java fences
+    // the same example in several languages (consecutive python / cpp / java fences): the
+    // reader sees the one in their language
     const group = [pre];
     if (CODE_LANGS.includes(lang)) {
       let next = pre.nextElementSibling;
@@ -65,43 +70,29 @@ function buildExamples(root, ctx) {
     group.forEach((g) => used.add(g));
     const after = group[group.length - 1].nextElementSibling;
     const stdin = after?.matches('pre.code[data-lang="stdin"]') ? after : null;
-    const ex = example(group, stdin ? codeOf(stdin) : null, ctx);
+    const shown = group.find((g) => g.dataset.lang === readerLang(ctx)) || group[0];
+    const ex = example(shown, group.some((g) => flagsOf(g).includes('run')), stdin ? codeOf(stdin) : null, ctx);
     pre.before(ex);
     group.forEach((g) => g.remove());
     stdin?.remove();
   }
 }
 
-function example(group, input, ctx) {
-  const langs = group.map((p) => p.dataset.lang);
-  const run = group.some((p) => flagsOf(p).includes('run'));
-  const box = h('div', { class: 'ex', dataset: { langs: langs.join(' ') } });
+function example(pre, run, input, ctx) {
+  const lang = pre.dataset.lang;
+  const box = h('div', { class: 'ex', dataset: { lang } });
   const bar = h('div', { class: 'ex-bar' });
   const out = h('div', { class: 'ex-out', hidden: true });
-  const bodies = group.map((p) => {
-    const b = h('pre', { class: 'ex-code', dataset: { lang: p.dataset.lang } }, h('code', null, codeOf(p)));
-    source.set(b, codeOf(p));
-    return b;
-  });
-  if (langs.length > 1 || CODE_LANGS.includes(langs[0])) {
-    const tabs = h(
-      'div',
-      { class: 'ex-tabs' },
-      langs.map((l) => h('button', { class: 'ex-tab', dataset: { lang: l }, onclick: () => setSettings({ lang: l }) }, LABEL[l] || l)),
-    );
-    bar.appendChild(tabs);
-  } else {
-    // ~~~text liczby.txt: a data file, labelled with its name
-    const name = langs[0] === 'text' && flagsOf(group[0]).find((f) => f !== 'run');
-    bar.appendChild(h('span', { class: 'ex-label' }, name ? h('span', null, icon('file', 13), ' ', name) : LABEL[langs[0]] || langs[0]));
-  }
+  const body = h('pre', { class: 'ex-code', dataset: { lang } }, h('code', null, codeOf(pre)));
+  source.set(body, codeOf(pre));
+  // ~~~text liczby.txt: a data file, labelled with its name
+  const name = lang === 'text' && flagsOf(pre).find((f) => f !== 'run');
+  bar.appendChild(h('span', { class: `ex-label ${CODE_LANGS.includes(lang) ? 'code-lang' : ''}` }, name ? h('span', null, icon('file', 13), ' ', name) : LABEL[lang] || lang));
   bar.appendChild(h('div', { class: 'grow' }));
-  bar.appendChild(
-    h('button', { class: 'icon-btn small', title: 'Kopiuj', onclick: () => navigator.clipboard.writeText(codeOf(visible(box))) }, icon('copy', 14)),
-  );
+  bar.appendChild(h('button', { class: 'icon-btn small', title: 'Kopiuj', onclick: () => navigator.clipboard.writeText(codeOf(body)) }, icon('copy', 14)));
   if (run) {
-    const isSql = langs[0] === 'sql';
-    const isExcel = langs[0] === 'excel';
+    const isSql = lang === 'sql';
+    const isExcel = lang === 'excel';
     const label = isSql ? 'Wykonaj' : isExcel ? 'Oblicz' : 'Uruchom';
     const go = h('button', { class: 'btn small primary' }, icon('play', 14), h('span', null, label));
     go.addEventListener('click', async () => {
@@ -109,34 +100,19 @@ function example(group, input, ctx) {
       out.hidden = false;
       clear(out).appendChild(h('div', { class: 'muted small' }, h('span', { class: 'spin' }), isSql ? ' Wykonywanie…' : ' Uruchamianie…'));
       try {
-        if (isSql) await showSql(out, ctx.db, codeOf(visible(box)));
-        else if (isExcel) await showFormulas(out, ctx.sheet, codeOf(visible(box)));
-        else await showRun(out, visible(box).dataset.lang, codeOf(visible(box)), input, ctx.files);
+        if (isSql) await showSql(out, ctx.db, codeOf(body));
+        else if (isExcel) await showFormulas(out, ctx.sheet, codeOf(body));
+        else await showRun(out, lang, codeOf(body), input, ctx.files);
       } finally {
         go.disabled = false;
       }
     });
     bar.appendChild(go);
   }
-  box.append(bar, ...bodies);
+  box.append(bar, body);
   if (input != null) box.appendChild(h('div', { class: 'ex-in' }, h('span', { class: 'muted small' }, 'Wejście programu:'), h('pre', null, input)));
   box.appendChild(out);
-  syncLang(box);
   return box;
-}
-
-const visible = (box) => box.querySelector('.ex-code:not([hidden])') || box.querySelector('.ex-code');
-
-// shows the example in the reader's language (or the first one there is)
-function syncLang(box) {
-  const langs = box.dataset.langs.split(' ');
-  const want = langs.includes(getSettings().lang) ? getSettings().lang : langs[0];
-  box.querySelectorAll('.ex-code').forEach((b) => (b.hidden = b.dataset.lang !== want));
-  box.querySelectorAll('.ex-tab').forEach((t) => t.classList.toggle('active', t.dataset.lang === want));
-}
-
-export function syncLangs(root) {
-  root.querySelectorAll('.ex').forEach(syncLang);
 }
 
 // syntax colours from the editor (Monaco), once it's loaded

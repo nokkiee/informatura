@@ -14,7 +14,7 @@ export default {
     {
       title: 'Napis to ciąg znaków',
       body: md`
-        Napis (\`str\` w Pythonie, \`string\` w C++, \`String\` w Javie) to ciąg znaków ponumerowanych **od zera**. W napisie \`"matura"\` znak \`m\` ma indeks 0, a ostatni znak \`a\` – indeks 5 (długość − 1).
+        Napis (typ [[python: \`str\`]][[cpp: \`string\`]][[java: \`String\`]]) to ciąg znaków ponumerowanych **od zera**. W napisie \`"matura"\` znak \`m\` ma indeks 0, a ostatni znak \`a\` – indeks 5 (długość − 1).
 
         | indeks | 0 | 1 | 2 | 3 | 4 | 5 |
         |---|---|---|---|---|---|---|
@@ -29,7 +29,15 @@ export default {
         | ostatni znak | \`s[-1]\` | \`s.back()\` | \`s.charAt(s.length() - 1)\` |
         | fragment od i, długości d | \`s[i:i+d]\` | \`s.substr(i, d)\` | \`s.substring(i, i + d)\` |
 
-        Zwróć uwagę na różnicę: \`substr\` w C++ bierze **długość** fragmentu, a \`substring\` w Javie i wycinek w Pythonie – **indeks końca** (bez niego).
+        :::python
+        Wycinek \`s[i:j]\` to znaki od indeksu \`i\` do \`j - 1\` – **koniec nie wchodzi**. Można pominąć początek albo koniec: \`s[:3]\` to pierwsze trzy znaki, \`s[3:]\` – wszystko od indeksu 3. Ujemne indeksy liczą od końca: \`s[-1]\` to ostatni znak, \`s[-2]\` – przedostatni.
+        :::
+        :::cpp
+        Uwaga: drugi argument \`substr\` to **długość** fragmentu, a nie indeks końca: \`s.substr(2, 3)\` to trzy znaki o indeksach 2, 3 i 4. Sam \`s.substr(3)\` to wszystko od indeksu 3 do końca.
+        :::
+        :::java
+        Uwaga: \`substring(i, j)\` bierze znaki od indeksu \`i\` do \`j - 1\` – **koniec nie wchodzi**. Sam \`s.substring(3)\` to wszystko od indeksu 3 do końca.
+        :::
 
         ~~~python run
         s = "informatyka"
@@ -67,16 +75,17 @@ export default {
         }
         ~~~
 
-        W C++ i Javie pojedynczy **znak** zapisuje się w apostrofach (\`'a'\`), a **napis** w cudzysłowie (\`"a"\`) – to dwa różne typy (\`char\` i \`string\`/\`String\`). W Pythonie znak to po prostu napis długości 1.
+        [[python: Pojedynczy znak to po prostu napis długości 1 – \`'a'\` i \`"a"\` znaczą to samo.]][[cpp java: Pojedynczy **znak** zapisuje się w apostrofach (\`'a'\`), a **napis** w cudzysłowie (\`"a"\`) – to dwa różne typy: \`char\` i [[cpp: \`string\`]][[java: \`String\`]].]]
       `,
     },
     {
       title: 'Porównywanie, łączenie, odwracanie',
       body: md`
-        - **Łączenie:** \`s + t\` we wszystkich trzech językach.
-        - **Równość:** w Pythonie i C++ \`s == t\`. W **Javie** napisy porównuje się metodą \`s.equals(t)\` – \`==\` sprawdza, czy to ten sam obiekt w pamięci, i potrafi zwrócić fałsz dla takich samych napisów!
-        - **Kolejność alfabetyczna (leksykograficzna):** \`s < t\` w Pythonie i C++, w Javie \`s.compareTo(t) < 0\`. Porównuje się znak po znaku od lewej; pierwszy różny znak rozstrzyga. Dlatego \`"kot" < "kotek"\` (krótszy początek jest mniejszy) i \`"Zebra" < "ala"\` (wielkie litery mają mniejsze kody niż małe).
-        - **Odwracanie:** Python \`s[::-1]\`, C++ \`string(s.rbegin(), s.rend())\`, Java \`new StringBuilder(s).reverse().toString()\`.
+        - **Łączenie:** \`s + t\`.
+        - **Równość:** [[python: \`s == t\`.]][[cpp: \`s == t\`.]][[java: \`s.equals(t)\`. **Nie** używaj \`==\` – ono sprawdza, czy to ten sam obiekt w pamięci, i potrafi zwrócić fałsz dla takich samych napisów!]]
+        - **Kolejność alfabetyczna (leksykograficzna):** [[python: \`s < t\`]][[cpp: \`s < t\`]][[java: \`s.compareTo(t) < 0\`]]. Porównuje się znak po znaku od lewej; pierwszy różny znak rozstrzyga. Dlatego \`kot\` jest przed \`kotek\` (krótszy początek jest mniejszy), a \`Zebra\` przed \`ala\` (wielkie litery mają mniejsze kody niż małe).
+
+        - **Odwracanie:** [[python: \`s[::-1]\` (wycinek z krokiem −1)]][[cpp: \`string(s.rbegin(), s.rend())\` – nowy napis z liter czytanych od końca]][[java: \`new StringBuilder(s).reverse().toString()\`]].
 
         **Palindrom** to napis, który czytany od tyłu jest taki sam (np. \`kajak\`). Sprawdzisz to, porównując napis z jego odwróceniem:
 
@@ -110,7 +119,7 @@ export default {
         }
         ~~~
 
-        > **Wskazówka:** Palindrom można też sprawdzić bez odwracania: porównuj \`s[i]\` z \`s[n - 1 - i]\` dla \`i\` od 0 do połowy. Tak trzeba zrobić, gdy w zadaniu „zapisz algorytm” nie wolno używać gotowych funkcji.
+        > **Wskazówka:** Palindrom można też sprawdzić bez odwracania: porównuj [[python: \`s[i]\` z \`s[n - 1 - i]\`]][[cpp: \`s[i]\` z \`s[n - 1 - i]\`]][[java: \`s.charAt(i)\` z \`s.charAt(n - 1 - i)\`]] dla \`i\` od 0 do połowy. Tak trzeba zrobić, gdy w zadaniu „zapisz algorytm” nie wolno używać gotowych funkcji.
       `,
     },
     {
@@ -124,13 +133,12 @@ export default {
 
         Kolejne cyfry i litery mają kolejne kody: \`'1'\` = 49, \`'B'\` = 66, \`'z'\` = 122. Mała litera ma kod o 32 większy od wielkiej.
 
-        - **Python:** \`ord(c)\` daje kod znaku, \`chr(k)\` – znak o kodzie \`k\`.
-        - **C++ i Java:** znak \`char\` jest liczbą – można go dodawać i odejmować. \`(int)c\` pokaże kod, a \`(char)k\` zamieni kod na znak.
+        [[python: \`ord(c)\` daje kod znaku, a \`chr(k)\` – znak o kodzie \`k\`.]][[cpp java: Znak \`char\` jest liczbą – można go dodawać i odejmować. \`(int) c\` pokaże kod, a \`(char) k\` zamieni kod na znak.]]
 
         Najczęstsze sztuczki:
-        - \`ord(c) - ord('a')\` (C++/Java: \`c - 'a'\`) – **numer litery** w alfabecie: a → 0, b → 1, …, z → 25,
-        - \`ord(c) - ord('0')\` (C++/Java: \`c - '0'\`) – **wartość cyfry**: znak \`'7'\` → liczba 7,
-        - \`chr(ord('a') + k)\` – litera o numerze \`k\`.
+        - [[python: \`ord(c) - ord('a')\`]][[cpp java: \`c - 'a'\`]] – **numer litery** w alfabecie: a → 0, b → 1, …, z → 25,
+        - [[python: \`ord(c) - ord('0')\`]][[cpp java: \`c - '0'\`]] – **wartość cyfry**: znak \`'7'\` → liczba 7,
+        - [[python: \`chr(ord('a') + k)\`]][[cpp java: \`(char) ('a' + k)\`]] – litera o numerze \`k\`.
 
         Przesunięcie litery o 3 dalej w alfabecie, z „zawinięciem” za \`z\` z powrotem na \`a\` (to szyfr Cezara – wróci w dziale Algorytmika):
 
@@ -174,13 +182,15 @@ export default {
         }
         ~~~
 
-        > **Wskazówka:** W Javie dopisywanie do napisu w pętli (\`s = s + c\`) przy długich napisach jest wolne – lepiej użyć \`StringBuilder\` i metody \`append\`, jak wyżej.
+        :::java
+        > **Wskazówka:** Dopisywanie do napisu w pętli (\`s = s + c\`) przy długich napisach jest wolne – lepiej użyć \`StringBuilder\` i metody \`append\`, jak wyżej.
+        :::
       `,
     },
     {
       title: 'Zliczanie znaków',
       body: md`
-        Pytania typu „która litera występuje najczęściej” albo „czy dwa słowa składają się z tych samych liter” rozwiązuje się **tablicą liczników**: 26 zer, po jednym na każdą literę. Dla każdego znaku zwiększasz licznik o numerze \`c - 'a'\`.
+        Pytania typu „która litera występuje najczęściej” albo „czy dwa słowa składają się z tych samych liter” rozwiązuje się **tablicą liczników**: 26 zer, po jednym na każdą literę. Dla każdego znaku zwiększasz licznik o numerze [[python: \`ord(c) - ord('a')\`]][[cpp java: \`c - 'a'\`]].
 
         ~~~python run
         s = "abrakadabra"
@@ -219,9 +229,9 @@ export default {
         }
         ~~~
 
-        Dwa słowa są **anagramami** (składają się z tych samych liter w innej kolejności, np. \`kot\` i \`tok\`), gdy mają takie same tablice liczników – albo gdy po posortowaniu ich liter dostajesz ten sam napis (Python: \`sorted(a) == sorted(b)\`).
+        Dwa słowa są **anagramami** (składają się z tych samych liter w innej kolejności, np. \`kot\` i \`tok\`), gdy mają takie same tablice liczników – albo gdy po posortowaniu ich liter dostajesz ten sam napis ([[python: \`sorted(a) == sorted(b)\`]][[cpp: \`sort(a.begin(), a.end())\`, to samo dla \`b\`, i \`a == b\`]][[java: \`Arrays.sort\` na \`a.toCharArray()\` i \`b.toCharArray()\`, potem \`Arrays.equals\`]]).
 
-        > **Na maturze:** Gotowe funkcje są dozwolone w zadaniach „napisz program”: w Pythonie \`s.count("a")\` policzy wystąpienia litery, \`"kot" in s\` sprawdzi, czy napis zawiera fragment, a \`s.find("kot")\` poda indeks pierwszego wystąpienia (lub -1). W C++ jest \`s.find("kot")\` (zwraca \`string::npos\`, gdy nie ma), w Javie \`s.contains("kot")\` i \`s.indexOf("kot")\`.
+        > **Na maturze:** Gotowe funkcje są dozwolone w zadaniach „napisz program”: [[python: \`s.count("a")\` policzy wystąpienia litery, \`"kot" in s\` sprawdzi, czy napis zawiera fragment, a \`s.find("kot")\` poda indeks pierwszego wystąpienia (lub -1).]][[cpp: \`s.find("kot")\` poda indeks pierwszego wystąpienia fragmentu (albo \`string::npos\`, gdy go nie ma), a \`count(s.begin(), s.end(), 'a')\` z \`<algorithm>\` policzy wystąpienia litery.]][[java: \`s.contains("kot")\` sprawdzi, czy napis zawiera fragment, a \`s.indexOf("kot")\` poda indeks pierwszego wystąpienia (lub -1).]]
       `,
     },
     {
@@ -263,40 +273,42 @@ export default {
         }
         ~~~
 
-        Zwróć uwagę na granicę pętli: ostatni fragment długości 3 zaczyna się na indeksie \`n - 3\`. W Pythonie \`range(len(s) - 2)\` kończy się właśnie na \`n - 3\`. Gdybyś wyszedł dalej, \`s[i + 2]\` wyszedłby poza napis (w Pythonie błąd, w C++ – czytanie „śmieci” z pamięci).
+        Zwróć uwagę na granicę pętli: ostatni fragment długości 3 zaczyna się na indeksie \`n - 3\`. [[python: \`range(len(s) - 2)\` kończy się właśnie na \`n - 3\`.]][[cpp java: Warunek \`i + 2 < n\` kończy pętlę właśnie na \`n - 3\`.]] Gdybyś wyszedł dalej, [[python: \`s[i + 2]\` wyszedłby poza napis i program zakończyłby się błędem *IndexError*]][[cpp: \`s[i + 2]\` wyszedłby poza napis i program czytałby „śmieci” z pamięci – bez żadnego komunikatu]][[java: \`s.charAt(i + 2)\` wyszedłby poza napis i program zakończyłby się wyjątkiem]].
 
-        > **Uwaga:** W C++ \`s.size()\` jest liczbą bez znaku. Warunek \`i < s.size() - 3\` dla napisu krótszego niż 3 znaki daje ogromną liczbę zamiast ujemnej! Bezpieczniej pisać \`i + 3 <= (int)s.size()\` albo rzutować na \`int\`, jak wyżej.
+        :::cpp
+        > **Uwaga:** \`s.size()\` jest liczbą bez znaku. Warunek \`i < s.size() - 3\` dla napisu krótszego niż 3 znaki daje ogromną liczbę zamiast ujemnej! Bezpieczniej pisać \`i + 3 <= (int)s.size()\` albo rzutować na \`int\`, jak wyżej.
+        :::
       `,
     },
   ],
   quiz: [
     {
       type: 'choice',
-      q: md`Co wypisze \`print("informatyka"[2:5])\` w Pythonie?`,
+      q: md`Co wypisze [[python: \`print("informatyka"[2:5])\`]][[cpp: \`cout << s.substr(2, 3)\` dla \`string s = "informatyka"\`]][[java: \`System.out.println("informatyka".substring(2, 5))\`]]?`,
       options: ['`for`', '`nfo`', '`form`', '`orm`'],
       answer: 0,
-      explain: md`Indeksy liczymy od 0: i(0) n(1) **f(2) o(3) r(4)** m(5)… Wycinek \`[2:5]\` to indeksy 2, 3 i 4 – bez 5. W C++ to samo dałoby \`s.substr(2, 3)\`, a w Javie \`s.substring(2, 5)\`.`,
+      explain: md`Indeksy liczymy od 0: i(0) n(1) **f(2) o(3) r(4)** m(5)… [[python: Wycinek \`[2:5]\` to indeksy 2, 3 i 4 – bez 5.]][[cpp: \`substr(2, 3)\` to 3 znaki od indeksu 2: indeksy 2, 3 i 4.]][[java: \`substring(2, 5)\` to indeksy 2, 3 i 4 – bez 5.]]`,
     },
     {
       type: 'input',
-      q: md`Jaki znak daje w Pythonie \`chr(ord("A") + 2)\` (w C++: \`(char)('A' + 2)\`)?`,
+      q: md`Jaki znak daje [[python: \`chr(ord("A") + 2)\`]][[cpp java: \`(char) ('A' + 2)\`]]?`,
       answer: ['C'],
       exact: true,
-      explain: md`\`ord("A")\` = 65, 65 + 2 = 67, a znak o kodzie 67 to \`C\`. Kolejne litery mają kolejne kody.`,
+      explain: md`Kod \`'A'\` to 65, 65 + 2 = 67, a znak o kodzie 67 to \`C\`. Kolejne litery mają kolejne kody.`,
     },
     {
       type: 'tf',
       q: md`Oceń prawdziwość zdań.`,
       items: [
-        { text: 'W Javie napisy najlepiej porównywać metodą `equals`, a nie operatorem `==`.', answer: true },
-        { text: 'W Pythonie `s[-1]` to ostatni znak napisu `s`.', answer: true },
-        { text: 'W C++ `s.substr(2, 3)` to fragment od indeksu 2 do indeksu 3.', answer: false },
+        { text: '[[python: `s == t` sprawdza, czy napisy mają tę samą treść.]][[cpp: `s == t` sprawdza, czy napisy mają tę samą treść.]][[java: Napisy najlepiej porównywać metodą `equals`, a nie operatorem `==`.]]', answer: true },
+        { text: '[[python: `s[-1]` to ostatni znak napisu `s`.]][[cpp: `s[s.size() - 1]` to ostatni znak napisu `s`.]][[java: `s.charAt(s.length() - 1)` to ostatni znak napisu `s`.]]', answer: true },
+        { text: '[[python: `s[2:3]` to fragment od indeksu 2 do indeksu 3 włącznie.]][[cpp: `s.substr(2, 3)` to fragment od indeksu 2 do indeksu 3.]][[java: `s.substring(2, 3)` to fragment od indeksu 2 do indeksu 3 włącznie.]]', answer: false },
         { text: 'W kodzie ASCII każda wielka litera ma większy kod niż każda mała.', answer: false },
       ],
       explain: md`
-        - Tak – \`==\` w Javie porównuje obiekty, nie treść.
-        - Tak – ujemne indeksy w Pythonie liczą od końca.
-        - Nie – drugi argument \`substr\` to **długość**: \`substr(2, 3)\` to trzy znaki o indeksach 2, 3, 4.
+        - Tak[[java:  – \`==\` porównuje obiekty, nie treść]].
+        - Tak[[python:  – ujemne indeksy liczą od końca]][[cpp java:  – ostatni indeks to długość − 1]].
+        - Nie – [[python: koniec wycinka nie wchodzi: \`s[2:3]\` to jeden znak o indeksie 2.]][[cpp: drugi argument \`substr\` to **długość**: \`substr(2, 3)\` to trzy znaki o indeksach 2, 3, 4.]][[java: koniec nie wchodzi: \`substring(2, 3)\` to jeden znak o indeksie 2.]]
         - Nie – odwrotnie: \`'A'\` = 65, \`'a'\` = 97, więc wielkie litery mają mniejsze kody.
       `,
     },
@@ -349,7 +361,8 @@ export default {
           }
         `,
       },
-      explain: md`Palindrom = napis równy swojemu odwróceniu. W Pythonie pamiętaj o \`strip()\` (znak końca wiersza z \`input()\` jest już usunięty, ale przy plikach nie). W Javie porównanie przez \`equals\`.`,
+      explain: md`Palindrom = napis równy swojemu odwróceniu. [[python: \`input()\` usuwa znak końca wiersza, ale przy wierszach z pliku pamiętaj o \`strip()\` – inaczej \`"kajak\n"\` nie będzie palindromem.]][[cpp: Porównujesz \`s == string(s.rbegin(), s.rend())\`.]][[java: Porównanie przez \`equals\`, nie \`==\`.]]`,
+
     },
     {
       type: 'code',

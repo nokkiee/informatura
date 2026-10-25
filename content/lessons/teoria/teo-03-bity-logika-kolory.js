@@ -39,7 +39,7 @@ export default {
 
         **Odczyt:** \`11110110\` → najstarszy bit 1, więc ujemna: −128 + 64 + 32 + 16 + 4 + 2 = **−10**.
 
-        > **Zapamiętaj:** Dlatego w C++ i Javie \`int\` (32 bity) ma zakres od −2 147 483 648 do 2 147 483 647, a przekroczenie maksimum „zawija się” na liczby ujemne – to przepełnienie z lekcji o programowaniu.
+        > **Zapamiętaj:** [[python: 32-bitowa liczba w kodzie U2 ma zakres od −2 147 483 648 do 2 147 483 647, a przekroczenie maksimum „zawija się” na liczby ujemne. W Pythonie liczby całkowite nie mają limitu, więc tego nie zobaczysz – ale na maturze takie pytania się zdarzają.]][[cpp java: Dlatego \`int\` (32 bity) ma zakres od −2 147 483 648 do 2 147 483 647, a przekroczenie maksimum „zawija się” na liczby ujemne – to przepełnienie z lekcji o programowaniu.]]
       `,
     },
     {
@@ -193,7 +193,7 @@ export default {
           }
         `,
       },
-      explain: md`Każda składowa to dwie cyfry szesnastkowe: znaki 1–2, 3–4 i 5–6 (znak 0 to \`#\`). Gotowe funkcje zamieniają je na liczby: \`int(…, 16)\`, \`stoi(…, nullptr, 16)\`, \`Integer.parseInt(…, 16)\`.`,
+      explain: md`Każda składowa to dwie cyfry szesnastkowe: znaki 1–2, 3–4 i 5–6 (znak 0 to \`#\`). Gotowa funkcja zamienia je na liczby: [[python: \`int(…, 16)\`]][[cpp: \`stoi(…, nullptr, 16)\`]][[java: \`Integer.parseInt(…, 16)\`]].`,
     },
     {
       type: 'code',
@@ -244,7 +244,8 @@ export default {
           }
         `,
       },
-      explain: md`XOR ma jedynki dokładnie tam, gdzie bity są różne; potem liczymy jedynki (pętla z \`% 2\` i \`/ 2\` albo gotowe \`Long.bitCount\`, w Pythonie \`bin(x).count("1")\`).`,
+      explain: md`XOR ma jedynki dokładnie tam, gdzie bity są różne; potem liczymy jedynki (pętla z \`% 2\` i [[python: \`// 2\`]][[cpp java: \`/ 2\`]] albo gotowe [[python: \`bin(x).count("1")\`]][[cpp: \`__builtin_popcountll(x)\`]][[java: \`Long.bitCount(x)\`]]).`,
+
     },
   ],
   practice: ['2023-maj/2.4', '2023-czerwiec/5', '2023-maj/2.5'],

@@ -23,7 +23,7 @@ export default {
         > W pliku \`bin.txt\` w każdym wierszu zapisano liczbę w systemie dwójkowym. **Blokiem** nazywamy każdy maksymalny ciąg kolejnych jednakowych cyfr, np. liczba \`1110010\` ma 4 bloki: \`111\`, \`00\`, \`1\`, \`0\`. Podaj, ile liczb z pliku ma co najwyżej dwa bloki, oraz liczbę, która ma najwięcej bloków.
 
         Zanim napiszesz choćby wiersz kodu, wypisz sobie:
-        1. **Format danych:** jeden napis binarny w wierszu; ile wierszy, jaka długość (to mówi, czy liczby zmieszczą się w \`int\` i czy prosty algorytm zdąży).
+        1. **Format danych:** jeden napis binarny w wierszu; ile wierszy, jaka długość (to mówi, [[cpp java: czy liczby zmieszczą się w \`int\` i ]]czy prosty algorytm zdąży).
         2. **Co dokładnie jest odpowiedzią:** liczba (ile?) czy element (która?), jedna odpowiedź czy kilka, w jakiej kolejności.
         3. **Przypadki brzegowe:** czy liczba może mieć jeden blok (\`111\`)? Co, jeśli kilka liczb ma tyle samo bloków – którą podać? (W prawdziwych zadaniach treść zwykle mówi „jest jedna taka liczba” – czytaj to uważnie.)
         4. **Przykład z treści:** policz go ręcznie. Jeśli Twoje rozumienie daje inny wynik niż podany w zadaniu – źle zrozumiałeś definicję.
@@ -190,7 +190,8 @@ export default {
 
         Policz ręcznie: bloki mają kolejno 3, 2, 2, 1, 7, 1, 3, 4. Co najwyżej dwa bloki: \`111000\`, \`10\`, \`1\`, \`111111\` – cztery liczby. Najwięcej bloków (7) ma \`1010101\`. Program daje to samo, więc można go uruchomić na pełnym pliku.
 
-        > **Wskazówka:** Jeśli wynik dla pliku przykładowego się nie zgadza, wypisz wartości pośrednie (np. \`print(s, bloki(s))\` dla każdego wiersza) i porównaj z ręcznymi obliczeniami. Błąd zwykle widać od razu.
+        > **Wskazówka:** Jeśli wynik dla pliku przykładowego się nie zgadza, wypisz wartości pośrednie (np. [[python: \`print(s, bloki(s))\`]][[cpp: \`cout << s << " " << bloki(s) << endl;\`]][[java: \`System.out.println(s + " " + bloki(s));\`]] dla każdego wiersza)
+ i porównaj z ręcznymi obliczeniami. Błąd zwykle widać od razu.
       `,
     },
     {

@@ -1,7 +1,8 @@
 'use strict';
 // Lessons ("Lekcje"): the overview, a lesson's steps with runnable examples in the reader's
-// language, every kind of quiz question (choice, true/false, short answer, program, SQL query,
-// formula), progress that survives a reload, the practice links and a section test.
+// language (and only in it: switching the language rewrites the text, examples and questions),
+// every kind of quiz question (choice, true/false, short answer, program, SQL query, formula),
+// progress that survives a reload, the practice links and a section test.
 module.exports = async (H) => {
   const go = async (hash, wait = 900) => {
     await H.js(`location.hash = ${JSON.stringify(hash)}`);
@@ -17,6 +18,8 @@ module.exports = async (H) => {
     await H.js(`${editorIn(i)}.setValue(${JSON.stringify(text)})`);
   };
   const lesson = (section, id) => H.js(`import('../content/lessons/${section}/${id}.js').then((m) => m.default)`);
+  // the questions a reader of `lang` gets (some are asked only in one language)
+  const quizFor = (l, lang) => l.quiz.filter((q) => !q.langs || q.langs.includes(lang));
   await H.js(`(async () => { const s = await import('./js/store.js'); await s.setSettings({ lang: 'python' }); })()`);
 
   // ---- overview and a section ------------------------------------------------------------
@@ -40,21 +43,31 @@ module.exports = async (H) => {
   await H.click('.ex .btn', 'Uruchom');
   await H.waitFor(() => H.js(`!!document.querySelector('.ex-stdout')`), 30000);
   H.assert((await H.js(`document.querySelector('.ex-stdout').textContent`)) === 'Witaj, maturo!\n', 'colourized example runs with plain spaces');
-  // the examples follow the language chosen in the header
-  await H.js(`(async () => { const s = await import('./js/store.js'); await s.setSettings({ lang: 'cpp' }); })()`);
-  await H.sleep(300);
-  H.assert((await H.js(`document.querySelector('.ex .ex-code:not([hidden])').dataset.lang`)) === 'cpp', 'examples switch to C++');
-  await H.js(`(async () => { const s = await import('./js/store.js'); await s.setSettings({ lang: 'python' }); })()`);
+  // one language at a time: only the Python example, no word about the other languages
+  H.assert((await H.js(`[...document.querySelectorAll('.ex .ex-code')].map((e) => e.dataset.lang).join()`)) === 'python', 'only the Python example is shown');
+  H.assert(!/C\+\+|Jav[ay]/.test(await H.js(`document.querySelector('.lesson-main').textContent`)), 'the Python lesson does not talk about C++ or Java');
+  // the switch in the lesson's header rewrites the step in C++ (the header's switch follows)
+  await H.click('.lesson-lang .seg-btn', 'C++');
+  await H.sleep(500);
+  H.assert((await H.js(`document.querySelector('.ex .ex-code').dataset.lang`)) === 'cpp', 'the example is in C++');
+  H.assert(/cout/.test(await H.js(`document.querySelector('.lesson-main').textContent`)) && !/Python/.test(await H.js(`document.querySelector('.lesson-main').textContent`)), 'the text explains the C++ program');
+  H.assert((await H.js(`document.querySelector('.lesson-lang .seg-btn.active').textContent`)) === 'C++', 'the lesson switch shows C++');
+  H.assert(/C\+\+/.test(await H.js(`document.querySelector('#header .seg .seg-btn.active')?.textContent || ''`)), 'the header switch follows');
   await H.click('.lesson-nav .btn', 'Dalej');
   await H.sleep(400);
-  H.assert(/Zmienne i typy/.test(await H.js(`document.querySelector('.step-title').textContent`)), 'next step');
+  H.assert(/long long/.test(await H.js(`document.querySelector('.lesson-main').textContent`)), 'the C++ lesson warns about int overflow');
+  await H.shot('51-learn-lesson-cpp');
+  await H.click('.lesson-lang .seg-btn', 'Python');
+  await H.sleep(500);
+  H.assert(/Zmienne i typy/.test(await H.js(`document.querySelector('.step-title').textContent`)), 'switching keeps the step');
+  H.assert(!/long long/.test(await H.js(`document.querySelector('.lesson-main').textContent`)), 'the Python lesson has no long long');
   await H.shot('51-learn-lesson');
 
   // ---- the quiz: every closed question and the programs ------------------------------------------
   await H.click('.step-link', 'Sprawdź się');
   await H.sleep(800);
-  const L1 = await lesson('programowanie', 'prog-01-start');
-  H.assert((await H.js(`document.querySelectorAll('.q-card').length`)) === L1.quiz.length, 'all quiz questions shown');
+  const L1 = quizFor(await lesson('programowanie', 'prog-01-start'), 'python');
+  H.assert((await H.js(`document.querySelectorAll('.q-card').length`)) === L1.length, 'all quiz questions of the Python lesson shown');
   // a wrong answer first: feedback and explanation, not done
   await H.js(`${card(0)}.querySelectorAll('.opt')[1].click()`);
   await check(0);
@@ -71,7 +84,7 @@ module.exports = async (H) => {
   await H.sleep(200);
   H.assert(/ok/.test(await status(1)), 'short answer accepted');
   // true / false
-  await H.js(`(() => { const want = ${JSON.stringify(L1.quiz[2].items.map((x) => x.answer))}; ${card(2)}.querySelectorAll('tr').forEach((tr, k) => tr.querySelectorAll('.tf-btn')[want[k] ? 0 : 1].click()); })()`);
+  await H.js(`(() => { const want = ${JSON.stringify(L1[2].items.map((x) => x.answer))}; ${card(2)}.querySelectorAll('tr').forEach((tr, k) => tr.querySelectorAll('.tf-btn')[want[k] ? 0 : 1].click()); })()`);
   await check(2);
   await H.sleep(200);
   H.assert(/ok/.test(await status(2)), 'true/false accepted');
@@ -84,10 +97,10 @@ module.exports = async (H) => {
   H.assert(/bad/.test(await status(4)), 'a wrong program fails');
   H.assert(await H.js(`!!${card(4)}.querySelector('.q-test-detail')`), 'the failing test is shown');
   await H.shot('52-learn-code-wrong');
-  await setEditor(4, L1.quiz[4].solution.python);
+  await setEditor(4, L1[4].solution.python);
   await check(4);
   await H.waitFor(() => H.js(`/ok/.test(${card(4)}.querySelector('.q-status').className)`), 30000);
-  await setEditor(5, L1.quiz[5].solution.python);
+  await setEditor(5, L1[5].solution.python);
   await check(5);
   await H.waitFor(() => H.js(`/ok/.test(${card(5)}.querySelector('.q-status').className)`), 30000);
   await H.waitFor(() => H.js(`!document.querySelector('.lesson-done').hidden`), 5000);
@@ -101,7 +114,8 @@ module.exports = async (H) => {
   // practice links lead to real exam tasks
   await H.click('.step-link', 'Zadania z matur');
   await H.sleep(400);
-  H.assert((await H.js(`document.querySelectorAll('.practice-row').length`)) === L1.practice.length, 'practice tasks listed');
+  H.assert((await H.js(`document.querySelectorAll('.practice-row').length`)) === (await lesson('programowanie', 'prog-01-start')).practice.length, 'practice tasks listed');
+
   await H.click('.practice-row');
   await H.waitFor(() => H.js(`location.hash.startsWith('#/t/') && !!document.querySelector('.task-card')`), 10000);
 

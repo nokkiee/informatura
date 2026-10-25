@@ -67,17 +67,27 @@ export default {
         }
         ~~~
 
-        - **Python:** \`def nazwa(parametry):\` i wcięte ciało. Funkcja musi być zdefiniowana, zanim zostanie wywołana.
-        - **C++:** typ wyniku przed nazwą (\`int\`, \`bool\`, \`string\`…, \`void\` gdy nic nie zwraca). Funkcja stoi nad \`main\`.
-        - **Java:** metoda \`static\` w tej samej klasie co \`main\`.
+        :::python
+        - \`def nazwa(parametry):\` i wcięte ciało. Typów parametrów ani wyniku nie piszesz.
+        - Funkcja musi być zdefiniowana (wyżej w pliku), zanim zostanie wywołana.
+        - Funkcja bez \`return\` zwraca \`None\` („nic”).
+        :::
+        :::cpp
+        - Przed nazwą piszesz typ wyniku (\`int\`, \`long long\`, \`bool\`, \`string\`…, a \`void\`, gdy funkcja nic nie zwraca), a przy każdym parametrze – jego typ.
+        - Funkcja stoi **nad** \`main\` – kompilator musi ją znać, zanim zostanie wywołana.
+        :::
+        :::java
+        - Funkcja to metoda \`static\` w tej samej klasie co \`main\`: \`static long sumaCyfr(long n) { … }\`.
+        - Przed nazwą piszesz typ wyniku (\`int\`, \`long\`, \`boolean\`, \`String\`…, a \`void\`, gdy metoda nic nie zwraca), a przy każdym parametrze – jego typ. Kolejność metod w klasie nie ma znaczenia.
+        :::
 
-        > **Wskazówka:** Zmiana parametru \`n\` wewnątrz funkcji (\`n //= 10\`) nie zmienia zmiennej, którą przekazano przy wywołaniu – funkcja dostaje kopię liczby.
+        > **Wskazówka:** Zmiana parametru \`n\` wewnątrz funkcji ([[python: \`n //= 10\`]][[cpp java: \`n /= 10\`]]) nie zmienia zmiennej, którą przekazano przy wywołaniu – funkcja dostaje kopię liczby.
       `,
     },
     {
       title: 'Cyfry liczby',
       body: md`
-        Pętla „weź ostatnią cyfrę (\`n % 10\`), odetnij ją (\`n // 10\`)” przechodzi po cyfrach **od końca**. Z niej zrobisz prawie wszystko:
+        Pętla „weź ostatnią cyfrę (\`n % 10\`), odetnij ją ([[python: \`n // 10\`]][[cpp java: \`n / 10\`]])” przechodzi po cyfrach **od końca**. Z niej zrobisz prawie wszystko:
 
         - **suma cyfr** – dodawaj kolejne \`n % 10\`,
         - **liczba cyfr** – licz obroty pętli (uwaga: dla \`n = 0\` pętla nie ruszy, a 0 ma jedną cyfrę),
@@ -167,7 +177,7 @@ export default {
         }
         ~~~
 
-        > **Wskazówka:** W zadaniach „napisz program” możesz też zamienić liczbę na napis: \`str(n)\` / \`to_string(n)\` / \`String.valueOf(n)\` i pracować na znakach. W zadaniach „zapisz algorytm” z zakazem funkcji wbudowanych zwykle trzeba umieć wersję z \`div\` i \`mod\`.
+        > **Wskazówka:** W zadaniach „napisz program” możesz też zamienić liczbę na napis: [[python: \`str(n)\`]][[cpp: \`to_string(n)\`]][[java: \`String.valueOf(n)\`]] i pracować na znakach. W zadaniach „zapisz algorytm” z zakazem funkcji wbudowanych zwykle trzeba umieć wersję z \`div\` i \`mod\`.
       `,
     },
     {
@@ -175,7 +185,7 @@ export default {
       body: md`
         Liczba **pierwsza** ma dokładnie dwa dzielniki: 1 i siebie (2, 3, 5, 7, 11…; 1 nie jest pierwsza). Żeby to sprawdzić, wystarczy szukać dzielnika od 2 do \`√n\`: jeśli \`n = a · b\` i \`a ≤ b\`, to \`a ≤ √n\`. Warunek \`d * d <= n\` zamiast \`d <= sqrt(n)\` omija liczby z przecinkiem.
 
-        **NWD** (największy wspólny dzielnik) liczy się algorytmem Euklidesa, ale w programach możesz użyć gotowej funkcji: \`math.gcd(a, b)\` w Pythonie, \`gcd(a, b)\` z \`<numeric>\` w C++ (od C++17). W Javie trzeba ją napisać – to trzy wiersze. Skąd się bierze ten algorytm, wyjaśnia lekcja o liczbach w dziale Algorytmika.
+        **NWD** (największy wspólny dzielnik) liczy się algorytmem Euklidesa. [[python: W programach możesz użyć gotowej funkcji \`math.gcd(a, b)\` (po \`import math\`).]][[cpp: W programach możesz użyć gotowej funkcji \`gcd(a, b)\` z \`<numeric>\`.]][[java: Gotowej funkcji dla liczb typu \`long\` nie ma, więc trzeba ją napisać – to trzy wiersze, jak niżej.]] Skąd się bierze ten algorytm, wyjaśnia lekcja o liczbach w dziale Algorytmika.
 
         ~~~python run
         import math
@@ -306,7 +316,7 @@ export default {
         }
         ~~~
 
-        > **Uwaga:** Liczba binarna z 20 cyframi (jak w zadaniach maturalnych) ma wartość ponad milion – mieści się w \`int\`, ale 40-cyfrowa już nie. Przy porównywaniu liczb zapisanych binarnie jako napisy: dłuższy napis (bez zer wiodących) to większa liczba, a przy równej długości wystarczy porównać napisy alfabetycznie.
+        > **Uwaga:** Liczba binarna z 20 cyframi (jak w zadaniach maturalnych) ma wartość ponad milion[[python: , a 64-cyfrowa – ponad 10¹⁹; w Pythonie to żaden problem]][[cpp java:  – mieści się w \`int\`, ale 40-cyfrowa już nie]]. Przy porównywaniu liczb zapisanych binarnie jako napisy: dłuższy napis (bez zer wiodących) to większa liczba, a przy równej długości wystarczy porównać napisy alfabetycznie.
       `,
     },
   ],
@@ -323,29 +333,49 @@ export default {
                 n //= 10
             return s
         ~~~
+        ~~~cpp
+        int f(int n) {
+            int s = 0;
+            while (n > 0) {
+                s += n % 10;
+                n /= 10;
+            }
+            return s;
+        }
+        ~~~
+        ~~~java
+        static int f(int n) {
+            int s = 0;
+            while (n > 0) {
+                s += n % 10;
+                n /= 10;
+            }
+            return s;
+        }
+        ~~~
       `,
       answer: '21',
       explain: md`To suma cyfr: 8 + 2 + 7 + 4 = 21 (cyfry przychodzą od końca, ale przy dodawaniu kolejność nie ma znaczenia).`,
     },
     {
       type: 'input',
-      q: md`Co wypisze w Pythonie \`print(bin(13)[2:])\`? (W Javie: \`Long.toBinaryString(13)\`.)`,
+      q: md`[[python: Co wypisze \`print(bin(13)[2:])\`?]][[cpp: Co zwróci własna funkcja „liczba → napis w systemie o podstawie \`b\`” z tej lekcji dla \`n = 13\` i \`b = 2\`?]][[java: Co zwróci \`Long.toBinaryString(13)\`?]]`,
       answer: '1101',
       exact: true,
-      explain: md`13 = 8 + 4 + 1 = 1·2³ + 1·2² + 0·2¹ + 1·2⁰, więc binarnie 1101. \`bin(13)\` daje \`"0b1101"\`, a \`[2:]\` odcina przedrostek \`0b\`.`,
+      explain: md`13 = 8 + 4 + 1 = 1·2³ + 1·2² + 0·2¹ + 1·2⁰, więc binarnie 1101.[[python:  \`bin(13)\` daje \`"0b1101"\`, a \`[2:]\` odcina przedrostek \`0b\`.]]`,
     },
     {
       type: 'tf',
       q: md`Oceń prawdziwość zdań.`,
       items: [
-        { text: 'W Pythonie `int("101", 2)` daje 5.', answer: true },
-        { text: 'Funkcja w Pythonie bez instrukcji `return` zwraca `None`.', answer: true },
+        { text: '[[python: `int("101", 2)`]][[cpp: `stoll("101", nullptr, 2)`]][[java: `Long.parseLong("101", 2)`]] daje 5.', answer: true },
+        { text: '[[python: Funkcja bez instrukcji `return` zwraca `None`.]][[cpp: Funkcja, która nic nie zwraca, ma typ wyniku `void`.]][[java: Metoda, która nic nie zwraca, ma typ wyniku `void`.]]', answer: true },
         { text: 'Żeby sprawdzić, czy n jest pierwsza, trzeba sprawdzić wszystkie dzielniki od 2 do n − 1.', answer: false },
         { text: 'Liczba 1 jest liczbą pierwszą.', answer: false },
       ],
       explain: md`
         - Tak: 1·4 + 0·2 + 1·1 = 5.
-        - Tak – a próba liczenia na \`None\` kończy się błędem, więc pilnuj \`return\`.
+        - Tak[[python:  – a próba liczenia na \`None\` kończy się błędem, więc pilnuj \`return\`]].
         - Nie – wystarczy do \`√n\`: każdy dzielnik większy od \`√n\` ma „parę” mniejszą od \`√n\`.
         - Nie – liczba pierwsza ma **dokładnie dwa** dzielniki, a 1 ma jeden.
       `,
@@ -435,6 +465,7 @@ export default {
         `,
       },
       explain: md`Funkcja z lekcji, wywołana dla każdej liczby. Pułapki z testów: 0 i 1 nie są pierwsze, kwadraty liczb pierwszych (49, 121, 169) mają dzielnik równy dokładnie \`√n\` – dlatego warunek to \`d * d <= n\`, a nie \`<\`.`,
+
     },
     {
       type: 'code',
@@ -506,7 +537,8 @@ export default {
           }
         `,
       },
-      explain: md`Kolejne reszty z dzielenia przez \`b\` to cyfry od najmniej znaczącej, więc dopisujemy je **z przodu** napisu. Przypadek \`n = 0\` trzeba obsłużyć osobno, bo pętla \`while n > 0\` nie wykona się ani razu i napis zostałby pusty.`,
+      explain: md`Kolejne reszty z dzielenia przez \`b\` to cyfry od najmniej znaczącej, więc dopisujemy je **z przodu** napisu. Przypadek \`n = 0\` trzeba obsłużyć osobno, bo pętla [[python: \`while n > 0\`]][[cpp java: \`while (n > 0)\`]] nie wykona się
+ ani razu i napis zostałby pusty.`,
     },
   ],
   practice: ['2024-maj/3.2', '2024-maj/3.3', '2023-maj/2.3', '2023-czerwiec/3.4', '2025-maj/2.3', '2025-czerwiec/2.2', '2023-maj/2.5'],

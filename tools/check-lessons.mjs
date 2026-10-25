@@ -3,6 +3,9 @@
 //   - every program exercise's model solution passes its tests in Python, C++ and Java
 //   - every runnable example (~~~python run …) runs in each of its languages, and they all
 //     print the same (unless the example is marked "differs")
+//   - each reader gets the lesson in their language only (renderer/js/learn/langs.js): every code
+//     example has a version in each language that sees it, a table never loses its only language
+//     column, and the text a Python reader sees doesn't talk about C++ or Java (and so on)
 //   - SQL solutions and ~~~sql run examples run on the lesson's database (solutions give rows)
 //   - formula solutions and ~~~excel run examples evaluate without errors (and to `expect`)
 //   - every question is complete (answers, explanations), every practice link is a real task,
@@ -28,6 +31,7 @@ const C = await import(pathToFileURL(path.join(ROOT, 'renderer/js/check.js')).hr
 const S = await import(pathToFileURL(path.join(ROOT, 'renderer/js/ws/sql.js')).href);
 const E = await import(pathToFileURL(path.join(ROOT, 'renderer/js/sheet/engine.js')).href);
 const L = await import(pathToFileURL(path.join(ROOT, 'renderer/js/learn/check.js')).href);
+const LG = await import(pathToFileURL(path.join(ROOT, 'renderer/js/learn/langs.js')).href);
 const SQL = await require('sql.js')();
 
 // HyperFormula with the app's Polish function names (as in tools/sheet-eval.mjs)
@@ -145,23 +149,35 @@ const isErr = (v) => v && typeof v === 'object';
 // ---- examples in the lesson text -------------------------------------------------------------------
 
 const CODE = ['python', 'cpp', 'java'];
-function fences(src) {
+const BLOCK = /^\s*:::\s*(.*?)\s*$/;
+function fences(src, where) {
   const out = [];
   const lines = String(src).split('\n');
+  let block = null; // the languages of the :::block we're in
   for (let i = 0; i < lines.length; i++) {
+    const b = lines[i].match(BLOCK);
+    if (b) {
+      const names = b[1].split(/[ ,]+/).filter(Boolean);
+      if (names.some((n) => !CODE.includes(n))) fail(where, `unknown language block ":::${b[1]}"`);
+      if (names.length && block) fail(where, `":::${b[1]}" inside another language block (close it with ":::" first)`);
+      if (!names.length && !block) fail(where, 'a ":::" closes no language block');
+      block = names.length ? names : null;
+      continue;
+    }
     const m = lines[i].match(/^~~~(\S*)\s*(.*)$/);
     if (!m) continue;
     let j = i + 1;
     while (j < lines.length && !/^~~~\s*$/.test(lines[j])) j++;
-    out.push({ lang: m[1], flags: m[2].split(/\s+/).filter(Boolean), code: lines.slice(i + 1, j).join('\n'), start: i, end: j });
+    out.push({ lang: m[1], flags: m[2].split(/\s+/).filter(Boolean), code: lines.slice(i + 1, j).join('\n'), start: i, end: j, block });
     i = j;
   }
+  if (block) fail(where, `language block ":::${block.join(' ')}" is not closed`);
   // consecutive python/cpp/java fences (only blank lines between) are one example
   const groups = [];
   for (const f of out) {
     const prev = groups[groups.length - 1];
     const between = prev ? lines.slice(prev.at(-1).end + 1, f.start).every((l) => !l.trim()) : false;
-    if (prev && between && CODE.includes(f.lang) && CODE.includes(prev[0].lang) && !prev.some((p) => p.lang === f.lang)) prev.push(f);
+    if (prev && between && CODE.includes(f.lang) && CODE.includes(prev[0].lang) && !prev.some((p) => p.lang === f.lang) && prev[0].block === f.block) prev.push(f);
     else if (prev && between && f.lang === 'stdin' && CODE.includes(prev[0].lang)) prev.stdin = f.code;
     else groups.push([f]);
   }
@@ -187,14 +203,48 @@ function checkTables(src, where) {
   }
 }
 
-async function checkExamples(src, ctx, where) {
+// what a reader of each language sees: no word about the other languages, no table that loses
+// its only language column, no leftover [[…]] markers
+const OTHER = { python: /Python\w*/, cpp: /C\+\+/, java: /\bJav(?:a|ie|y|ę|ą)\b/, all: /(trzech|wszystkich|obu|innych) języka|język(ach|ami) programowania/ };
+function checkReaders(src, where, langs = CODE) {
+  for (const l of langs) {
+    const text = LG.forLang(String(src), l, { tables: false });
+    if (/\[\[(python|cpp|java)/.test(text)) fail(`${where} (${l})`, 'a [[…]] language marker is not closed');
+    const prose = LG.forLang(String(src), l).replace(/^~~~[\s\S]*?^~~~\s*$/gm, '');
+    for (const [other, re] of Object.entries(OTHER)) {
+      if (other === l) continue;
+      const m = prose.match(re);
+      if (m) fail(`${where} (${l})`, `the ${l} reader sees "${m[0]}": …${excerpt(prose.slice(Math.max(0, m.index - 60), m.index + 40))}…`);
+    }
+    // a table with language columns needs one for this reader
+    const lines = text.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      if (!lines[i].trim().startsWith('|') || !/^\s*\|[\s:|-]+\|\s*$/.test(lines[i + 1] || '')) continue;
+      const who = lines[i].trim().replace(/^\||\|$/g, '').split(/(?<!\\)\|/).map(LG.columnLangs);
+      if (who.some(Boolean) && !who.some((w) => w?.includes(l))) fail(`${where} (${l})`, `table has no column for ${l}: ${lines[i].trim().slice(0, 80)}`);
+    }
+    checkTables(LG.forLang(String(src), l), `${where} (${l})`);
+  }
+}
+
+async function checkExamples(src, ctx, where, langs = CODE) {
   checkTables(src, where);
-  for (const g of fences(src)) {
+  checkReaders(src, where, langs);
+  for (const g of fences(src, where)) {
     const flags = g.flatMap((f) => f.flags);
-    if (!flags.includes('run')) continue;
     const l0 = g[0].lang;
+    // every reader who sees the example sees it in their language
     if (CODE.includes(l0)) {
-      if (!onlyLang && g.length !== 3 && !flags.includes('only')) fail(where, `example has ${g.map((f) => f.lang).join('/')} only (mark it "only" if that is on purpose)`);
+      const readers = (g[0].block || CODE).filter((l) => langs.includes(l));
+      const have = g.map((f) => f.lang);
+      const missing = readers.filter((l) => !have.includes(l));
+      const unseen = have.filter((l) => !readers.includes(l));
+      if (missing.length) fail(where, `example ${have.join('/')} has no ${missing.join('/')} version (or put it in a ":::${have.join(' ')}" block)`);
+      if (unseen.length) fail(where, `the ${unseen.join('/')} version of an example is never shown (it is in a ":::${(g[0].block || []).join(' ')}" block)`);
+      if (flags.includes('only')) fail(where, '"only" is gone: put a one-language example in a ":::lang" block');
+    }
+    if (!flags.includes('run')) continue;
+    if (CODE.includes(l0)) {
       let first = null;
       for (const f of g) {
         if (!LANGS.includes(f.lang)) continue;
@@ -231,9 +281,14 @@ const TYPES = ['choice', 'tf', 'input', 'code', 'sql', 'sheet'];
 async function checkQuestion(q, ctx, where) {
   checks++;
   if (!TYPES.includes(q.type)) return fail(where, `unknown type ${q.type}`);
+  if (q.langs && (!q.langs.length || q.langs.some((l) => !CODE.includes(l)))) fail(where, `bad langs ${JSON.stringify(q.langs)}`);
+  const readers = q.langs || CODE;
   if (!q.q) fail(where, 'no question text');
   if (!q.explain) fail(where, 'no explanation');
-  if (q.explain) await checkExamples(q.explain, ctx, where + ' explanation');
+  await checkExamples(q.q || '', ctx, where, readers);
+  if (q.explain) await checkExamples(q.explain, ctx, where + ' explanation', readers);
+  for (const [k, o] of (q.options || []).entries()) checkReaders(o, `${where} option ${k + 1}`, readers);
+  for (const [k, it] of (q.items || []).entries()) checkReaders(it.text || '', `${where} item ${k + 1}`, readers);
   if (q.type === 'choice') {
     if (!(q.options?.length >= 2)) fail(where, 'needs at least two options');
     const ans = Array.isArray(q.answer) ? q.answer : [q.answer];
@@ -251,8 +306,8 @@ async function checkQuestion(q, ctx, where) {
   }
   if (q.type === 'code') {
     if (!(q.tests?.length >= 3)) fail(where, 'needs at least 3 tests');
-    for (const l of CODE) if (!q.solution?.[l]) fail(where, `no ${l} solution`);
-    for (const l of LANGS) {
+    for (const l of readers) if (!q.solution?.[l]) fail(where, `no ${l} solution`);
+    for (const l of LANGS.filter((x) => readers.includes(x))) {
       const code = q.solution?.[l];
       if (!code) continue;
       for (let i = 0; i < (q.tests || []).length; i++) {
@@ -309,9 +364,11 @@ for (const section of sections) {
     const lesson = (await import(pathToFileURL(file).href)).default;
     lessonCount++;
     for (const k of ['title', 'summary', 'intro']) if (!lesson[k]) fail(where, `no ${k}`);
+    for (const k of ['title', 'summary']) checkReaders(lesson[k] || '', `${where} ${k}`);
+    await checkExamples(lesson.intro || '', { files: lesson.files, db: lesson.db, sheet: lesson.sheet }, `${where} intro`);
     if (!(lesson.minutes > 0)) fail(where, 'no minutes');
     if (!(lesson.steps?.length >= 2)) fail(where, 'needs at least two steps');
-    if (!(lesson.quiz?.length >= 4)) fail(where, 'needs at least four quiz questions');
+    for (const l of CODE) if (!(LG.questionsFor(lesson.quiz || [], l).length >= 4)) fail(where, `needs at least four quiz questions in ${l}`);
     if (!lesson.practice?.length) fail(where, 'no practice tasks');
     for (const key of lesson.practice || []) if (!taskKeys.has(key)) fail(where, `practice task ${key} does not exist`);
     const ctx = { files: lesson.files, db: lesson.db, sheet: lesson.sheet };
@@ -327,7 +384,8 @@ for (const section of sections) {
     continue;
   }
   const test = (await import(pathToFileURL(testFile).href)).default;
-  if (!(test.questions?.length >= 8)) fail(`${section.id} test`, 'needs at least 8 questions');
+  for (const l of CODE) if (!(LG.questionsFor(test.questions || [], l).length >= 8)) fail(`${section.id} test`, `needs at least 8 questions in ${l}`);
+  checkReaders(section.desc || '', `${section.id} description`);
   const ctx = { files: test.files, db: test.db, sheet: test.sheet };
   for (const [i, q] of (test.questions || []).entries()) {
     if (!section.lessons.includes(q.lesson)) fail(`${section.id} test ${i + 1}`, `lesson "${q.lesson}" is not in the section`);
