@@ -44,7 +44,8 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
   wyjaśnienie, a w zadaniach praktycznych – przykładowe rozwiązanie.
 - Na końcu działu jest **test z całego działu** z wynikiem procentowym (zaliczenie od 70%) i listą
   lekcji do powtórki.
-- Pod każdą lekcją są **linki do prawdziwych zadań z matur** na jej temat. Postęp zapisuje się sam.
+- Pod każdą lekcją są **linki do prawdziwych zadań z matur** na jej temat. Postęp zapisuje się sam,
+  a w *Ustawieniach → Postęp* można go wyzerować osobno (bez ruszania wyników zadań z matur).
 
 Lekcje, przykłady i ćwiczenia w lekcjach napisano dla programu (zadania z matur są tylko w części
 „Zadania z matur”). Każde wzorcowe rozwiązanie, przykład, zapytanie i formuła z lekcji jest automatycznie
@@ -122,7 +123,9 @@ sprawdzane – zob. `tools/check-lessons.mjs`.
   - Punkty częściowe są przyznawane według zasad oceniania z klucza.
 - Zadań, których nie da się sprawdzić automatycznie (wykresy, zapis algorytmu, opis), nie ocenia program.
   Po odsłonięciu rozwiązania i zasad oceniania przyznajesz sobie punkty sam.
-- Postęp, kod i odpowiedzi zapisują się automatycznie.
+- Postęp, kod i odpowiedzi zapisują się automatycznie. Wyniki zadań wyzerujesz w *Ustawieniach → Postęp*
+  (osobno od postępu w lekcjach).
+
 
 ## Czego potrzebujesz
 
