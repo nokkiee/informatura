@@ -1,5 +1,5 @@
 import { h, icon, btn, clear, toast, confirmDialog } from '../ui.js';
-import { getSettings, setSettings, resetProgress } from '../store.js';
+import { getSettings, setSettings, resetProgress, allProgress, getLearn, resetLearn } from '../store.js';
 import { LANGS } from '../algo.js';
 
 const HINTS = {
@@ -161,24 +161,65 @@ export async function renderSettings(view) {
   page.appendChild(section('Kompilatory i interpretery', h('p', { class: 'muted small' }, 'Programy uruchamiane są narzędziami zainstalowanymi na tym komputerze. Jeśli coś jest „brak”, zainstaluj to albo wskaż ścieżkę.'), tcBox));
   refresh(false);
 
+  // two separate resets: the exam tasks and the lessons (with their tests)
+  const tasksNote = h('p', { class: 'muted small set-note' });
+  const showTasks = () => {
+    const n = Object.values(allProgress()).filter((p) => p.status && p.status !== 'seen').length;
+    tasksNote.textContent = n ? `Zadania z wynikiem: ${n}. Twój kod i odpowiedzi w zadaniach zostaną.` : 'Nie masz jeszcze wyników zadań.';
+  };
+  const learnNote = h('p', { class: 'muted small set-note' });
+  const showLearn = async () => {
+    const learn = await getLearn();
+    const lessons = Object.values(learn.lessons).filter((l) => l.seen?.length || Object.keys(l.q || {}).length).length;
+    const tests = Object.values(learn.tests).filter((t) => t.best != null || Object.keys(t.answers || {}).length).length;
+    learnNote.textContent =
+      lessons || tests ? `Rozpoczęte lekcje: ${lessons}, rozwiązywane testy działów: ${tests}. Wyniki zadań z matur zostaną.` : 'Nie masz jeszcze postępu w lekcjach ani w testach działów.';
+  };
+  showTasks();
+  showLearn();
   page.appendChild(
     section(
       'Postęp',
       row(
-        'Wyniki zadań',
-        btn('Wyzeruj postęp', {
+        'Zadania z matur',
+        btn('Wyzeruj wyniki zadań', {
           icon: 'trash',
           kind: 'danger',
           onClick: async () => {
-            if (await confirmDialog('Wyzerować postęp?', 'Znikną punkty i statusy zadań. Twój kod i odpowiedzi zostaną.', 'Wyzeruj', 'danger')) {
+            if (await confirmDialog('Wyzerować wyniki zadań?', 'Znikną punkty i statusy zadań z matur. Twój kod i odpowiedzi zostaną. Postęp w lekcjach się nie zmieni.', 'Wyzeruj', 'danger')) {
               await resetProgress();
-              toast('Postęp wyzerowany', 'info');
+              showTasks();
+              toast('Wyniki zadań wyzerowane', 'info');
             }
           },
         }),
       ),
+      tasksNote,
+      row(
+        'Lekcje i testy',
+        btn('Wyzeruj postęp lekcji', {
+          icon: 'trash',
+          kind: 'danger',
+          onClick: async () => {
+            if (
+              await confirmDialog(
+                'Wyzerować postęp lekcji?',
+                'Znikną ukończone lekcje, przeczytane kroki, odpowiedzi i programy z testów po lekcjach oraz wyniki testów działów. Wyniki zadań z matur się nie zmienią.',
+                'Wyzeruj',
+                'danger',
+              )
+            ) {
+              await resetLearn();
+              await showLearn();
+              toast('Postęp lekcji wyzerowany', 'info');
+            }
+          },
+        }),
+      ),
+      learnNote,
     ),
   );
+
 
   page.appendChild(
     section(
@@ -186,7 +227,8 @@ export async function renderSettings(view) {
       h(
         'p',
         { class: 'small' },
-        `Informatura ${info.version}. Zadania, pliki z danymi i zasady oceniania pochodzą z arkuszy egzaminu maturalnego z informatyki (CKE), pobranych z arkusze.pl. Program nie dodaje własnych zadań – testy dodatkowe do zadań z zapisem algorytmu sprawdzają tylko poprawność Twojego programu. Podpowiedzi i przykładowe rozwiązania (Python, C++, Java, SQL) przygotowano dla programu; każde rozwiązanie daje wynik zgodny z kluczem CKE.`,
+        `Informatura ${info.version}. Zadania, pliki z danymi i zasady oceniania pochodzą z arkuszy egzaminu maturalnego z informatyki (CKE), pobranych z arkusze.pl. Program nie dodaje własnych zadań – testy dodatkowe do zadań z zapisem algorytmu sprawdzają tylko poprawność Twojego programu. Podpowiedzi i przykładowe rozwiązania (Python, C++, Java, SQL) przygotowano dla programu; każde rozwiązanie daje wynik zgodny z kluczem CKE. Lekcje i ćwiczenia w lekcjach również napisano dla programu.`,
+
       ),
     ),
   );

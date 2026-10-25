@@ -2,7 +2,8 @@
 // Lessons ("Lekcje"): the overview, a lesson's steps with runnable examples in the reader's
 // language (and only in it: switching the language rewrites the text, examples and questions),
 // every kind of quiz question (choice, true/false, short answer, program, SQL query, formula),
-// progress that survives a reload, the practice links and a section test.
+// progress that survives a reload, the practice links, a section test and resetting the lessons'
+// progress in the settings (apart from the tasks' results).
 module.exports = async (H) => {
   const go = async (hash, wait = 900) => {
     await H.js(`location.hash = ${JSON.stringify(hash)}`);
@@ -172,4 +173,25 @@ module.exports = async (H) => {
   await H.click('.lesson-nav .btn', 'Rozwiąż od nowa');
   await H.sleep(400);
   H.assert(await H.js(`document.querySelector('.test-summary').hidden && document.querySelector('.q-input').value === ''`), 'the test starts over');
+
+  // ---- resetting the lessons in the settings (the tasks' results stay) ---------------------------------
+  const tasksBefore = await H.js(`window.api.storeGet('progress').then((p) => JSON.stringify(p || {}))`);
+  await go('#/settings', 1200);
+  H.assert(/Rozpoczęte lekcje: [1-9]/.test(await H.js(`document.querySelector('.page.settings').textContent`)), 'the settings show the lessons progress');
+  await H.click('.set-section .btn', 'Wyzeruj postęp lekcji');
+  await H.sleep(300);
+  await H.click('.modal .btn', 'Wyzeruj');
+  await H.sleep(600);
+  H.assert(/Nie masz jeszcze postępu w lekcjach/.test(await H.js(`document.querySelector('.page.settings').textContent`)), 'the settings say there is no progress left');
+  H.assert((await H.js(`window.api.storeGet('learn').then((l) => Object.keys(l.lessons).length + Object.keys(l.tests).length)`)) === 0, 'the lessons progress is saved empty');
+  H.assert((await H.js(`window.api.storeGet('progress').then((p) => JSON.stringify(p || {}))`)) === tasksBefore, 'the tasks results did not change');
+  await H.js(`[...document.querySelectorAll('.set-section h2')].find((x) => x.textContent === 'Postęp').scrollIntoView({ block: 'center' })`);
+  await H.sleep(200);
+  await H.shot('57-learn-reset');
+
+  await go('#/learn/programowanie', 1000);
+  H.assert(!(await H.js(`document.querySelector('.lesson-row').classList.contains('done')`)), 'the lesson is no longer done');
+  await go('#/learn/teoria', 1000);
+  H.assert(/jeszcze nie rozwiązany/.test(await H.js(`document.querySelector('.test-row').textContent`)), 'the section test result is gone');
 };
+
