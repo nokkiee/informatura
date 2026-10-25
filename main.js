@@ -178,6 +178,13 @@ async function selfTest(w) {
   result.sql = await until(`document.querySelectorAll('.sql-side .tbl-item').length === 3`);
   await js(`location.hash = '#/t/2023-maj/6.2?from=exam'`);
   result.sheet = await until(`!!document.querySelector('.grid-canvas') && document.querySelector('.fx-input')?.value === 'data'`);
+  // lessons: a lesson page, and its first example runs
+  await js(`location.hash = '#/learn/programowanie/prog-01-start'`);
+  result.learn = await until(`!!document.querySelector('.lesson-steps') && !!document.querySelector('.ex .btn.primary')`);
+  if (result.learn) {
+    await js(`document.querySelector('.ex .btn.primary').click()`);
+    result.learn = await until(`(document.querySelector('.ex-stdout')?.textContent || '').includes('Witaj')`, 30000);
+  }
   try {
     openPdf('pdf/informatyka-2023-maj-matura-rozszerzona.pdf', 3);
     await wait(1500);
@@ -186,7 +193,7 @@ async function selfTest(w) {
     result.pdf = String(e.message);
   }
   result.toolchains = await runner.detect();
-  const ok = ['home', 'code', 'hints', 'sql', 'sheet', 'pdf'].every((k) => result[k] === true);
+  const ok = ['home', 'code', 'hints', 'sql', 'sheet', 'learn', 'pdf'].every((k) => result[k] === true);
   console.log('SELFTEST ' + (ok ? 'OK ' : 'FAILED ') + JSON.stringify(result));
   app.exit(ok ? 0 : 1);
 }

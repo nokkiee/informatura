@@ -76,6 +76,7 @@ export function renderHome(view) {
       h(
         'section',
         { class: 'modes' },
+        modeCard('cap', 'Lekcje', 'Każdy dział matury wyjaśniony krok po kroku – z przykładami do uruchomienia, testem po każdej lekcji i testem z całego działu.', 'Zacznij naukę', '#/learn'),
         modeCard('book', 'Cały arkusz', 'Wybierz maturę i rozwiązuj ją zadanie po zadaniu – w trybie ćwiczeń albo jako symulację egzaminu z zegarem (210 minut).', 'Wybierz arkusz', '#/exams'),
         modeCard('shuffle', 'Losowe zadanie', 'Losuj zadania z wybranych działów i matur. Dobre na szybki trening jednego typu zadań.', 'Losuj', '#/random'),
         modeCard('list', 'Wszystkie zadania', 'Przeglądaj zadania według działów, matur i postępu. Wracaj do tych, które sprawiły Ci trudność.', 'Przeglądaj', '#/browse'),

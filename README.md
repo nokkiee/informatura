@@ -11,6 +11,8 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
 
 ## Co jest w środku
 
+- **Lekcje:** 32 lekcje w 5 działach (programowanie, algorytmika, bazy danych, arkusz kalkulacyjny, teoria),
+  każda z testem na końcu, i test z całego działu – opis niżej.
 - **8 matur, 175 zadań, 400 punktów:** maj i czerwiec 2023, 2024, 2025 i 2026.
   - Wszystkie zadania pochodzą z oryginalnych arkuszy CKE. Żadne nie jest wymyślone.
   - Przy każdym zadaniu widać, z której matury pochodzi (data egzaminu) i jaki ma numer.
@@ -23,6 +25,28 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
   przykładowe rozwiązanie podpowiadane w edytorze tak, jak VS Code podpowiada kod.
 - **Oryginał pod ręką:** przycisk *Arkusz PDF* otwiera oryginalny arkusz na stronie z danym zadaniem.
   Klucz odpowiedzi CKE też jest w programie.
+
+### Lekcje
+
+![Lekcja z przykładem uruchomionym w Pythonie](docs/screenshots/ekran-lekcje.png)
+
+- Każdy dział matury wyjaśniony krok po kroku: do czego służy dane narzędzie, kiedy po nie sięgnąć
+  i jak użyć go w zadaniu – od pierwszego programu, przez rekurencję, SQL i symulacje w arkuszu,
+  po systemy liczbowe, sieci i bezpieczeństwo.
+- Przykłady kodu są w Pythonie, C++ i Javie (pokazuje się język wybrany u góry okna) i można je
+  **uruchomić** w lekcji. Zapytania SQL wykonasz na przykładowej bazie, a formuły policzysz na
+  przykładowych danych.
+- Na końcu lekcji jest **test**: pytania ABCD, prawda/fałsz, krótkie odpowiedzi i zadania praktyczne –
+  napisz program (sprawdzany testami, także ukrytymi), zapytanie SQL (porównywane z wynikiem wzorcowego
+  zapytania) albo formułę (liczoną na danych i kopiowaną w dół jak w arkuszu). Po sprawdzeniu widać
+  wyjaśnienie, a w zadaniach praktycznych – przykładowe rozwiązanie.
+- Na końcu działu jest **test z całego działu** z wynikiem procentowym (zaliczenie od 70%) i listą
+  lekcji do powtórki.
+- Pod każdą lekcją są **linki do prawdziwych zadań z matur** na jej temat. Postęp zapisuje się sam.
+
+Lekcje, przykłady i ćwiczenia w lekcjach napisano dla programu (zadania z matur są tylko w części
+„Zadania z matur”). Każde wzorcowe rozwiązanie, przykład, zapytanie i formuła z lekcji jest automatycznie
+sprawdzane – zob. `tools/check-lessons.mjs`.
 
 ### Podpowiedzi
 
@@ -170,8 +194,8 @@ npm run install-desktop
 | `npm start` | uruchamia program |
 | `npm run dev` | uruchamia z narzędziami deweloperskimi (F12) |
 | `npm test` | testy jednostkowe: sprawdzanie odpowiedzi, kompletność treści, to, że oficjalne odpowiedzi z klucza dostają pełne punkty |
-| `npm run test:e2e` | testy całej aplikacji w Electronie: uruchamianie kodu w trzech językach, SQL, arkusz, symulacja, podpowiedzi, wyświetlanie każdego z 175 zadań razem z jego podpowiedziami |
-| `npm run verify-content` | skrypty w `tools/ref/` liczą odpowiedzi z plików danych i porównują je z kluczem CKE, `tools/check-solutions.mjs` uruchamia wszystkie przykładowe rozwiązania z podpowiedzi, a `tools/audit-pdf.mjs` porównuje treść z oryginalnymi PDF-ami (strony, punkty, liczby w treści, odpowiedzi z klucza) |
+| `npm run test:e2e` | testy całej aplikacji w Electronie: uruchamianie kodu w trzech językach, SQL, arkusz, symulacja, podpowiedzi, lekcje i ich testy, wyświetlanie każdego z 175 zadań razem z jego podpowiedziami |
+| `npm run verify-content` | skrypty w `tools/ref/` liczą odpowiedzi z plików danych i porównują je z kluczem CKE, `tools/check-solutions.mjs` uruchamia wszystkie przykładowe rozwiązania z podpowiedzi, `tools/check-lessons.mjs` – wszystkie rozwiązania, przykłady, zapytania i formuły z lekcji (w trzech językach), a `tools/audit-pdf.mjs` porównuje treść z oryginalnymi PDF-ami (strony, punkty, liczby w treści, odpowiedzi z klucza) |
 | `node scripts/e2e.js solveall` | rozwiązuje każde ze 175 zadań przez interfejs programu (pola, przyciski, uruchomienie kodu i zapytań) i sprawdza, czy dostaje pełne punkty; trwa kilka minut |
 | `npm run pack` | buduje nierozpakowaną wersję do `dist/linux-unpacked` |
 | `npm run dist` | buduje AppImage i .deb |
@@ -196,9 +220,11 @@ INFORMATURA_SELFTEST=1 dist/linux-unpacked/informatura --no-sandbox
   - `renderer/js/sheet/`: silnik arkusza i siatka.
   - `renderer/js/check.js`: sprawdzanie odpowiedzi.
   - `renderer/js/ghost.js`: przykładowe rozwiązanie pokazywane jako podpowiedź w edytorze.
+  - `renderer/js/learn/`: lekcje – wyświetlanie treści i przykładów, pytania i ich sprawdzanie.
 - `content/exams/<matura>.js`: treść zadań, klucz i zasady oceniania dla każdej matury.
 - `content/hints/<matura>.js`: podpowiedzi do każdego zadania.
 - `content/solutions/<matura>/<zadanie>.py|cpp|java|sql`: przykładowe rozwiązania, które pokazują podpowiedzi.
+- `content/lessons/<dział>/<lekcja>.js`, `…/test.js`: lekcje i testy działów (`content/lessons/index.js` – lista).
 - `content/data/<matura>/`: pliki z danymi. `content/pdf/`: oryginalne arkusze i klucze. `content/img/`: rysunki z arkuszy.
 - `sources/`: arkusze i załączniki w postaci pobranej z arkusze.pl.
 
@@ -207,7 +233,7 @@ INFORMATURA_SELFTEST=1 dist/linux-unpacked/informatura --no-sandbox
 Zadania, pliki z danymi, rysunki i klucze odpowiedzi pochodzą z matur z informatyki
 (poziom rozszerzony, formuła 2023) Centralnej Komisji Egzaminacyjnej. Pobrano je z
 [arkusze.pl](https://arkusze.pl/), a prawa do nich należą do CKE. Program służy wyłącznie do nauki.
-Podpowiedzi i przykładowe rozwiązania napisano dla programu.
+Podpowiedzi, przykładowe rozwiązania i lekcje (z ćwiczeniami) napisano dla programu.
 
 Kod programu jest udostępniony na licencji GNU GPL v3 (`LICENSE`), bo korzysta z biblioteki
 HyperFormula na licencji GPL. Pozostałe biblioteki i ich licencje są wymienione w

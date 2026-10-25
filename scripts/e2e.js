@@ -7,7 +7,7 @@ const { spawnSync } = require('child_process');
 const electron = require('electron');
 
 const root = path.join(__dirname, '..');
-const names = process.argv.slice(2).length ? process.argv.slice(2) : ['flow', 'features', 'hints', 'alltasks'];
+const names = process.argv.slice(2).length ? process.argv.slice(2) : ['flow', 'features', 'hints', 'learn', 'alltasks'];
 for (const name of names) {
   console.log(`\n=== ${name} ===`);
   // CI Linux runners can't set up Chromium's sandbox (no SUID helper, restricted user namespaces).

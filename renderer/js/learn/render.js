@@ -27,7 +27,10 @@ export function renderLessonText(src, ctx = {}) {
   return el;
 }
 
-const codeOf = (pre) => pre.querySelector('code').textContent.replace(/\n$/, '');
+// The example's code as written. Once colorized, the text on screen has no-break spaces, so the
+// code to run or copy is kept aside.
+const source = new WeakMap();
+const codeOf = (pre) => source.get(pre) ?? pre.querySelector('code').textContent.replace(/\n$/, '');
 const flagsOf = (pre) => (pre.dataset.flags || '').split(' ').filter(Boolean);
 
 function buildExamples(root, ctx) {
@@ -77,6 +80,7 @@ function example(group, input, ctx) {
   const out = h('div', { class: 'ex-out', hidden: true });
   const bodies = group.map((p) => {
     const b = h('pre', { class: 'ex-code', dataset: { lang: p.dataset.lang } }, h('code', null, codeOf(p)));
+    source.set(b, codeOf(p));
     return b;
   });
   if (langs.length > 1 || CODE_LANGS.includes(langs[0])) {
