@@ -1,8 +1,7 @@
 // App shell: header, hash router and navigation helpers.
 import { h, icon, clear, toast } from './ui.js';
-import { initStore, getSettings, setSettings, onSettings, flushTaskState } from './store.js';
+import { initStore, getSettings, onSettings, flushTaskState } from './store.js';
 import { loadContent, getExam, examTitle } from './content.js';
-import { LANGS } from './algo.js';
 
 const view = document.getElementById('view');
 let current = null;
@@ -112,24 +111,6 @@ function setActiveNav(id) {
 function buildHeader() {
   const header = document.getElementById('header');
   clear(header);
-  const langSwitch = h(
-    'div',
-    { class: 'seg', title: 'Język programowania' },
-    Object.entries(LANGS).map(([k, v]) =>
-      h(
-        'button',
-        {
-          class: `seg-btn ${getSettings().lang === k ? 'active' : ''}`,
-          dataset: { lang: k },
-          onclick: async () => {
-            await setSettings({ lang: k });
-          },
-        },
-        v.label,
-      ),
-    ),
-  );
-  onSettings((s) => langSwitch.querySelectorAll('.seg-btn').forEach((b) => b.classList.toggle('active', b.dataset.lang === s.lang)));
   header.appendChild(
     h(
       'div',
@@ -141,7 +122,6 @@ function buildHeader() {
   );
   header.appendChild(h('nav', { class: 'nav' }, navItems.map((n) => h('a', { class: 'nav-link', href: n.href, dataset: { id: n.id } }, icon(n.icon, 15), n.label))));
   header.appendChild(h('div', { class: 'grow' }));
-  header.appendChild(langSwitch);
   header.appendChild(h('a', { class: 'icon-btn nav-link', href: '#/settings', title: 'Ustawienia', dataset: { id: 'settings' } }, icon('settings')));
 }
 

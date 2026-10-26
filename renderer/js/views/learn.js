@@ -146,7 +146,7 @@ async function renderOverview(view, sections, learn) {
             'Każdy dział matury z informatyki wyjaśniony krok po kroku: do czego służy dane narzędzie, kiedy po nie sięgnąć i jak użyć go w zadaniu. Przykłady uruchomisz od razu w lekcji. Na końcu każdej lekcji sprawdzisz się w krótkim teście, a na końcu działu – w teście z całego działu. Są w nich pytania zamknięte i zadania praktyczne: piszesz program, zapytanie SQL albo formułę, a program od razu je sprawdza.',
           ),
           h('div', { class: 'hero-stats' }, stat(doneTotal, 'ukończonych lekcji', `z ${total}`), stat(sections.filter((s) => learn.tests[s.id]?.best >= PASS).length, 'zdanych testów działów', `z ${sections.length}`)),
-          h('div', { class: 'learn-lang-note' }, langSwitch(), h('span', { class: 'small muted' }, 'Kod, przykłady i zadania w lekcjach są tylko w wybranym języku. Zmienisz go tutaj, w lekcji albo u góry okna.')),
+          h('div', { class: 'learn-lang-note' }, langSwitch(), h('span', { class: 'small muted' }, 'Kod, przykłady i zadania w lekcjach są tylko w wybranym języku. Zmienisz go tutaj albo w każdej lekcji – to ten sam język, który otwiera się w zadaniach z programowania.')),
         ),
         next
           ? h(

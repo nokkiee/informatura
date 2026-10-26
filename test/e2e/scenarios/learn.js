@@ -47,13 +47,14 @@ module.exports = async (H) => {
   // one language at a time: only the Python example, no word about the other languages
   H.assert((await H.js(`[...document.querySelectorAll('.ex .ex-code')].map((e) => e.dataset.lang).join()`)) === 'python', 'only the Python example is shown');
   H.assert(!/C\+\+|Jav[ay]/.test(await H.js(`document.querySelector('.lesson-main').textContent`)), 'the Python lesson does not talk about C++ or Java');
-  // the switch in the lesson's header rewrites the step in C++ (the header's switch follows)
+  // the switch in the lesson's header rewrites the step in C++ (and sets the tasks' language too)
+  H.assert(await H.js(`!document.querySelector('#header .seg')`), 'the window header has no language switch');
   await H.click('.lesson-lang .seg-btn', 'C++');
   await H.sleep(500);
   H.assert((await H.js(`document.querySelector('.ex .ex-code').dataset.lang`)) === 'cpp', 'the example is in C++');
   H.assert(/cout/.test(await H.js(`document.querySelector('.lesson-main').textContent`)) && !/Python/.test(await H.js(`document.querySelector('.lesson-main').textContent`)), 'the text explains the C++ program');
   H.assert((await H.js(`document.querySelector('.lesson-lang .seg-btn.active').textContent`)) === 'C++', 'the lesson switch shows C++');
-  H.assert(/C\+\+/.test(await H.js(`document.querySelector('#header .seg .seg-btn.active')?.textContent || ''`)), 'the header switch follows');
+  H.assert((await H.js(`import('./js/store.js').then((s) => s.getSettings().lang)`)) === 'cpp', 'the language setting (used by the tasks) is C++');
   await H.click('.lesson-nav .btn', 'Dalej');
   await H.sleep(400);
   H.assert(/long long/.test(await H.js(`document.querySelector('.lesson-main').textContent`)), 'the C++ lesson warns about int overflow');

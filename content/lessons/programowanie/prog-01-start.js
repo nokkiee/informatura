@@ -16,7 +16,7 @@ export default {
       body: md`
         Na maturze z informatyki część zadań brzmi: *„Napisz program, który…”*. Dostajesz plik z danymi (np. \`liczby.txt\`), a Twój program ma policzyć odpowiedź – na przykład ile liczb jest parzystych albo która liczba jest największa. Oceniana jest **odpowiedź**, którą zapiszesz w pliku z wynikami, więc program jest narzędziem: ma być poprawny, nie musi być piękny.
 
-        Ta lekcja pokazuje wszystko w języku **[[python: Python]][[cpp: C++]][[java: Java]]**. Jeśli na maturze chcesz pisać w innym języku, zmień go przełącznikiem **Język** nad lekcją (albo u góry okna) – wtedy cała lekcja, przykłady i zadania będą w tamtym języku.
+        Ta lekcja pokazuje wszystko w języku **[[python: Python]][[cpp: C++]][[java: Java]]**. Jeśli na maturze chcesz pisać w innym języku, zmień go przełącznikiem **Język** nad lekcją – wtedy cała lekcja, przykłady i zadania będą w tamtym języku.
 
         Oto najkrótszy sensowny program – wypisuje jeden wiersz tekstu:
 
