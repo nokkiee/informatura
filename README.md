@@ -7,7 +7,7 @@ Rozwiązujesz zadania z egzaminów CKE w jednym programie. Kod piszesz i urucham
 C++ albo Javie, zapytania SQL wykonujesz na wbudowanej bazie, a obliczenia robisz we wbudowanym
 arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba pobierać.
 
-![Strona startowa](docs/screenshots/ekran-glowna.png)
+![Strona startowa](docs/screenshots/ekran-1-start.png)
 
 ## Co jest w środku
 
@@ -28,7 +28,7 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
 
 ### Lekcje
 
-![Lekcja czytana w Pythonie, z przełącznikiem języka](docs/screenshots/ekran-lekcja-jezyk.png)
+![Lekcja czytana w Pythonie, z przełącznikiem języka](docs/screenshots/ekran-2-lekcja.png)
 
 - Każdy dział matury wyjaśniony krok po kroku: do czego służy dane narzędzie, kiedy po nie sięgnąć
   i jak użyć go w zadaniu – od pierwszego programu, przez rekurencję, SQL i symulacje w arkuszu,
@@ -53,7 +53,7 @@ sprawdzane – zob. `tools/check-lessons.mjs`.
 
 ### Podpowiedzi
 
-![Podpowiedzi i przykładowe rozwiązanie w edytorze](docs/screenshots/ekran-podpowiedz.png)
+![Podpowiedzi i przykładowe rozwiązanie w edytorze](docs/screenshots/ekran-3-podpowiedzi.png)
 
 - Przycisk **Podpowiedź** odsłania kolejne wskazówki. Pierwsze tylko naprowadzają (od czego zacząć,
   na co uważać), następne mówią coraz dokładniej, co zrobić – w arkuszu kalkulacyjnym aż do gotowych formuł.
@@ -73,7 +73,7 @@ sprawdzane – zob. `tools/check-lessons.mjs`.
 
 ### Programowanie: Python, C++ lub Java
 
-![Zadanie programistyczne](docs/screenshots/ekran-program.png)
+![Zadanie programistyczne](docs/screenshots/ekran-4-program.png)
 
 - Edytor z podświetlaniem składni (ten sam co w VS Code).
 - Konsola, w której widać wynik programu i w której można wpisywać dane wejściowe.
@@ -89,7 +89,7 @@ sprawdzane – zob. `tools/check-lessons.mjs`.
 
 ### Bazy danych: SQL w stylu Accessa
 
-![Zadanie z bazą danych](docs/screenshots/ekran-baza.png)
+![Zadanie z bazą danych](docs/screenshots/ekran-5-sql.png)
 
 - Tabele z zadania są już zaimportowane, a schemat i powiązania widać z boku.
 - Silnik to SQLite. Działają też funkcje znane z Accessa i MySQL:
@@ -100,7 +100,7 @@ sprawdzane – zob. `tools/check-lessons.mjs`.
 
 ### Arkusz kalkulacyjny z polskimi funkcjami
 
-![Arkusz kalkulacyjny z tabelą przestawną i wykresem](docs/screenshots/ekran-arkusz-wykres.png)
+![Arkusz kalkulacyjny z tabelą przestawną i wykresem](docs/screenshots/ekran-6-arkusz.png)
 
 - Formuły po polsku jak w Excelu (`SUMA`, `JEŻELI`, `LICZ.JEŻELI`, `WYSZUKAJ.PIONOWO`, `ROK`, `DZIEŃ.TYG` …)
   ze średnikiem jako separatorem. W ustawieniach można przełączyć na nazwy angielskie.
