@@ -34,7 +34,7 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
   i jak użyć go w zadaniu – od pierwszego programu, przez rekurencję, SQL i symulacje w arkuszu,
   po systemy liczbowe, sieci i bezpieczeństwo.
 - Lekcję czytasz w **jednym języku**: Python, C++ albo Java, do wyboru przełącznikiem w nagłówku
-  lekcji (albo u góry okna). Tekst, tabele, przykłady, pytania i rozwiązania dotyczą wtedy tylko tego
+  lekcji (ten sam język otwiera się w zadaniach). Tekst, tabele, przykłady, pytania i rozwiązania dotyczą wtedy tylko tego
   języka – jakby lekcja była napisana tylko dla niego.
 - Przykłady kodu można **uruchomić** w lekcji. Zapytania SQL wykonasz na przykładowej bazie, a formuły
   policzysz na przykładowych danych.

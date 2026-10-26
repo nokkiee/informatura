@@ -1,6 +1,6 @@
-// A lesson is read in one programming language: the one chosen in the header (Python, C++ or
-// Java). Everything else is left out, so each reader gets the lesson as if it were written for
-// their language only.
+// A lesson is read in one programming language: the one chosen in the lesson (Python, C++ or
+// Java – the same setting as the language of the tasks). Everything else is left out, so each
+// reader gets the lesson as if it were written for their language only.
 //
 // In the lesson text (and in questions and explanations):
 //   :::python            a block of Markdown only for Python readers, up to the line ":::"
