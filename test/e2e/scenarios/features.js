@@ -250,4 +250,26 @@ module.exports = async (H) => {
   await H.click('.btn', 'Sprawdź');
   await H.waitFor(() => H.js(`!!document.querySelector('.result-box.ok')`), 3000);
   await H.shot('27-sql-dialect');
+
+  // ---- the start page's language cards: the clicked one lights up, every time ---------------------
+  await go('#/', 800);
+  const activeCard = () => H.js(`[...document.querySelectorAll('.lang-card.active')].map((c) => c.textContent)`);
+  for (const [label, lang] of [['C++', 'cpp'], ['Java', 'java'], ['Python', 'python'], ['Java', 'java']]) {
+    await H.click('.lang-card', label);
+    await H.sleep(150);
+    const active = await activeCard();
+    H.assert(active.length === 1 && active[0].endsWith(label), `${label} lit (got ${JSON.stringify(active)})`);
+    H.assert(await H.js(`import('./js/store.js').then((s) => s.getSettings().lang === '${lang}')`), `${label} chosen`);
+  }
+
+  // ---- a task offers only the languages installed on this computer ----------------------------------
+  process.env.INFORMATURA_HIDE_TOOLCHAINS = 'cpp,java'; // reported as missing (they can still run)
+  await go('#/t/2024-maj/3.2?from=exam', 300);
+  await H.waitFor(() => H.js(`document.querySelectorAll('.lang-select option').length === 1`), 15000);
+  H.assert((await H.js(`document.querySelector('.lang-select').value`)) === 'python', 'only Python to pick');
+  H.assert(/nie wykryto: Java/.test(await H.js(`[...document.querySelectorAll('.toast')].map((t) => t.textContent).join(' ')`)), 'says why the task opens in Python');
+  H.assert(await H.js(`import('./js/store.js').then((s) => s.getSettings().lang === 'python')`), 'the language setting follows');
+  delete process.env.INFORMATURA_HIDE_TOOLCHAINS;
+  await go('#/t/2024-maj/3.3?from=exam', 300);
+  await H.waitFor(() => H.js(`document.querySelectorAll('.lang-select option').length === 3`), 15000);
 };

@@ -240,7 +240,15 @@ function registerIpc() {
   };
   runner.init(ctx);
 
-  ipcMain.handle('toolchains:detect', (_e, force) => runner.detect(force));
+  ipcMain.handle('toolchains:detect', async (_e, force) => {
+    const tc = await runner.detect(force);
+    // e2e tests: INFORMATURA_HIDE_TOOLCHAINS=cpp,java reports those as not installed
+    const hide = (process.env.INFORMATURA_HIDE_TOOLCHAINS || '').split(',').filter(Boolean);
+    if (!hide.length) return tc;
+    const out = { ...tc };
+    for (const k of hide) if (out[k]) out[k] = { ok: false, error: 'nie znaleziono' };
+    return out;
+  });
   ipcMain.handle('run:start', (_e, spec) => runner.start(spec));
   ipcMain.handle('run:stdin', (_e, id, text) => runner.stdin(id, text));
   ipcMain.handle('run:kill', (_e, id) => runner.kill(id));

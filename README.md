@@ -160,7 +160,7 @@ winget install EclipseAdoptium.Temurin.21.JDK
 ```
 
 Program sam znajduje kompilatory zainstalowane razem z Code::Blocks, Dev-C++ i MSYS2, a Javę w typowych folderach JDK.
-W *Ustawieniach* programu widać, co zostało wykryte. Można tam też wskazać ścieżkę ręcznie.
+W *Ustawieniach* programu widać, co zostało wykryte. Można tam też wskazać ścieżkę ręcznie. W zadaniach z programowania do wyboru są tylko języki wykryte na komputerze.
 
 Bazy danych, arkusz kalkulacyjny i zadania teoretyczne nie wymagają niczego dodatkowego.
 

@@ -21,8 +21,10 @@ export function renderHome(view) {
         {
           class: `lang-card ${getSettings().lang === k ? 'active' : ''}`,
           onclick: async (e) => {
+            // the clicked card, taken before the await (afterwards the event no longer has it)
+            const card = e.currentTarget;
+            langPick.querySelectorAll('.lang-card').forEach((b) => b.classList.toggle('active', b === card));
             await setSettings({ lang: k });
-            langPick.querySelectorAll('.lang-card').forEach((b) => b.classList.toggle('active', b === e.currentTarget));
           },
         },
         h('span', { class: `lang-logo l-${k}` }, k === 'python' ? 'Py' : k === 'cpp' ? 'C++' : 'J'),
