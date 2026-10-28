@@ -51,6 +51,23 @@ export function createCodeWorkspace(container, ctx) {
     Object.entries(LANGS).map(([k, v]) => h('option', { value: k, selected: k === lang }, v.label)),
   );
   langSel.addEventListener('change', () => switchLang(langSel.value));
+  // only the languages installed on this computer can be picked (with none installed all stay:
+  // running then says what to install)
+  window.api
+    .detectToolchains()
+    .then((tc) => {
+      if (disposed) return;
+      const ok = Object.keys(LANGS).filter((k) => tc?.[k]?.ok);
+      if (!ok.length) return;
+      clear(langSel).append(...ok.map((k) => h('option', { value: k }, LANGS[k].label)));
+      if (!ok.includes(lang)) {
+        const missing = LANGS[lang].label;
+        switchLang(ok[0]);
+        toast(`Na tym komputerze nie wykryto: ${missing}. Zadanie otwiera się w języku ${LANGS[ok[0]].label}.`, 'info', 6000);
+      }
+      langSel.value = lang;
+    })
+    .catch(() => {});
 
   const runBtn = btn('Uruchom', { icon: 'play', kind: 'primary', kbd: 'Ctrl+⏎', onClick: () => run() });
   const stopBtn = btn('Stop', { icon: 'stop', kind: 'danger', onClick: () => stop() });
