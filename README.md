@@ -100,7 +100,7 @@ sprawdzane – zob. `tools/check-lessons.mjs`.
 
 ### Arkusz kalkulacyjny z polskimi funkcjami
 
-![Arkusz kalkulacyjny z tabelą przestawną i wykresem](docs/screenshots/ekran-6-arkusz.png)
+![Tabela przestawna z panelem „Pola tabeli przestawnej”](docs/screenshots/ekran-6-przestawna.png)
 
 - Formuły po polsku jak w Excelu (`SUMA`, `JEŻELI`, `LICZ.JEŻELI`, `WYSZUKAJ.PIONOWO`, `ROK`, `DZIEŃ.TYG` …)
   ze średnikiem jako separatorem. W ustawieniach można przełączyć na nazwy angielskie.
@@ -115,6 +115,8 @@ sprawdzane – zob. `tools/check-lessons.mjs`.
 - Dane z pliku są już wczytane, a daty i godziny są rozpoznane.
 - Kolumny same się poszerzają, żeby liczby i daty nie zamieniały się w `###`, a tekst nie był ucinany przez sąsiednią komórkę.
   Kolumna, której szerokość ustawisz ręcznie, zostaje taka, jaką ustawiłeś.
+
+![Suma częściowa: suma kilogramów pod każdym dostawcą](docs/screenshots/ekran-7-suma-czesciowa.png)
 
 ### Teoria
 
