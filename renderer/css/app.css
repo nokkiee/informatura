@@ -1852,6 +1852,14 @@ body[data-view='t'] .view {
   flex: none;
   flex-wrap: wrap;
 }
+.sheet-toolbar {
+  container-type: inline-size;
+}
+@container (max-width: 1080px) {
+  .sheet-toolbar .btn.compact > span:not(.ico) {
+    display: none;
+  }
+}
 .ws-toolbar .sep {
   width: 1px;
   height: 22px;
@@ -2419,6 +2427,154 @@ body[data-view='t'] .view {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+/* pivot table fields panel (as in Excel) */
+.pivot-panel {
+  width: 280px;
+  flex: none;
+  border-left: 1px solid var(--border);
+  background: var(--panel);
+  overflow: hidden auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+.pivot-panel > * {
+  flex-shrink: 0;
+}
+/* with the fields panel open, charts take less room so the table stays readable */
+.sheet-main:has(.pivot-panel:not([hidden])) .chart-dock {
+  width: 34%;
+  min-width: 240px;
+}
+.pv-head,
+.pv-src {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pv-fields {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  max-height: 170px;
+  overflow: auto;
+  padding: 4px;
+}
+.pv-fields.over,
+.pv-drop.over {
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+}
+.pv-field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  cursor: grab;
+}
+.pv-field:hover {
+  background: var(--panel2);
+}
+.pv-areas {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+.pv-area-title {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+.pv-drop {
+  min-height: 74px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pv-empty {
+  color: var(--dim);
+  font-size: 11.5px;
+  text-align: center;
+  margin: auto 0;
+}
+.pv-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 3px 4px 4px 2px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel2);
+  font-size: 12px;
+  cursor: grab;
+  min-width: 0;
+}
+.pv-chip.dragging,
+.pv-field.dragging {
+  opacity: 0.45;
+}
+.pv-chip-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.pv-chip-row .pv-name {
+  flex: 1;
+  min-width: 0;
+}
+.pv-chip > .pv-select.wide {
+  margin-left: 14px;
+  width: calc(100% - 14px);
+}
+.pv-grip {
+  color: var(--dim);
+  font-size: 11px;
+  padding: 0 2px;
+}
+.pv-name {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pv-select {
+  font: inherit;
+  font-size: 11.5px;
+  max-width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 1px 2px;
+}
+.icon-btn.tiny {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+}
+.pv-opts {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.pv-err {
+  color: var(--danger);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.st-cols {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: -4px 0 4px;
 }
 .chart-card {
   border: 1px solid var(--border);

@@ -78,7 +78,7 @@ export default {
     {
       title: 'Tabela przestawna, sortowanie, filtr',
       body: md`
-        **Tabela przestawna** robi zestawienie bez pisania formuł: wybierasz pole do **wierszy** (np. produkt albo miesiąc z daty), pole do **wartości** (np. ilość) i funkcję (suma, liczba, średnia, maksimum). W Excelu: **Wstawianie → Tabela przestawna**; w Informaturze: przycisk **Tabela przestawna** nad arkuszem (z grupowaniem dat po dniach, miesiącach, latach i godzinach).
+        **Tabela przestawna** robi zestawienie bez pisania formuł: wybierasz pole do **wierszy** (np. produkt albo miesiąc z daty), pole do **wartości** (np. ilość) i funkcję (suma, liczba, średnia, maksimum). W Excelu: **Wstawianie → Tabela przestawna**, a potem przeciągasz pola w panelu **Pola tabeli przestawnej** do obszarów *Wiersze*, *Kolumny*, *Wartości* i *Filtry*. W Informaturze działa to tak samo: przycisk **Tabela przestawna** nad arkuszem tworzy tabelę w nowym arkuszu, a obok niej pojawia się ten sam panel (daty pogrupujesz po dniach, miesiącach, latach i godzinach). Gdy w wierszach są dwa pola (np. miesiąc i produkt), pod każdą grupą pojawia się jej **suma częściowa**.
 
         Kiedy jej używać:
         - zestawienia „dla każdego…” – szybciej niż formuły,
@@ -86,6 +86,8 @@ export default {
         - do sprawdzenia wyniku policzonego formułami.
 
         Kiedy formuły są lepsze: gdy wynik zależy od **kolejności** wierszy (serie, stan „dzień po dniu”) – tego tabela przestawna nie policzy.
+
+        **Suma częściowa** (Dane → Suma częściowa) to zestawienie „dla każdego…” prosto w danych: posortuj je według kolumny z grupami (np. dostawcy), a pod każdą grupą pojawi się wiersz z funkcją \`SUMY.CZĘŚCIOWE\` (suma, licznik, średnia…), na końcu zaś wynik dla wszystkich danych. W Informaturze: przycisk **Suma częściowa** – może też najpierw posortować dane.
 
         **Sortowanie** (Dane → Sortuj) i **filtr** (Dane → Filtruj) pozwalają szybko obejrzeć dane: posortuj malejąco po ilości i odczytaj pierwszy wiersz, odfiltruj jeden produkt i zobacz sumę na pasku stanu.
 

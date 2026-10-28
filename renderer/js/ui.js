@@ -93,6 +93,8 @@ const P = {
   trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/>',
   sort: '<path d="M7 4v16"/><polyline points="3 16 7 20 11 16"/><path d="M17 20V4"/><polyline points="13 8 17 4 21 8"/>',
   table: '<rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="10" y1="10" x2="10" y2="20"/>',
+  sigma: '<path d="M18 5H6l6 7-6 7h12"/>',
+  fields: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
   plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
   info: '<circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16"/><circle cx="12" cy="8" r=".6"/>',
   flag: '<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
@@ -128,6 +130,9 @@ export function toast(msg, kind = 'info', ms = 3200) {
     toastBox = h('div', { class: 'toasts' });
     document.body.appendChild(toastBox);
   }
+  // the same message again (e.g. a button clicked many times) doesn't stack up
+  const same = [...toastBox.children].find((x) => x.textContent === String(msg) && !x.classList.contains('out'));
+  if (same) same.remove();
   const t = h('div', { class: `toast ${kind}` }, msg);
   toastBox.appendChild(t);
   setTimeout(() => t.classList.add('out'), ms);
@@ -135,6 +140,7 @@ export function toast(msg, kind = 'info', ms = 3200) {
 }
 
 export function modal({ title, body, actions = [], wide = false, onClose }) {
+  let busy = false;
   const close = () => {
     overlay.remove();
     document.removeEventListener('keydown', onKey);
@@ -155,8 +161,21 @@ export function modal({ title, body, actions = [], wide = false, onClose }) {
           actions.map((a) =>
             btn(a.label, {
               kind: a.kind,
+              // one click at a time (a second click while the first is still working does
+              // nothing), and an action that fails says so instead of leaving the dialog dead
               onClick: async () => {
-                const keep = await a.onClick?.();
+                if (busy) return;
+                busy = true;
+                let keep;
+                try {
+                  keep = await a.onClick?.();
+                } catch (err) {
+                  console.error(err);
+                  toast(err?.message || String(err), 'error');
+                  keep = true;
+                } finally {
+                  busy = false;
+                }
                 if (keep !== true) close();
               },
             }),

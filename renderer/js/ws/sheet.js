@@ -1,11 +1,14 @@
 // Spreadsheet workspace: HyperFormula engine + canvas grid, with a formula bar,
-// function autocomplete, sheets, sorting, a pivot table tool and charts.
+// function autocomplete, sheets, sorting, pivot tables (with a live fields panel), subtotals and
+// charts.
 import { h, btn, icon, clear, toast, modal, debounce, esc } from '../ui.js';
 import { getSettings, onSettings } from '../store.js';
 import { fetchData } from '../content.js';
-import { loadHyperFormula, hfConfig, parseDataFile, displayValue, addr, colName, parseAddr, formatDate } from '../sheet/engine.js';
+import { loadHyperFormula, hfConfig, parseDataFile, displayValue, addr, colName, parseAddr } from '../sheet/engine.js';
 import { Grid } from '../sheet/grid.js';
 import { CHART_TYPES, drawChart } from '../sheet/chart.js';
+import { computePivot, filterValues, keyOf, PIVOT_FNS, DATE_GROUPS } from '../sheet/pivot.js';
+import { SUBTOTAL_FNS, subtotalPlan, isSubtotalFormula } from '../sheet/subtotal.js';
 
 const FN_HELP = {
   pl: 'Funkcje po polsku, argumenty oddzielaj średnikiem: =SUMA(B2:B10), =JEŻELI(A2>5;"tak";"nie"), =LICZ.JEŻELI(C:C;"maj")',
@@ -39,24 +42,29 @@ export function createSheetWorkspace(container, ctx) {
   const fxBar = h('div', { class: 'fx-bar' }, nameBox, h('span', { class: 'fx-label' }, 'fx'), fxInput);
   const gridHost = h('div', { class: 'grid-host' });
   const chartDock = h('div', { class: 'chart-dock', hidden: true });
-  const main = h('div', { class: 'sheet-main' }, gridHost, chartDock);
+  const main = h('div', { class: 'sheet-main' }, gridHost);
   const tabsEl = h('div', { class: 'sheet-tabs' });
   const statusEl = h('div', { class: 'sheet-status' });
   const footer = h('div', { class: 'sheet-footer' }, tabsEl, h('div', { class: 'grow' }), statusEl);
   const acPopup = h('div', { class: 'ac-popup', hidden: true });
 
-  const tb = (label, ic, title, fn, kind) => btn(label, { icon: ic, small: true, title, onClick: fn, kind });
+  const tb = (label, ic, title, fn, kind, compact) => {
+    const b = btn(label, { icon: ic, small: true, title, onClick: fn, kind });
+    if (compact) b.classList.add('compact'); // only the icon when the toolbar is narrow
+    return b;
+  };
   const toolbar = h(
     'div',
     { class: 'ws-toolbar sheet-toolbar' },
-    tb('Importuj', 'download', 'Wczytaj plik z danymi do nowego arkusza (Dane → Z tekstu)', () => importDialog()),
+    tb('Importuj', 'download', 'Wczytaj plik z danymi do nowego arkusza (Dane → Z tekstu)', () => importDialog(), null, true),
     h('span', { class: 'sep' }),
     h('button', { class: 'icon-btn', title: 'Cofnij (Ctrl+Z)', onclick: () => grid?.undo() }, h('span', { class: 'glyph' }, '↶')),
     h('button', { class: 'icon-btn', title: 'Ponów (Ctrl+Y)', onclick: () => grid?.redo() }, h('span', { class: 'glyph' }, '↷')),
     h('span', { class: 'sep' }),
-    tb('Sortuj', 'sort', 'Sortuj dane według kolumny', () => sortDialog()),
-    tb('Tabela przestawna', 'table', 'Zestawienie: grupowanie i sumowanie (jak tabela przestawna)', () => pivotDialog()),
-    tb('Wykres', 'chart', 'Wstaw wykres z zaznaczonych danych', () => chartDialog()),
+    tb('Sortuj', 'sort', 'Sortuj dane według kolumny', () => sortDialog(), null, true),
+    tb('Tabela przestawna', 'table', 'Zestawienie: grupowanie i sumowanie, z panelem pól jak w Excelu', () => pivotDialog()),
+    tb('Suma częściowa', 'sigma', 'Wiersz z sumą (liczbą, średnią…) pod każdą grupą danych, jak Dane → Suma częściowa w Excelu', () => subtotalDialog()),
+    tb('Wykres', 'chart', 'Wstaw wykres z zaznaczonych danych', () => chartDialog(), null, true),
     h('span', { class: 'sep' }),
     h('button', { class: 'icon-btn', title: 'Mniej miejsc po przecinku', onclick: () => changeDecimals(-1) }, h('span', { class: 'glyph small' }, ',0←')),
     h('button', { class: 'icon-btn', title: 'Więcej miejsc po przecinku', onclick: () => changeDecimals(1) }, h('span', { class: 'glyph small' }, ',00→')),
@@ -130,6 +138,7 @@ export function createSheetWorkspace(container, ctx) {
     renderTabs();
     updateBars();
     refreshCharts();
+    syncPivotPanel();
     if (ctx.focus !== false) grid.scroller.focus({ preventScroll: true });
   }
 
@@ -179,6 +188,7 @@ export function createSheetWorkspace(container, ctx) {
     renderTabs();
     grid?.requestDraw();
     updateBars();
+    syncPivotPanel();
     persist();
   }
 
@@ -245,6 +255,9 @@ export function createSheetWorkspace(container, ctx) {
             wb.meta[name] = wb.meta[old];
             delete wb.meta[old];
             charts.forEach((c) => c.sheet === old && (c.sheet = name));
+            for (const m of Object.values(wb.meta)) if (m?.pivot?.src === old) m.pivot.src = name;
+            if (panelClosed.delete(old)) panelClosed.add(name);
+            syncPivotPanel();
             renderTabs();
             persist();
           },
@@ -553,6 +566,13 @@ export function createSheetWorkspace(container, ctx) {
     return { reg, header, names: firstRow.map((v, i) => (header ? String(v) : `Kolumna ${colName(reg.c0 + i)}`)) };
   }
 
+  // empty cells stay last in both directions
+  function compareSortKeys(a, b, asc) {
+    if (a[0] !== b[0]) return a[0] - b[0];
+    const cmp = typeof a[1] === 'string' ? a[1].localeCompare(b[1], 'pl') : a[1] - b[1];
+    return asc ? cmp : -cmp;
+  }
+
   function sortValueKey(v) {
     if (v === null || v === undefined || v === '') return [3, 0];
     if (typeof v === 'number') return [0, v];
@@ -561,24 +581,22 @@ export function createSheetWorkspace(container, ctx) {
     return [4, 0];
   }
 
-  function doSort(reg, header, col, asc) {
-    const from = reg.r0 + (header ? 1 : 0);
-    const dims = wb.hf.getSheetDimensions(wb.sheet);
+  // sorts rows from..to of a sheet by one column (stable, numbers before text, empty last)
+  function sortRows(sheet, from, to, col, asc) {
+    const dims = wb.hf.getSheetDimensions(sheet);
     const rows = [];
-    for (let r = from; r <= reg.r1; r++) rows.push({ r, k: sortValueKey(wb.hf.getCellValue({ sheet: wb.sheet, row: r, col })) });
-    rows.sort((a, b) => {
-      if (a.k[0] !== b.k[0]) return a.k[0] - b.k[0];
-      const x = a.k[1];
-      const y = b.k[1];
-      const cmp = typeof x === 'string' ? x.localeCompare(y, 'pl') : x - y;
-      return asc ? cmp : -cmp;
-    });
+    for (let r = from; r <= to; r++) rows.push({ r, k: sortValueKey(wb.hf.getCellValue({ sheet, row: r, col })) });
+    rows.sort((a, b) => compareSortKeys(a.k, b.k, asc));
     // setRowOrder takes the new position of every current row
     const targetOf = new Array(dims.height);
     for (let i = 0; i < dims.height; i++) targetOf[i] = i;
     rows.forEach((x, i) => (targetOf[x.r] = from + i));
+    wb.hf.setRowOrder(sheet, targetOf);
+  }
+
+  function doSort(reg, header, col, asc) {
     try {
-      wb.hf.setRowOrder(wb.sheet, targetOf);
+      sortRows(wb.sheet, reg.r0 + (header ? 1 : 0), reg.r1, col, asc);
       grid.changed();
       persist();
     } catch (err) {
@@ -611,120 +629,481 @@ export function createSheetWorkspace(container, ctx) {
     });
   }
 
-  // Pivot table: group rows by a field (optionally by month/year for dates) and aggregate.
+  // ---- pivot tables ------------------------------------------------------------------------------
+  // A pivot table lives in its own sheet. Its layout (which fields are in the filters, columns,
+  // rows and values) is kept in that sheet's meta, and the "Pola tabeli przestawnej" panel next
+  // to the grid changes it live, as in Excel.
+  const pivotOf = (id = wb.sheet) => wb.metaFor(id).pivot || null;
+
+  // the pivot's source data: field names, records (values of every data row), date formats
+  function pivotSource(p) {
+    const sid = wb.hf.getSheetId(p.src);
+    if (sid === undefined) throw new Error(`Nie ma już arkusza „${p.src}” z danymi tej tabeli.`);
+    const { r0, c0, r1, c1 } = p.range;
+    const from = r0 + (p.header ? 1 : 0);
+    const smeta = wb.metaFor(sid);
+    const names = [];
+    const dateFmt = [];
+    for (let c = c0; c <= c1; c++) {
+      const v = p.header ? wb.hf.getCellValue({ sheet: sid, row: r0, col: c }) : null;
+      names.push(v !== null && v !== undefined && v !== '' ? String(v) : `Kolumna ${colName(c)}`);
+      let fmt = smeta.colFmt[c]?.date || null;
+      // dates typed in by hand have no column format: HyperFormula knows their type
+      for (let r = from; !fmt && r <= Math.min(r1, from + 20); r++) {
+        const a = { sheet: sid, row: r, col: c };
+        if (typeof wb.hf.getCellValue(a) !== 'number') continue;
+        const t = wb.hf.getCellValueDetailedType(a);
+        fmt = t === 'NUMBER_DATE' ? 'YYYY-MM-DD' : t === 'NUMBER_DATETIME' ? 'YYYY-MM-DD hh:mm' : null;
+        break;
+      }
+      dateFmt.push(fmt);
+    }
+    const records = from <= r1 ? wb.hf.getRangeValues({ start: { sheet: sid, row: from, col: c0 }, end: { sheet: sid, row: r1, col: c1 } }) : [];
+    return { names, records, dateFmt };
+  }
+
+  const isNumberField = (src, f) => {
+    if (src.dateFmt[f]) return false;
+    const first = src.records.find((r) => r[f] !== null && r[f] !== undefined && r[f] !== '');
+    return typeof first?.[f] === 'number';
+  };
+
+  // computes the table and writes it into its sheet; returns an error message (and writes nothing)
+  function writePivot(id, p, res = computePivot(p, pivotSource(p))) {
+    if (res.error) return res.error;
+    wb.hf.setSheetContent(id, res.cells);
+    const meta = wb.metaFor(id);
+    meta.colFmt = {};
+    for (const [c, f] of Object.entries(res.dateCols)) meta.colFmt[c] = { date: f };
+    // every column as wide as its widest text (labels included – they'd spill otherwise)
+    const probe = document.createElement('canvas').getContext('2d');
+    probe.font = '13px system-ui';
+    meta.colW = {};
+    res.cells.slice(0, 2000).forEach((row) =>
+      row.forEach((v, c) => {
+        if (v === null || v === '' || meta.manualW?.[c]) return;
+        const t = displayValue(v, null, meta.colFmt[c], wb.lang);
+        meta.colW[c] = Math.max(meta.colW[c] || 64, Math.min(320, Math.ceil(probe.measureText(t).width + 18)));
+      }),
+    );
+    return null;
+  }
+
   function pivotDialog() {
     if (!grid) return;
+    // on a pivot table's sheet the button brings back its fields panel
+    if (pivotOf()) {
+      panelClosed.delete(wb.hf.getSheetName(wb.sheet));
+      return syncPivotPanel();
+    }
     const { reg, header, names } = regionWithHeader();
     const opts = names.map((n, i) => h('option', { value: i }, n));
     const rowSel = h('select', { class: 'select' }, opts.map((o) => o.cloneNode(true)));
     const colSel = h('select', { class: 'select' }, h('option', { value: '' }, '(brak)'), opts.map((o) => o.cloneNode(true)));
     const valSel = h('select', { class: 'select' }, opts.map((o) => o.cloneNode(true)));
     valSel.value = String(Math.min(names.length - 1, 1));
-    const fnSel = h('select', { class: 'select' }, ['Suma', 'Liczba', 'Średnia', 'Maksimum', 'Minimum'].map((f) => h('option', null, f)));
-    const grpSel = h('select', { class: 'select' }, [
-      ['', 'bez grupowania'],
-      ['day', 'dni'],
-      ['hour', 'godziny'],
-      ['month', 'miesiące'],
-      ['year', 'lata'],
-      ['ym', 'rok i miesiąc'],
-    ].map(([v, l]) => h('option', { value: v }, l)));
+    const fnSel = h('select', { class: 'select' }, PIVOT_FNS.map((f) => h('option', null, f)));
+    const grpSel = h('select', { class: 'select' }, DATE_GROUPS.map(([v, l]) => h('option', { value: v }, l)));
+    const headChk = h('input', { type: 'checkbox', checked: header });
     modal({
       title: 'Tabela przestawna',
       body: h(
         'div',
         { class: 'form' },
-        h('div', { class: 'muted small' }, `Dane: ${addr(reg.r0, reg.c0)}:${addr(reg.r1, reg.c1)}${header ? ' (z nagłówkami)' : ''}. Wynik trafi do nowego arkusza.`),
+        h('div', { class: 'muted small' }, `Dane: ${addr(reg.r0, reg.c0)}:${addr(reg.r1, reg.c1)}. Tabela trafi do nowego arkusza, a obok niej pojawi się panel „Pola tabeli przestawnej”: przeciągasz w nim pola między wierszami, kolumnami, wartościami i filtrami, a tabela od razu się przebudowuje – jak w Excelu.`),
         h('label', null, 'Wiersze ', rowSel),
         h('label', null, 'Grupuj daty w wierszach ', grpSel),
         h('label', null, 'Kolumny ', colSel),
         h('label', null, 'Wartości ', valSel),
         h('label', null, 'Funkcja ', fnSel),
+        h('label', { class: 'check' }, headChk, ' Pierwszy wiersz to nagłówki'),
       ),
       actions: [
         { label: 'Anuluj' },
-        { label: 'Utwórz', kind: 'primary', onClick: () => buildPivot(reg, header, names, Number(rowSel.value), colSel.value === '' ? null : Number(colSel.value), Number(valSel.value), fnSel.value, grpSel.value) },
+        {
+          label: 'Utwórz',
+          kind: 'primary',
+          onClick: () =>
+            createPivot({
+              src: wb.hf.getSheetName(wb.sheet),
+              range: reg,
+              header: headChk.checked,
+              rows: [{ f: Number(rowSel.value), grp: grpSel.value }],
+              cols: colSel.value === '' ? [] : [{ f: Number(colSel.value), grp: '' }],
+              vals: [{ f: Number(valSel.value), fn: fnSel.value }],
+              filters: [],
+              subtotals: true,
+              totals: true,
+            }),
+        },
       ],
     });
   }
 
-  function buildPivot(reg, header, names, rf, cf, vf, fn, grp) {
-    const sheet = wb.sheet;
-    const from = reg.r0 + (header ? 1 : 0);
-    const keyOf = (r, f, grouping) => {
-      const a = { sheet, row: r, col: reg.c0 + f };
-      const v = wb.hf.getCellValue(a);
-      const t = typeof v === 'number' ? wb.hf.getCellValueDetailedType(a) : null;
-      if (grouping && typeof v === 'number') {
-        const ymd = formatDate(v, 'YYYY-MM-DD');
-        if (grouping === 'day') return { k: ymd, label: formatDate(v, 'DD.MM.YYYY') };
-        if (grouping === 'hour') {
-          const hour = Math.floor(Math.round((v - Math.floor(v)) * 1440) / 60) % 24; // via minutes: 10:00 is 0.41666…
-          return { k: hour, label: hour };
-        }
-        if (grouping === 'month') return { k: Number(ymd.slice(5, 7)), label: MONTHS[Number(ymd.slice(5, 7)) - 1] };
-        if (grouping === 'year') return { k: Number(ymd.slice(0, 4)), label: ymd.slice(0, 4) };
-        return { k: ymd.slice(0, 7), label: ymd.slice(0, 7) };
-      }
-      const label = displayValue(v, t, wb.metaFor(sheet).colFmt[reg.c0 + f], wb.lang);
-      return { k: typeof v === 'number' ? v : label, label };
-    };
-    const rowsMap = new Map();
-    const colsMap = new Map();
-    const cells = new Map();
-    for (let r = from; r <= reg.r1; r++) {
-      const rk = keyOf(r, rf, grp);
-      const ck = cf === null ? { k: '', label: '' } : keyOf(r, cf, null);
-      rowsMap.set(rk.k, rk.label);
-      colsMap.set(ck.k, ck.label);
-      const key = rk.k + '\u0000' + ck.k;
-      if (!cells.has(key)) cells.set(key, []);
-      const v = wb.hf.getCellValue({ sheet, row: r, col: reg.c0 + vf });
-      cells.get(key).push(v);
-    }
-    const agg = (list) => {
-      if (!list || !list.length) return null;
-      const nums = list.filter((v) => typeof v === 'number');
-      if (fn === 'Liczba') return list.filter((v) => v !== null && v !== '').length;
-      if (!nums.length) return null;
-      if (fn === 'Suma') return nums.reduce((a, b) => a + b, 0);
-      if (fn === 'Średnia') return nums.reduce((a, b) => a + b, 0) / nums.length;
-      if (fn === 'Maksimum') return Math.max(...nums);
-      return Math.min(...nums);
-    };
-    const sortKeys = (m) => [...m.keys()].sort((a, b) => (typeof a === 'number' && typeof b === 'number' ? a - b : String(a).localeCompare(String(b), 'pl')));
-    const rk = sortKeys(rowsMap);
-    const ck = sortKeys(colsMap);
-    const out = [];
-    const title = `${fn} z ${names[vf]}`;
-    const grpLabel = { day: 'dzień', hour: 'godzina', month: 'miesiąc', year: 'rok', ym: 'rok-miesiąc' }[grp];
-    out.push([names[rf] + (grp ? ` (${grpLabel})` : ''), ...(cf === null ? [title] : ck.map((k) => colsMap.get(k))), ...(cf !== null && fn !== 'Średnia' ? ['Suma końcowa'] : [])]);
-    for (const r of rk) {
-      const row = [typeof r === 'number' && !grp ? r : rowsMap.get(r)];
-      let total = 0;
-      for (const c of ck) {
-        const v = agg(cells.get(r + '\u0000' + c));
-        row.push(v);
-        total += v || 0;
-      }
-      if (cf !== null && fn !== 'Średnia') row.push(total);
-      out.push(row);
-    }
-    if (fn === 'Suma' || fn === 'Liczba') {
-      const tot = ['Suma końcowa'];
-      for (let i = 1; i < out[0].length; i++) tot.push(out.slice(1).reduce((s, row) => s + (row[i] || 0), 0));
-      out.push(tot);
+  // checks the table first, so a layout that can't be built leaves no empty sheet behind
+  function createPivot(p) {
+    const res = computePivot(p, pivotSource(p));
+    if (res.error) {
+      toast(res.error, 'error', 8000);
+      return true; // the dialog stays open: pick other fields
     }
     let i = 1;
     while (wb.hf.getSheetId('Przestawna' + (i > 1 ? i : '')) !== undefined) i++;
     const name = 'Przestawna' + (i > 1 ? i : '');
     wb.hf.addSheet(name);
     const id = wb.hf.getSheetId(name);
-    wb.hf.setSheetContent(id, out.map((r) => r.map((v) => (typeof v === 'number' ? Math.round(v * 1e10) / 1e10 : v))));
-    const meta = wb.metaFor(id);
-    meta.colW[0] = 160;
+    try {
+      writePivot(id, p, res);
+    } catch (err) {
+      wb.hf.removeSheet(id);
+      delete wb.meta[name];
+      throw err;
+    }
+    wb.metaFor(id).pivot = p;
     switchSheet(id);
     toast('Utworzono tabelę przestawną w arkuszu ' + name, 'ok');
+  }
+
+  // ---- the fields panel ----
+  const pivotPanel = h('div', { class: 'pivot-panel', hidden: true });
+  main.append(pivotPanel, chartDock);
+  const panelClosed = new Set(); // pivot sheets whose panel was closed
+  let pivotError = '';
+  const AREA_TITLES = { filters: 'Filtry', cols: 'Kolumny', rows: 'Wiersze', vals: 'Wartości' };
+
+  function syncPivotPanel() {
+    const p = wb.hf && pivotOf();
+    const name = p && wb.hf.getSheetName(wb.sheet);
+    pivotPanel.hidden = !p || panelClosed.has(name);
+    if (!pivotPanel.hidden) renderPivotPanel();
+  }
+
+  // changes the layout and rebuilds the table; a layout that can't be built is not applied
+  function changePivot(fn) {
+    const id = wb.sheet;
+    const meta = wb.metaFor(id);
+    const next = JSON.parse(JSON.stringify(meta.pivot));
+    fn(next);
+    let err;
+    try {
+      err = writePivot(id, next);
+    } catch (e) {
+      err = e.message;
+    }
+    pivotError = err || '';
+    if (!err) {
+      meta.pivot = next;
+      grid.changed();
+      persist();
+    }
+    renderPivotPanel();
+  }
+
+  // a field moved by drag and drop (from the field list or another area) to `area` at `at`
+  function moveField(n, d, area, at, src) {
+    let item = null;
+    let f = d.f;
+    if (d.from !== 'list') {
+      item = n[d.from][d.i];
+      if (!item) return;
+      f = item.f;
+      n[d.from].splice(d.i, 1);
+      if (d.from === area && d.i < at) at--;
+    }
+    if (area === 'list') return; // dropped back on the list: taken out of the table
+    // a field is in one of filters / columns / rows at a time (values may repeat it)
+    if (area !== 'vals') for (const a of ['filters', 'cols', 'rows']) n[a] = n[a].filter((x) => x.f !== f);
+    const fresh = area === 'vals' ? { f, fn: item?.fn || (isNumberField(src, f) ? 'Suma' : 'Liczba') } : area === 'filters' ? { f, value: null } : { f, grp: item?.grp || '' };
+    n[area].splice(Math.min(at, n[area].length), 0, fresh);
+  }
+
+  function dropZone(el, area, src) {
+    el.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      el.classList.add('over');
+    });
+    el.addEventListener('dragleave', (e) => {
+      if (!el.contains(e.relatedTarget)) el.classList.remove('over');
+    });
+    el.addEventListener('drop', (e) => {
+      e.preventDefault();
+      el.classList.remove('over');
+      let d;
+      try {
+        d = JSON.parse(e.dataTransfer.getData('text/plain'));
+      } catch {
+        return;
+      }
+      // before the first chip whose middle is below the pointer
+      const chips = [...el.querySelectorAll('.pv-chip')];
+      let at = chips.findIndex((c) => {
+        const r = c.getBoundingClientRect();
+        return e.clientY < r.top + r.height / 2;
+      });
+      if (at < 0) at = chips.length;
+      changePivot((n) => moveField(n, d, area, at, src));
+    });
+  }
+
+  const draggable = (el, data) => {
+    el.draggable = true;
+    el.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', JSON.stringify(data));
+      e.dataTransfer.effectAllowed = 'move';
+      el.classList.add('dragging');
+    });
+    el.addEventListener('dragend', () => el.classList.remove('dragging'));
+  };
+
+  function renderPivotPanel() {
+    const p = pivotOf();
+    if (!p) return;
+    const name = wb.hf.getSheetName(wb.sheet);
+    const head = h(
+      'div',
+      { class: 'pv-head' },
+      icon('fields', 15),
+      h('b', null, 'Pola tabeli przestawnej'),
+      h('div', { class: 'grow' }),
+      h(
+        'button',
+        {
+          class: 'icon-btn small',
+          title: 'Zamknij panel (otworzysz go przyciskiem „Tabela przestawna”)',
+          onclick: () => {
+            panelClosed.add(name);
+            syncPivotPanel();
+          },
+        },
+        icon('x', 14),
+      ),
+    );
+    let src;
+    try {
+      src = pivotSource(p);
+    } catch (err) {
+      clear(pivotPanel).append(head, h('div', { class: 'pv-err' }, err.message));
+      return;
+    }
+    const { names } = src;
+    const used = new Set([...p.rows, ...p.cols, ...p.vals, ...p.filters].map((x) => x.f));
+
+    const fieldList = h(
+      'div',
+      { class: 'pv-fields' },
+      names.map((n, f) => {
+        const chk = h('input', {
+          type: 'checkbox',
+          checked: used.has(f),
+          onchange: () =>
+            changePivot((x) => {
+              if (chk.checked) moveField(x, { from: 'list', f }, isNumberField(src, f) ? 'vals' : 'rows', 1e9, src);
+              else for (const a of ['filters', 'cols', 'rows', 'vals']) x[a] = x[a].filter((it) => it.f !== f);
+            }),
+        });
+        const el = h('label', { class: 'pv-field', title: `${n} – przeciągnij do obszaru poniżej` }, chk, h('span', { class: 'pv-name' }, n));
+        draggable(el, { from: 'list', f });
+        return el;
+      }),
+    );
+    dropZone(fieldList, 'list', src);
+
+    // a field in an area: its name (for values: the function and the name) and, below, how
+    // dates are grouped or which value the filter keeps
+    const chip = (area, it, i) => {
+      let title;
+      let extra = null;
+      if (area === 'vals') {
+        title = h('span', { class: 'pv-name', title: `${it.fn} z ${names[it.f]}` }, names[it.f]);
+        extra = h('select', { class: 'pv-select wide', title: 'Funkcja', onchange: () => changePivot((x) => (x.vals[i].fn = extra.value)) }, PIVOT_FNS.map((fn) => h('option', { selected: fn === it.fn }, fn)));
+      } else {
+        title = h('span', { class: 'pv-name', title: names[it.f] }, names[it.f]);
+        if (area === 'filters') {
+          const values = filterValues(src, it.f);
+          extra = h(
+            'select',
+            { class: 'pv-select wide', title: 'Pokaż tylko', onchange: () => changePivot((x) => (x.filters[i].value = extra.value === '' ? null : values[Number(extra.value)].k)) },
+            h('option', { value: '' }, '(wszystkie)'),
+            values.map((v, k) => h('option', { value: k, selected: v.k === it.value }, String(v.label))),
+          );
+        } else if (src.dateFmt[it.f]) {
+          extra = h('select', { class: 'pv-select wide', title: 'Grupowanie dat', onchange: () => changePivot((x) => (x[area][i].grp = extra.value)) }, DATE_GROUPS.map(([v, l]) => h('option', { value: v, selected: v === (it.grp || '') }, l)));
+        }
+      }
+      const el = h(
+        'div',
+        { class: 'pv-chip', dataset: { area, i } },
+        h(
+          'div',
+          { class: 'pv-chip-row' },
+          h('span', { class: 'pv-grip', title: 'Przeciągnij' }, '⠿'),
+          title,
+          h('button', { class: 'icon-btn tiny', title: 'Usuń z tabeli', onclick: () => changePivot((x) => x[area].splice(i, 1)) }, icon('x', 12)),
+        ),
+        extra,
+      );
+      draggable(el, { from: area, i });
+      return el;
+    };
+    const areaBox = (area) => {
+      const drop = h('div', { class: 'pv-drop', dataset: { area } }, p[area].map((it, i) => chip(area, it, i)));
+      if (!p[area].length) drop.appendChild(h('div', { class: 'pv-empty' }, 'przeciągnij tu pole'));
+      dropZone(drop, area, src);
+      return h('div', { class: 'pv-area' }, h('div', { class: 'pv-area-title' }, AREA_TITLES[area]), drop);
+    };
+    const opt = (key, label, title) =>
+      h('label', { class: 'check small', title }, h('input', { type: 'checkbox', checked: p[key] !== false, onchange: (e) => changePivot((x) => (x[key] = e.target.checked)) }), ' ' + label);
+
+    clear(pivotPanel).append(
+      head,
+      h(
+        'div',
+        { class: 'pv-src small muted' },
+        h('span', null, `Dane: ${p.src}!${addr(p.range.r0, p.range.c0)}:${addr(p.range.r1, p.range.c1)}`),
+        h('div', { class: 'grow' }),
+        btn('Odśwież', { icon: 'refresh', small: true, title: 'Przelicz tabelę od nowa (np. po zmianie danych albo dopisaniu wierszy)', onClick: () => refreshPivot() }),
+      ),
+      h('div', { class: 'pv-label small' }, 'Zaznacz pola albo przeciągnij je do obszarów:'),
+      fieldList,
+      h('div', { class: 'pv-areas' }, areaBox('filters'), areaBox('cols'), areaBox('rows'), areaBox('vals')),
+      h('div', { class: 'pv-opts' }, opt('subtotals', 'Sumy częściowe', 'Wiersz z wynikiem pod każdą grupą, gdy w wierszach jest więcej niż jedno pole'), opt('totals', 'Sumy końcowe', 'Wiersz (i kolumna) „Suma końcowa”')),
+      ...(pivotError ? [h('div', { class: 'pv-err' }, icon('x', 13), ' ', pivotError)] : []),
+      h('div', { class: 'pv-tip small muted' }, 'Każda zmiana od razu przebudowuje tabelę w tym arkuszu (to, co wpiszesz w jej komórkach, zostanie nadpisane).'),
+    );
+  }
+
+  // recomputes the table, taking in rows added below the source data
+  function refreshPivot() {
+    changePivot((n) => {
+      const sid = wb.hf.getSheetId(n.src);
+      if (sid === undefined) return;
+      const { r0, c0, c1 } = n.range;
+      const d = wb.hf.getSheetDimensions(sid);
+      const rowHas = (r) => {
+        for (let c = c0; c <= c1; c++) {
+          const v = wb.hf.getCellValue({ sheet: sid, row: r, col: c });
+          if (v !== null && v !== undefined && v !== '') return true;
+        }
+        return false;
+      };
+      let r1 = r0;
+      while (r1 + 1 < d.height && rowHas(r1 + 1)) r1++;
+      n.range = { ...n.range, r1 };
+    });
+    if (!pivotError) toast('Tabela przeliczona', 'ok');
+  }
+
+  // ---- subtotals (Excel: Dane → Suma częściowa) ---------------------------------------------------
+  function subtotalDialog() {
+    if (!grid) return;
+    const { reg, header, names } = regionWithHeader();
+    if (reg.r1 <= reg.r0) return toast('Zaznacz komórkę w tabeli z danymi (z wierszem nagłówków).', 'warn');
+    const inCol = grid.sel.c0 - reg.c0;
+    const atSel = h('select', { class: 'select' }, names.map((n, i) => h('option', { value: i, selected: i === inCol }, n)));
+    const fnSel = h('select', { class: 'select' }, SUBTOTAL_FNS.map(([n], i) => h('option', { value: i }, n)));
+    const numeric = (i) => typeof wb.hf.getCellValue({ sheet: wb.sheet, row: reg.r0 + (header ? 1 : 0), col: reg.c0 + i }) === 'number';
+    let last = names.length - 1;
+    while (last > 0 && !numeric(last)) last--;
+    const checks = names.map((_, i) => h('input', { type: 'checkbox', checked: i === last && i !== inCol }));
+    const sortChk = h('input', { type: 'checkbox', checked: true });
+    const replaceChk = h('input', { type: 'checkbox', checked: true });
+    const headChk = h('input', { type: 'checkbox', checked: header });
+    modal({
+      title: 'Suma częściowa',
+      body: h(
+        'div',
+        { class: 'form' },
+        h(
+          'div',
+          { class: 'muted small' },
+          `Zakres: ${addr(reg.r0, reg.c0)}:${addr(reg.r1, reg.c1)}. Pod każdą grupą wierszy z tą samą wartością w wybranej kolumnie pojawi się wiersz z wynikiem dla tej grupy (funkcja ${wb.lang === 'en' ? 'SUBTOTAL' : 'SUMY.CZĘŚCIOWE'}), a na końcu – wynik dla wszystkich danych.`,
+        ),
+        h('label', null, 'Przy każdej zmianie w: ', atSel),
+        h('label', null, 'Użyj funkcji: ', fnSel),
+        h('div', null, 'Dodaj sumę częściową do:'),
+        h('div', { class: 'st-cols' }, names.map((n, i) => h('label', { class: 'check' }, checks[i], ' ' + n))),
+        h('label', { class: 'check' }, sortChk, ' Najpierw posortuj dane według tej kolumny (grupa to wiersze leżące jeden pod drugim)'),
+        h('label', { class: 'check' }, replaceChk, ' Zamień bieżące sumy częściowe'),
+        h('label', { class: 'check' }, headChk, ' Pierwszy wiersz to nagłówki'),
+      ),
+      actions: [
+        { label: 'Usuń wszystko', onClick: () => removeSubtotals(reg) },
+        { label: 'Anuluj' },
+        {
+          label: 'OK',
+          kind: 'primary',
+          onClick: () => {
+            const cols = checks.map((c, i) => (c.checked ? i : -1)).filter((i) => i >= 0 && i !== Number(atSel.value));
+            if (!cols.length) {
+              toast('Zaznacz co najmniej jedną kolumnę, do której dodać sumy częściowe.', 'warn');
+              return true;
+            }
+            applySubtotals({ reg, header: headChk.checked, at: Number(atSel.value), cols, fn: SUBTOTAL_FNS[Number(fnSel.value)], sort: sortChk.checked, replace: replaceChk.checked });
+          },
+        },
+      ],
+    });
+  }
+
+  // the rows of the region holding SUMY.CZĘŚCIOWE formulas (top to bottom)
+  function subtotalRows(sheet, reg) {
+    const rows = [];
+    for (let r = reg.r0; r <= reg.r1; r++)
+      for (let c = reg.c0; c <= reg.c1; c++)
+        if (isSubtotalFormula(wb.hf.getCellFormula({ sheet, row: r, col: c }))) {
+          rows.push(r);
+          break;
+        }
+    return rows;
+  }
+
+  function removeSubtotals(reg) {
+    const rows = subtotalRows(wb.sheet, reg);
+    if (rows.length) wb.hf.batch(() => rows.reverse().forEach((r) => wb.hf.removeRows(wb.sheet, [r, 1])));
+    grid.changed();
+    persist();
+    toast(rows.length ? `Usunięto sumy częściowe (${rows.length} wierszy)` : 'W tych danych nie ma sum częściowych', rows.length ? 'ok' : 'info');
+  }
+
+  // Everything is read first and then changed in one batch (one Ctrl+Z undoes it all; inside a
+  // batch HyperFormula gives no values): old subtotal rows out, the rows sorted, new ones in.
+  function applySubtotals({ reg, header, at, cols, fn, sort, replace }) {
+    const sheet = wb.sheet;
+    const col = reg.c0 + at;
+    const dateFmt = wb.metaFor(sheet).colFmt[col]?.date;
+    const from = reg.r0 + (header ? 1 : 0);
+    const old = replace ? subtotalRows(sheet, reg) : [];
+    const skip = new Set(old);
+    const data = []; // the data rows, as they will lie (from `from` on) once the old subtotals are gone
+    for (let r = from; r <= reg.r1; r++) {
+      if (skip.has(r)) continue;
+      const v = wb.hf.getCellValue({ sheet, row: r, col });
+      data.push({ key: keyOf(v, { dateFmt }), sk: sortValueKey(v) });
+    }
+    if (!data.length) return toast('Brak danych pod nagłówkiem.', 'warn');
+    const order = data.map((_, i) => i);
+    if (sort) order.sort((a, b) => compareSortKeys(data[a].sk, data[b].sk, true) || a - b);
+    const to = from + data.length - 1;
+    const keys = order.map((i) => ({ k: data[i].key.k, label: String(data[i].key.label) }));
+    const plan = subtotalPlan({ from, to, keys, at: col, cols: cols.map((i) => reg.c0 + i), fn, lang: wb.lang });
+    const height = wb.hf.getSheetDimensions(sheet).height - old.length;
+    wb.hf.batch(() => {
+      [...old].reverse().forEach((r) => wb.hf.removeRows(sheet, [r, 1]));
+      if (sort) {
+        const targetOf = Array.from({ length: height }, (_, i) => i);
+        order.forEach((i, pos) => (targetOf[from + i] = from + pos));
+        wb.hf.setRowOrder(sheet, targetOf);
+      }
+      for (const ins of plan.inserts) {
+        wb.hf.addRows(sheet, [ins.row, 1]);
+        for (const [c, v] of Object.entries(ins.cells)) wb.hf.setCellContents({ sheet, row: ins.row, col: Number(c) }, [[v]]);
+      }
+    });
+    grid.changed();
+    persist();
+    const n = plan.groups.length;
+    toast(`Dodano sumy częściowe dla ${n} ${n === 1 ? 'grupy' : 'grup'} i wynik końcowy`, 'ok');
   }
 
   // ---- charts ----------------------------------------------------------------------------------
@@ -862,5 +1241,3 @@ export function createSheetWorkspace(container, ctx) {
     },
   };
 }
-
-const MONTHS = ['styczeń', 'luty', 'marzec', 'kwiecień', 'maj', 'czerwiec', 'lipiec', 'sierpień', 'wrzesień', 'październik', 'listopad', 'grudzień'];

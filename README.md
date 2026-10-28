@@ -105,7 +105,13 @@ sprawdzane – zob. `tools/check-lessons.mjs`.
 - Formuły po polsku jak w Excelu (`SUMA`, `JEŻELI`, `LICZ.JEŻELI`, `WYSZUKAJ.PIONOWO`, `ROK`, `DZIEŃ.TYG` …)
   ze średnikiem jako separatorem. W ustawieniach można przełączyć na nazwy angielskie.
 - Zaznaczanie, przeciąganie formuł, kopiuj/wklej i cofanie.
-- Sortowanie, tabela przestawna i wykresy.
+- Sortowanie i wykresy.
+- **Tabela przestawna** z panelem „Pola tabeli przestawnej” jak w Excelu: pola przeciągasz między
+  filtrami, kolumnami, wierszami i wartościami (suma, liczba, średnia, maksimum, minimum), a tabela
+  od razu się przebudowuje. Daty można grupować (dni, miesiące, lata…). Przy kilku polach w wierszach
+  są sumy częściowe, a na końcu suma końcowa.
+- **Suma częściowa** (jak *Dane → Suma częściowa* w Excelu): pod każdą grupą wierszy z tą samą wartością
+  w wybranej kolumnie pojawia się wiersz z funkcją `SUMY.CZĘŚCIOWE`, a na końcu wynik dla wszystkich danych.
 - Dane z pliku są już wczytane, a daty i godziny są rozpoznane.
 - Kolumny same się poszerzają, żeby liczby i daty nie zamieniały się w `###`, a tekst nie był ucinany przez sąsiednią komórkę.
   Kolumna, której szerokość ustawisz ręcznie, zostaje taka, jaką ustawiłeś.
@@ -199,7 +205,7 @@ npm run install-desktop
 | `npm start` | uruchamia program |
 | `npm run dev` | uruchamia z narzędziami deweloperskimi (F12) |
 | `npm test` | testy jednostkowe: sprawdzanie odpowiedzi, kompletność treści, to, że oficjalne odpowiedzi z klucza dostają pełne punkty |
-| `npm run test:e2e` | testy całej aplikacji w Electronie: uruchamianie kodu w trzech językach, SQL, arkusz, symulacja, podpowiedzi, lekcje i ich testy, wyświetlanie każdego z 175 zadań razem z jego podpowiedziami |
+| `npm run test:e2e` | testy całej aplikacji w Electronie: uruchamianie kodu w trzech językach, SQL, arkusz (z tabelą przestawną i sumą częściową), symulacja, podpowiedzi, lekcje i ich testy, wyświetlanie każdego z 175 zadań razem z jego podpowiedziami |
 | `npm run verify-content` | skrypty w `tools/ref/` liczą odpowiedzi z plików danych i porównują je z kluczem CKE, `tools/check-solutions.mjs` uruchamia wszystkie przykładowe rozwiązania z podpowiedzi, `tools/check-lessons.mjs` – wszystkie rozwiązania, przykłady, zapytania i formuły z lekcji (w trzech językach; sprawdza też, że czytelnik każdego języka nie dostaje kodu ani wzmianek o pozostałych), a
  `tools/audit-pdf.mjs` porównuje treść z oryginalnymi PDF-ami (strony, punkty, liczby w treści, odpowiedzi z klucza) |
 | `node scripts/e2e.js solveall` | rozwiązuje każde ze 175 zadań przez interfejs programu (pola, przyciski, uruchomienie kodu i zapytań) i sprawdza, czy dostaje pełne punkty; trwa kilka minut |
@@ -223,7 +229,7 @@ INFORMATURA_SELFTEST=1 dist/linux-unpacked/informatura --no-sandbox
 - `renderer/`: interfejs.
   - `renderer/js/views/`: ekrany programu.
   - `renderer/js/ws/`: edytor kodu, SQL i arkusz.
-  - `renderer/js/sheet/`: silnik arkusza i siatka.
+  - `renderer/js/sheet/`: silnik arkusza, siatka, tabela przestawna i suma częściowa.
   - `renderer/js/check.js`: sprawdzanie odpowiedzi.
   - `renderer/js/ghost.js`: przykładowe rozwiązanie pokazywane jako podpowiedź w edytorze.
   - `renderer/js/learn/`: lekcje – wyświetlanie treści i przykładów, pytania i ich sprawdzanie.
