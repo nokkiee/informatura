@@ -112,7 +112,9 @@ function filterBar(f, onChange, { search = true } = {}) {
 }
 
 export function renderBrowse(view, params) {
-  const f = loadFilter('browseFilter') || defaultFilter();
+  let f = loadFilter('browseFilter') || defaultFilter();
+  // a search from the top bar looks through all the tasks
+  if (params.q !== undefined) f = { ...defaultFilter(), q: params.q };
   if (params.cat && CATEGORIES[params.cat]) f.cats = [params.cat];
   const list = h('div', { class: 'browse-list' });
   const count = h('span', { class: 'muted' });

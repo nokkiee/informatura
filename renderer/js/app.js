@@ -1,4 +1,4 @@
-// App shell: header, hash router and navigation helpers.
+// App shell: side bar, top bar, hash router and navigation helpers.
 import { h, icon, clear, toast } from './ui.js';
 import { initStore, getSettings, onSettings, flushTaskState } from './store.js';
 import { loadContent, getExam, examTitle } from './content.js';
@@ -92,7 +92,7 @@ async function route() {
   view.scrollTop = 0;
 }
 
-// ---- header ------------------------------------------------------------------------------
+// ---- side bar and top bar ----------------------------------------------------------------------
 
 const navItems = [
   { id: 'home', label: 'Start', icon: 'home', href: '#/' },
@@ -108,21 +108,35 @@ function setActiveNav(id) {
   document.querySelectorAll('.nav-link').forEach((a) => a.classList.toggle('active', a.dataset.id === active));
 }
 
-function buildHeader() {
-  const header = document.getElementById('header');
-  clear(header);
-  header.appendChild(
+const sideLink = (n) => h('a', { class: 'nav-link side-link', href: n.href, title: n.label, dataset: { id: n.id } }, icon(n.icon, 19), h('span', null, n.label));
+
+function buildShell() {
+  // the side bar: logo, the sections, the settings at the bottom
+  clear(document.getElementById('sidebar')).append(
+    h('button', { class: 'side-logo', title: 'Informatura – start', onclick: () => navigate('#/') }, h('img', { src: 'img/logo.svg', alt: '' })),
+    h('nav', { class: 'side-nav' }, navItems.map(sideLink)),
+    h('div', { class: 'grow' }),
+    sideLink({ id: 'settings', label: 'Ustawienia', icon: 'settings', href: '#/settings' }),
+  );
+  // the top bar: the name, a search through all tasks, a quick random task
+  const search = h('input', { class: 'top-search-input', placeholder: 'Szukaj zadań…', spellcheck: false, 'aria-label': 'Szukaj zadań' });
+  search.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const q = search.value.trim();
+    navigate(q ? `#/browse?q=${encodeURIComponent(q)}` : '#/browse');
+    search.blur();
+  });
+  clear(document.getElementById('header')).append(
     h(
       'div',
-      { class: 'brand', onclick: () => navigate('#/') },
-      h('img', { class: 'logo', src: 'img/logo.svg', alt: '' }),
-      h('span', { class: 'brand-name' }, 'Infor', h('b', null, 'matura')),
-      h('span', { class: 'brand-sub' }, 'informatyka · rozszerzona · formuła 2023'),
+      { class: 'top-brand', onclick: () => navigate('#/') },
+      h('span', { class: 'top-title' }, 'Informatura'),
+      h('span', { class: 'top-sub' }, 'informatyka · rozszerzona · formuła 2023'),
     ),
+    h('div', { class: 'grow' }),
+    h('label', { class: 'top-search', title: 'Szukaj w treści, numerach i tematach zadań (Enter)' }, icon('search', 15), search),
+    h('a', { class: 'btn primary top-cta', href: '#/random?go=1', title: 'Losuj zadanie z wybranych działów i matur' }, icon('dice', 16), h('span', null, 'Losuj zadanie')),
   );
-  header.appendChild(h('nav', { class: 'nav' }, navItems.map((n) => h('a', { class: 'nav-link', href: n.href, dataset: { id: n.id } }, icon(n.icon, 15), n.label))));
-  header.appendChild(h('div', { class: 'grow' }));
-  header.appendChild(h('a', { class: 'icon-btn nav-link', href: '#/settings', title: 'Ustawienia', dataset: { id: 'settings' } }, icon('settings')));
 }
 
 function applyTheme(s) {
@@ -136,7 +150,7 @@ async function boot() {
     applyTheme(getSettings());
     onSettings(applyTheme);
     await loadContent();
-    buildHeader();
+    buildShell();
     window.addEventListener('hashchange', route);
     await route();
   } catch (err) {

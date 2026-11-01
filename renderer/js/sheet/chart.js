@@ -16,7 +16,7 @@ export const CHART_TYPES = [
   ['pie', 'Kołowy'],
 ];
 
-const PALETTE = ['#4f8ff7', '#f2994a', '#56c271', '#e5534b', '#a371f7', '#d4b106', '#2bb3c0', '#ec6cb9', '#8d99ae', '#6c8a3f'];
+const PALETTE = ['#2fd3a0', '#7ea6e0', '#d3a874', '#a99bd9', '#e5675f', '#67b8b4', '#c9b458', '#d78fb5', '#8a919b', '#7fa36a'];
 
 // Reads the range: first row = series names when it holds text, first column = categories when it holds text/dates.
 export function chartData(wb, cfg) {

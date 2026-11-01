@@ -55,18 +55,27 @@ function defineThemes(monaco) {
     inherit: true,
     rules: [],
     colors: {
-      'editor.background': '#12161c',
-      'editorGutter.background': '#12161c',
-      'editor.lineHighlightBackground': '#1a2029',
-      'editorLineNumber.foreground': '#4b5563',
-      'editorLineNumber.activeForeground': '#9aa4b2',
+      'editor.background': '#0f1215',
+      'editorGutter.background': '#0f1215',
+      'editor.lineHighlightBackground': '#15181c',
+      'editor.lineHighlightBorder': '#15181c',
+      'editorLineNumber.foreground': '#454b54',
+      'editorLineNumber.activeForeground': '#9aa1ab',
+      'editorCursor.foreground': '#2fd3a0',
+      'editor.selectionBackground': '#2fd3a033',
+      'editorWidget.background': '#13161a',
+      'editorWidget.border': '#22262c',
+      'editorSuggestWidget.background': '#13161a',
+      'editorSuggestWidget.border': '#22262c',
+      'editorSuggestWidget.selectedBackground': '#1f2329',
+      'editorIndentGuide.background1': '#1c2025',
     },
   });
   monaco.editor.defineTheme('ml-light', {
     base: 'vs',
     inherit: true,
     rules: [],
-    colors: { 'editor.background': '#ffffff' },
+    colors: { 'editor.background': '#fafbfc', 'editorGutter.background': '#fafbfc', 'editorCursor.foreground': '#10a37a', 'editor.selectionBackground': '#10a37a2e' },
   });
 }
 

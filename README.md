@@ -7,7 +7,7 @@ Rozwiązujesz zadania z egzaminów CKE w jednym programie. Kod piszesz i urucham
 C++ albo Javie, zapytania SQL wykonujesz na wbudowanej bazie, a obliczenia robisz we wbudowanym
 arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba pobierać.
 
-![Strona startowa](docs/screenshots/ekran-1-start.png)
+![Strona startowa](docs/screenshots/ui-1-start.png)
 
 ## Co jest w środku
 
@@ -20,7 +20,10 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
   - **Tryb ćwiczeń:** każde zadanie sprawdzasz od razu i możesz zajrzeć do rozwiązania.
   - **Symulacja egzaminu:** zegar 210 minut, sprawdzanie dopiero na końcu i podsumowanie punktów według działów.
 - **Losowe zadanie:** losujesz z wybranych działów i matur.
-- **Przeglądanie:** wszystkie zadania z filtrami według działu, matury i postępu.
+- **Przeglądanie:** wszystkie zadania z filtrami według działu, matury i postępu. Wyszukiwarka u góry okna
+  przeszukuje treść, numery i tematy wszystkich zadań.
+- **Spokojny, ciemny wygląd** (jest też jasny): działy w pasku z boku, karty z cienką ramką i jeden
+  miętowy kolor akcentu.
 - **Podpowiedzi** do każdego zadania: najpierw ogólne, potem coraz konkretniejsze, a przy kodzie i SQL –
   przykładowe rozwiązanie podpowiadane w edytorze tak, jak VS Code podpowiada kod.
 - **Oryginał pod ręką:** przycisk *Arkusz PDF* otwiera oryginalny arkusz na stronie z danym zadaniem.
@@ -28,7 +31,7 @@ arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba
 
 ### Lekcje
 
-![Lekcja czytana w Pythonie, z przełącznikiem języka](docs/screenshots/ekran-2-lekcja.png)
+![Lekcja czytana w Pythonie, z przełącznikiem języka](docs/screenshots/ui-2-lekcja.png)
 
 - Każdy dział matury wyjaśniony krok po kroku: do czego służy dane narzędzie, kiedy po nie sięgnąć
   i jak użyć go w zadaniu – od pierwszego programu, przez rekurencję, SQL i symulacje w arkuszu,
@@ -53,7 +56,7 @@ sprawdzane – zob. `tools/check-lessons.mjs`.
 
 ### Podpowiedzi
 
-![Podpowiedzi i przykładowe rozwiązanie w edytorze](docs/screenshots/ekran-3-podpowiedzi.png)
+![Podpowiedzi i przykładowe rozwiązanie w edytorze](docs/screenshots/ui-3-podpowiedzi.png)
 
 - Przycisk **Podpowiedź** odsłania kolejne wskazówki. Pierwsze tylko naprowadzają (od czego zacząć,
   na co uważać), następne mówią coraz dokładniej, co zrobić – w arkuszu kalkulacyjnym aż do gotowych formuł.
@@ -73,7 +76,7 @@ sprawdzane – zob. `tools/check-lessons.mjs`.
 
 ### Programowanie: Python, C++ lub Java
 
-![Zadanie programistyczne](docs/screenshots/ekran-4-program.png)
+![Zadanie programistyczne](docs/screenshots/ui-4-program.png)
 
 - Edytor z podświetlaniem składni (ten sam co w VS Code).
 - Konsola, w której widać wynik programu i w której można wpisywać dane wejściowe.
@@ -89,7 +92,7 @@ sprawdzane – zob. `tools/check-lessons.mjs`.
 
 ### Bazy danych: SQL w stylu Accessa
 
-![Zadanie z bazą danych](docs/screenshots/ekran-5-sql.png)
+![Zadanie z bazą danych](docs/screenshots/ui-5-sql.png)
 
 - Tabele z zadania są już zaimportowane, a schemat i powiązania widać z boku.
 - Silnik to SQLite. Działają też funkcje znane z Accessa i MySQL:
@@ -100,7 +103,7 @@ sprawdzane – zob. `tools/check-lessons.mjs`.
 
 ### Arkusz kalkulacyjny z polskimi funkcjami
 
-![Tabela przestawna z panelem „Pola tabeli przestawnej”](docs/screenshots/ekran-6-przestawna.png)
+![Tabela przestawna z panelem „Pola tabeli przestawnej”](docs/screenshots/ui-6-przestawna.png)
 
 - Formuły po polsku jak w Excelu (`SUMA`, `JEŻELI`, `LICZ.JEŻELI`, `WYSZUKAJ.PIONOWO`, `ROK`, `DZIEŃ.TYG` …)
   ze średnikiem jako separatorem. W ustawieniach można przełączyć na nazwy angielskie.
@@ -116,7 +119,7 @@ sprawdzane – zob. `tools/check-lessons.mjs`.
 - Kolumny same się poszerzają, żeby liczby i daty nie zamieniały się w `###`, a tekst nie był ucinany przez sąsiednią komórkę.
   Kolumna, której szerokość ustawisz ręcznie, zostaje taka, jaką ustawiłeś.
 
-![Suma częściowa: suma kilogramów pod każdym dostawcą](docs/screenshots/ekran-7-suma-czesciowa.png)
+![Suma częściowa: suma kilogramów pod każdym dostawcą](docs/screenshots/ui-7-suma-czesciowa.png)
 
 ### Teoria
 
