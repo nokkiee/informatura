@@ -1,4 +1,4 @@
-name: CI
+name: Build aplikacji
 
 on:
   push:
@@ -8,25 +8,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 22
-          cache: npm
-      - name: pdftotext for the audit against the original PDFs
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
-      - run: npm ci
-      - run: npm test
-      - run: npm run verify-content
-      - name: End-to-end tests (Python, C++ and Java code, SQL, spreadsheet, all 175 tasks)
-        run: xvfb-run -a npm run test:e2e
-
   windows:
-    # Runs the app on real Windows with the toolchains a student would install, then builds
-    # the installer and the portable version and checks that the installed app starts.
+    # Builds the installer and the portable version, installs silently and checks that the
+    # installed app starts and passes its self-test.
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v5
@@ -44,13 +28,8 @@ jobs:
       - name: C++ compiler (MinGW)
         shell: pwsh
         run: |
-          # Not added to PATH on purpose: the app should find MinGW in its usual folder by itself.
           if (-not (Get-Command g++ -ErrorAction SilentlyContinue)) { choco install mingw -y --no-progress }
       - run: npm ci
-      - run: npm test
-      - run: npm run verify-content
-      - name: End-to-end tests
-        run: npm run test:e2e
       - run: npx electron-builder --win nsis portable --publish never
       - name: Install silently and start the installed app
         shell: pwsh
@@ -71,4 +50,30 @@ jobs:
         with:
           name: Informatura-windows
           path: dist/*.exe
+          retention-days: 7
+
+  linux:
+    # Builds the AppImage and the .deb and checks that the built app starts and passes its self-test.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx electron-builder --linux AppImage deb --publish never
+      - name: Start the built app
+        env:
+          INFORMATURA_SELFTEST: '1'
+        run: |
+          # CI runners can't set up Chromium's sandbox (no SUID helper)
+          xvfb-run -a dist/linux-unpacked/informatura --no-sandbox | tee selftest.txt
+          grep -q 'SELFTEST OK' selftest.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Informatura-linux
+          path: |
+            dist/*.AppImage
+            dist/*.deb
           retention-days: 7

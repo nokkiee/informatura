@@ -1,8 +1,26 @@
-<img src="build/icon.png" alt="" width="112" align="right">
+<p align="center">
+  <img src="build/icon.png" alt="Logo Informatury" width="128">
+</p>
 
-# Informatura
+<h1 align="center">Informatura</h1>
 
-**Ćwiczenie matury z informatyki (poziom rozszerzony, formuła 2023) na prawdziwych arkuszach.**
+<p align="center">
+  <b>Ćwiczenie matury z informatyki (poziom rozszerzony, formuła 2023) na prawdziwych arkuszach.</b>
+</p>
+
+<p align="center">
+  <a href="https://github.com/nokkiee/informatura/releases/latest"><img src="https://img.shields.io/github/v/release/nokkiee/informatura?label=wydanie&color=2fd3a0&labelColor=1f2329" alt="Najnowsze wydanie"></a>
+  <a href="https://github.com/nokkiee/informatura/blob/main/LICENSE"><img src="https://img.shields.io/github/license/nokkiee/informatura?label=licencja&color=2fd3a0&labelColor=1f2329" alt="Licencja"></a>
+  <a href="#czego-potrzebujesz"><img src="https://img.shields.io/badge/Python-3-3776AB?logo=python&logoColor=white&labelColor=1f2329" alt="Python 3"></a>
+  <a href="#czego-potrzebujesz"><img src="https://img.shields.io/badge/C%2B%2B-17-00599C?logo=cplusplus&logoColor=white&labelColor=1f2329" alt="C++17"></a>
+  <a href="#czego-potrzebujesz"><img src="https://img.shields.io/badge/Java-11%2B-ED8B00?logo=openjdk&logoColor=white&labelColor=1f2329" alt="Java 11+"></a>
+  <a href="https://github.com/nokkiee/informatura/releases/latest"><img src="https://img.shields.io/badge/platforma-Windows%20%7C%20Linux-2fd3a0?labelColor=1f2329" alt="Windows i Linux"></a>
+  <a href="https://github.com/nokkiee/informatura/commits/main"><img src="https://img.shields.io/github/last-commit/nokkiee/informatura?label=ostatni%20commit&color=2fd3a0&labelColor=1f2329" alt="Ostatni commit"></a>
+  <a href="https://github.com/nokkiee/informatura"><img src="https://img.shields.io/github/languages/code-size/nokkiee/informatura?label=rozmiar%20kodu&color=2fd3a0&labelColor=1f2329" alt="Rozmiar kodu"></a>
+  <a href="https://github.com/nokkiee/informatura/actions/workflows/tests.yml"><img src="https://img.shields.io/github/actions/workflow/status/nokkiee/informatura/tests.yml?branch=main&label=testy&logo=githubactions&logoColor=white&labelColor=1f2329" alt="Testy"></a>
+  <a href="https://github.com/nokkiee/informatura/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/nokkiee/informatura/build.yml?branch=main&label=build%20aplikacji&logo=githubactions&logoColor=white&labelColor=1f2329" alt="Build aplikacji"></a>
+</p>
+
 Rozwiązujesz zadania z egzaminów CKE w jednym programie. Kod piszesz i uruchamiasz w Pythonie,
 C++ albo Javie, zapytania SQL wykonujesz na wbudowanej bazie, a obliczenia robisz we wbudowanym
 arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba pobierać.
@@ -211,15 +229,17 @@ npm run install-desktop
 | `npm run dev` | uruchamia z narzędziami deweloperskimi (F12) |
 | `npm test` | testy jednostkowe: sprawdzanie odpowiedzi, kompletność treści, to, że oficjalne odpowiedzi z klucza dostają pełne punkty |
 | `npm run test:e2e` | testy całej aplikacji w Electronie: uruchamianie kodu w trzech językach, SQL, arkusz (z tabelą przestawną i sumą częściową), symulacja, podpowiedzi, lekcje i ich testy, wyświetlanie każdego z 175 zadań razem z jego podpowiedziami |
-| `npm run verify-content` | skrypty w `tools/ref/` liczą odpowiedzi z plików danych i porównują je z kluczem CKE, `tools/check-solutions.mjs` uruchamia wszystkie przykładowe rozwiązania z podpowiedzi, `tools/check-lessons.mjs` – wszystkie rozwiązania, przykłady, zapytania i formuły z lekcji (w trzech językach; sprawdza też, że czytelnik każdego języka nie dostaje kodu ani wzmianek o pozostałych), a
- `tools/audit-pdf.mjs` porównuje treść z oryginalnymi PDF-ami (strony, punkty, liczby w treści, odpowiedzi z klucza) |
+| `npm run verify-content` | skrypty w `tools/ref/` liczą odpowiedzi z plików danych i porównują je z kluczem CKE, `tools/check-solutions.mjs` uruchamia wszystkie przykładowe rozwiązania z podpowiedzi, `tools/check-lessons.mjs` – wszystkie rozwiązania, przykłady, zapytania i formuły z lekcji (w trzech językach; sprawdza też, że czytelnik każdego języka nie dostaje kodu ani wzmianek o pozostałych), a `tools/audit-pdf.mjs` porównuje treść z oryginalnymi PDF-ami (strony, punkty, liczby w treści, odpowiedzi z klucza) |
 | `node scripts/e2e.js solveall` | rozwiązuje każde ze 175 zadań przez interfejs programu (pola, przyciski, uruchomienie kodu i zapytań) i sprawdza, czy dostaje pełne punkty; trwa kilka minut |
 | `npm run pack` | buduje nierozpakowaną wersję do `dist/linux-unpacked` |
 | `npm run dist` | buduje AppImage i .deb |
 | `npm run dist:win` | buduje instalator i wersję przenośną dla Windowsa |
 
 `node tools/sheet-eval.mjs` liczy formuły arkusza (po polsku) na danych z matury tym samym silnikiem co program –
-tak sprawdzone są formuły z podpowiedzi. Testy działają na Linuksie i Windowsie (GitHub Actions).
+tak sprawdzone są formuły z podpowiedzi.
+
+Na GitHubie (Actions) workflow **Testy** uruchamia wszystkie testy na Linuksie i Windowsie, a **Build aplikacji**
+buduje instalator, wersję przenośną, AppImage i .deb, instaluje program i sprawdza, czy zbudowana wersja działa.
 
 Gotową paczkę można szybko sprawdzić. To polecenie otwiera zadanie każdego rodzaju i wypisuje `SELFTEST OK`:
 
@@ -244,6 +264,12 @@ INFORMATURA_SELFTEST=1 dist/linux-unpacked/informatura --no-sandbox
 - `content/lessons/<dział>/<lekcja>.js`, `…/test.js`: lekcje i testy działów (`content/lessons/index.js` – lista).
 - `content/data/<matura>/`: pliki z danymi. `content/pdf/`: oryginalne arkusze i klucze. `content/img/`: rysunki z arkuszy.
 - `sources/`: arkusze i załączniki w postaci pobranej z arkusze.pl.
+
+## Współpraca
+
+Zgłoszenia błędów i propozycje są mile widziane – zasady i przygotowanie środowiska opisuje
+[CONTRIBUTING.md](CONTRIBUTING.md). Obowiązuje [kodeks postępowania](CODE_OF_CONDUCT.md), a luki
+bezpieczeństwa zgłaszaj według [SECURITY.md](SECURITY.md) (nie w publicznych zgłoszeniach).
 
 ## Źródła i licencja
 
