@@ -4,6 +4,17 @@ Wszystkie ważniejsze zmiany w Informaturze. Pliki do pobrania każdej wersji (z
 od wersji 1.3.1) są na stronie [Releases](https://github.com/nokkiee/informatura/releases).
 Numery wersji: zmiana środkowej liczby to nowe funkcje, ostatniej – poprawki i drobne zmiany.
 
+## [Nieopublikowane]
+
+Zmiany w repozytorium, które trafią do następnej wersji programu (sam program się nie zmienił).
+
+- Formularze zgłoszeń (*Błąd w programie*, *Błąd w treści zadania*, *Propozycja*) i szablon pull requesta.
+- Ta historia zmian.
+- Workflow *Sumy kontrolne* sam dołącza `SHA256SUMS.txt` do każdego publikowanego wydania;
+  [SECURITY.md](SECURITY.md) opisuje, jak sprawdzić pobrany plik.
+- Obrazek podglądu repozytorium (`docs/social-preview.png`).
+- Testy e2e czekają dłużej na pierwszy start programu na świeżym runnerze Windows.
+
 ## [1.3.1] – 2026-11-02
 
 Sam program działa tak samo jak w 1.3.0.
