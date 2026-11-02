@@ -21,6 +21,8 @@
   <a href="https://github.com/nokkiee/informatura/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/nokkiee/informatura/build.yml?branch=main&label=build%20aplikacji&logo=githubactions&logoColor=white&labelColor=1f2329" alt="Build aplikacji"></a>
 </p>
 
+<p align="center"><b><a href="https://nokkiee.github.io/informatura/">Strona projektu</a></b> · <a href="https://github.com/nokkiee/informatura/releases/latest">Pobierz</a> · <a href="CHANGELOG.md">Historia zmian</a></p>
+
 Rozwiązujesz zadania z egzaminów CKE w jednym programie. Kod piszesz i uruchamiasz w Pythonie,
 C++ albo Javie, zapytania SQL wykonujesz na wbudowanej bazie, a obliczenia robisz we wbudowanym
 arkuszu kalkulacyjnym. Pliki z danymi są już w programie, więc nic nie trzeba pobierać.
@@ -241,6 +243,8 @@ tak sprawdzone są formuły z podpowiedzi.
 Na GitHubie (Actions) workflow **Testy** uruchamia wszystkie testy na Linuksie i Windowsie, a **Build aplikacji**
 buduje instalator, wersję przenośną, AppImage i .deb, instaluje program i sprawdza, czy zbudowana wersja działa.
 Po opublikowaniu wydania **Sumy kontrolne** dołącza do niego `SHA256SUMS.txt` z sumami SHA-256 wszystkich plików.
+Workflow **Strona** publikuje stronę projektu z folderu `site/` na GitHub Pages (`node scripts/build-site.js` buduje ją
+lokalnie do `_site/`) – przy zmianach w `site/` i przy każdym nowym wydaniu, żeby linki do pobrania wskazywały najnowszą wersję.
 
 Gotową paczkę można szybko sprawdzić. To polecenie otwiera zadanie każdego rodzaju i wypisuje `SELFTEST OK`:
 

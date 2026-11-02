@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Informatura – matura z informatyki na prawdziwych arkuszach CKE (Python, C++, Java, SQL, Excel)</title>
+  <meta name="description" content="Darmowy program do nauki do matury z informatyki (poziom rozszerzony, formuła 2023): 175 zadań z arkuszy CKE 2023–2026 z podpowiedziami i rozwiązaniami, kod w Pythonie, C++ i Javie, SQL, arkusz kalkulacyjny oraz 32 lekcje z testami. Windows i Linux.">
+  <link rel="canonical" href="https://nokkiee.github.io/informatura/">
+  <meta name="theme-color" content="#0c0e11">
+  <link rel="icon" type="image/svg+xml" href="img/icon.svg">
+  <link rel="icon" type="image/png" href="img/icon.png">
+  <link rel="apple-touch-icon" href="img/icon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pl_PL">
+  <meta property="og:site_name" content="Informatura">
+  <meta property="og:title" content="Informatura – matura z informatyki na prawdziwych arkuszach CKE">
+  <meta property="og:description" content="175 zadań z matur 2023–2026 z podpowiedziami, kod w Pythonie, C++ i Javie, SQL, arkusz kalkulacyjny i 32 lekcje. Darmowy program na Windows i Linux.">
+  <meta property="og:url" content="https://nokkiee.github.io/informatura/">
+  <meta property="og:image" content="https://nokkiee.github.io/informatura/img/social-preview.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="stylesheet" href="style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Informatura",
+    "description": "Program do nauki do matury z informatyki (poziom rozszerzony, formuła 2023) na prawdziwych arkuszach CKE: zadania z podpowiedziami, kod w Pythonie, C++ i Javie, SQL, arkusz kalkulacyjny i lekcje.",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Windows 10, Windows 11, Linux",
+    "softwareVersion": "{{VERSION}}",
+    "inLanguage": "pl",
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "PLN" },
+    "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+    "url": "https://nokkiee.github.io/informatura/",
+    "downloadUrl": "https://github.com/nokkiee/informatura/releases/latest",
+    "image": "https://nokkiee.github.io/informatura/img/social-preview.png",
+    "screenshot": "https://nokkiee.github.io/informatura/img/ui-1-start.png"
+  }
+  </script>
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top-in">
+      <a class="brand" href="#"><img src="img/icon.svg" alt="" width="34" height="34"><span>Informatura</span></a>
+      <nav class="links" aria-label="Sekcje strony">
+        <a href="#funkcje">Funkcje</a>
+        <a href="#lekcje">Lekcje</a>
+        <a href="#pobierz">Pobierz</a>
+        <a href="#pytania">Pytania</a>
+        <a href="https://github.com/nokkiee/informatura">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-in">
+        <div class="hero-text">
+          <p class="kicker">Matura z informatyki · poziom rozszerzony · formuła 2023</p>
+          <h1>Ćwicz na prawdziwych maturach z&nbsp;informatyki</h1>
+          <p class="lead">
+            Informatura to darmowy program, w którym rozwiązujesz zadania z arkuszy CKE: piszesz i uruchamiasz kod
+            w&nbsp;Pythonie, C++ albo Javie, wykonujesz zapytania SQL i liczysz w arkuszu kalkulacyjnym – a program od razu
+            sprawdza odpowiedź. Pliki z danymi są już na miejscu.
+          </p>
+          <div class="cta">
+            <a class="btn primary" id="dl-main" href="https://github.com/nokkiee/informatura/releases/latest/download/Informatura-Setup-{{VERSION}}.exe">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14"/></svg>
+              <span id="dl-main-label">Pobierz dla Windows</span>
+            </a>
+            <a class="btn" id="dl-alt" href="https://github.com/nokkiee/informatura/releases/latest/download/Informatura-{{VERSION}}.AppImage">
+              <span id="dl-alt-label">Pobierz dla Linuksa</span>
+            </a>
+          </div>
+          <p class="small muted">Wersja {{VERSION}} z {{DATE}} · darmowa, bez reklam i bez konta · <a href="#pobierz">wszystkie pliki</a></p>
+        </div>
+        <div class="stats" aria-label="Najważniejsze liczby">
+          <div class="stat"><b>175</b><span>zadań z matur</span></div>
+          <div class="stat"><b>400</b><span>punktów do zdobycia</span></div>
+          <div class="stat"><b>8</b><span>arkuszy CKE 2023–2026</span></div>
+          <div class="stat"><b>32</b><span>lekcje z testami</span></div>
+        </div>
+      </div>
+      <div class="wrap">
+        <figure class="shot hero-shot">
+          <img src="img/ui-1-start.png" alt="Strona startowa Informatury: postęp, wybór języka programowania i tryby nauki" width="1837" height="994">
+        </figure>
+      </div>
+    </section>
+
+    <section id="funkcje" class="wrap section">
+      <h2>Wszystko, czego potrzebujesz do matury z informatyki</h2>
+      <p class="section-lead">Jeden program zamiast kilku: edytor kodu, baza danych, arkusz kalkulacyjny i arkusze CKE z kluczem odpowiedzi.</p>
+      <div class="cards">
+        <article class="card">
+          <h3>Prawdziwe arkusze CKE</h3>
+          <p>8 matur z maja i czerwca 2023, 2024, 2025 i 2026 – 175 zadań, każde z datą egzaminu i numerem. Żadne zadanie nie jest wymyślone, a oryginalny PDF otworzysz jednym kliknięciem.</p>
+        </article>
+        <article class="card">
+          <h3>Kod w Pythonie, C++ i Javie</h3>
+          <p>Piszesz w edytorze jak w VS Code i uruchamiasz program na plikach z danymi z matury. Przycisk „Test: dane przykładowe” porównuje wynik z odpowiedzią z treści zadania.</p>
+        </article>
+        <article class="card">
+          <h3>SQL na wbudowanej bazie</h3>
+          <p>Tabele z zadania są już wczytane. Widzisz schemat i powiązania, a zapytania piszesz także w stylu Accessa (TOP, daty #…#).</p>
+        </article>
+        <article class="card">
+          <h3>Arkusz jak Excel, po polsku</h3>
+          <p>Formuły SUMA, JEŻELI, WYSZUKAJ.PIONOWO, tabela przestawna z panelem pól, suma częściowa i wykresy – bez instalowania Excela.</p>
+        </article>
+        <article class="card">
+          <h3>Podpowiedzi krok po kroku</h3>
+          <p>Najpierw ogólna wskazówka, potem coraz konkretniejsza, a przy kodzie i SQL przykładowe rozwiązanie podpowiadane w edytorze – linijka po linijce.</p>
+        </article>
+        <article class="card">
+          <h3>Symulacja egzaminu</h3>
+          <p>Cały arkusz z zegarem 210 minut i sprawdzaniem dopiero na końcu, z podsumowaniem punktów według działów. Albo tryb ćwiczeń i losowe zadania.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap section rows">
+      <div class="row">
+        <div class="row-text">
+          <h2>Podpowiedź, gdy utkniesz</h2>
+          <p>Każde zadanie ma podpowiedzi od ogólnych do konkretnych. Przy programowaniu szary tekst przy kursorze pokazuje, co pisać dalej: <kbd>Tab</kbd> wpisuje linijkę, <kbd>Esc</kbd> ją chowa. Wszystkie przykładowe rozwiązania dają wynik zgodny z kluczem CKE.</p>
+        </div>
+        <figure class="shot"><img src="img/ui-3-podpowiedzi.png" alt="Podpowiedzi do zadania i przykładowe rozwiązanie podpowiadane w edytorze kodu" loading="lazy" width="1837" height="994"></figure>
+      </div>
+      <div class="row rev">
+        <div class="row-text">
+          <h2>Bazy danych bez instalowania Accessa</h2>
+          <p>Program wczytuje pliki z zadania do bazy SQLite. Po lewej masz tabele z kolumnami i powiązaniami, po prawej edytor zapytań i wynik – a odpowiedź sprawdzasz jednym kliknięciem.</p>
+        </div>
+        <figure class="shot"><img src="img/ui-5-sql.png" alt="Zadanie z bazą danych: schemat tabel, zapytanie SQL i jego wynik" loading="lazy" width="1837" height="994"></figure>
+      </div>
+      <div class="row">
+        <div class="row-text">
+          <h2>Arkusz kalkulacyjny z tabelą przestawną</h2>
+          <p>Polskie nazwy funkcji ze średnikiem, przeciąganie formuł, tabela przestawna z panelem pól jak w Excelu, suma częściowa i wykresy. Daty i godziny z plików są rozpoznawane od razu.</p>
+        </div>
+        <figure class="shot"><img src="img/ui-6-przestawna.png" alt="Arkusz kalkulacyjny z tabelą przestawną i panelem pól tabeli przestawnej" loading="lazy" width="1837" height="994"></figure>
+      </div>
+    </section>
+
+    <section id="lekcje" class="wrap section">
+      <div class="row rev">
+        <div class="row-text">
+          <h2>Lekcje do każdego działu</h2>
+          <p>32 lekcje w pięciu działach – programowanie, algorytmika, bazy danych, arkusz kalkulacyjny i teoria. Każda tłumaczy, do czego służy dane narzędzie i jak użyć go w zadaniu, a przykłady uruchamiasz od razu.</p>
+          <ul class="ticks">
+            <li>test po każdej lekcji: pytania ABCD, prawda/fałsz i zadania praktyczne sprawdzane automatycznie,</li>
+            <li>test z całego działu z wynikiem w procentach i listą lekcji do powtórki,</li>
+            <li>lekcję czytasz w jednym języku: Python, C++ albo Java,</li>
+            <li>pod każdą lekcją linki do prawdziwych zadań z matur na jej temat.</li>
+          </ul>
+        </div>
+        <figure class="shot"><img src="img/ui-2-lekcja.png" alt="Lekcja programowania w Pythonie z przykładem do uruchomienia" loading="lazy" width="1837" height="994"></figure>
+      </div>
+    </section>
+
+    <section id="pobierz" class="section download">
+      <div class="wrap">
+        <h2>Pobierz Informaturę</h2>
+        <p class="section-lead">Wersja {{VERSION}} · program jest darmowy i działa bez internetu. Instalator aktualizuje wcześniejszą wersję, a Twoje postępy zostają.</p>
+        <div class="files">
+          <a class="file" href="https://github.com/nokkiee/informatura/releases/latest/download/Informatura-Setup-{{VERSION}}.exe">
+            <b>Windows 10 / 11</b><span>Instalator · Informatura-Setup-{{VERSION}}.exe</span>
+          </a>
+          <a class="file" href="https://github.com/nokkiee/informatura/releases/latest/download/Informatura-{{VERSION}}-Portable.exe">
+            <b>Windows bez instalacji</b><span>Wersja przenośna · Informatura-{{VERSION}}-Portable.exe</span>
+          </a>
+          <a class="file" href="https://github.com/nokkiee/informatura/releases/latest/download/Informatura-{{VERSION}}.AppImage">
+            <b>Linux (każda dystrybucja)</b><span>AppImage · nadaj prawo do uruchamiania (<code>chmod +x</code>) i uruchom</span>
+          </a>
+          <a class="file" href="https://github.com/nokkiee/informatura/releases/latest/download/informatura_{{VERSION}}_amd64.deb">
+            <b>Debian / Ubuntu</b><span>Paczka .deb · <code>sudo apt install ./informatura_{{VERSION}}_amd64.deb</code></span>
+          </a>
+        </div>
+        <p class="note">Pliki dla Windowsa nie są podpisane cyfrowo, więc Windows może pokazać komunikat „System Windows ochronił ten komputer” – kliknij <b>Więcej informacji → Uruchom mimo to</b>. Sumy kontrolne plików są w <a href="https://github.com/nokkiee/informatura/releases/latest">SHA256SUMS.txt</a> (<a href="https://github.com/nokkiee/informatura/blob/main/SECURITY.md#jak-sprawdzi%C4%87-pobrany-plik">jak je sprawdzić</a>).</p>
+
+        <h3 class="sub">Co trzeba mieć zainstalowane</h3>
+        <p>Twój kod uruchamia się na Twoim komputerze, więc potrzebny jest kompilator albo interpreter języka, w którym piszesz – wystarczy jeden. Bazy danych, arkusz i teoria nie wymagają niczego dodatkowego.</p>
+        <div class="req">
+          <div><b>Python</b><span>Python 3</span><code>winget install Python.Python.3.12</code><code>sudo apt install python3</code></div>
+          <div><b>C++</b><span>g++ z C++17 lub nowszym</span><code>winget install BrechtSanders.WinLibs.POSIX.UCRT</code><code>sudo apt install g++</code></div>
+          <div><b>Java</b><span>JDK 11 lub nowszy</span><code>winget install EclipseAdoptium.Temurin.21.JDK</code><code>sudo apt install default-jdk</code></div>
+        </div>
+        <p class="small muted">Na Windowsie polecenia <code>winget</code> wpisujesz w PowerShellu. Program sam znajdzie też kompilatory z Code::Blocks, Dev-C++ i MSYS2, a w Ustawieniach pokazuje, co wykrył.</p>
+      </div>
+    </section>
+
+    <section id="pytania" class="wrap section faq">
+      <h2>Pytania</h2>
+      <details>
+        <summary>Czy Informatura jest darmowa?</summary>
+        <p>Tak. Program jest darmowy, bez reklam i bez zakładania konta, a jego kod jest otwarty (licencja GPL-3.0) i dostępny na GitHubie.</p>
+      </details>
+      <details>
+        <summary>Czy zadania są prawdziwe?</summary>
+        <p>Tak – wszystkie 175 zadań pochodzi z oryginalnych arkuszy matury z informatyki CKE (poziom rozszerzony, formuła 2023) z lat 2023–2026, razem z plikami danych i kluczem odpowiedzi. Treść jest automatycznie porównywana z oryginalnymi PDF-ami. Podpowiedzi, przykładowe rozwiązania i lekcje napisano dla programu.</p>
+      </details>
+      <details>
+        <summary>Czy to oficjalny program CKE?</summary>
+        <p>Nie. Informatura to niezależny projekt do nauki i nie jest związana z Centralną Komisją Egzaminacyjną. Prawa do zadań, plików z danymi i kluczy należą do CKE.</p>
+      </details>
+      <details>
+        <summary>Czy potrzebuję internetu?</summary>
+        <p>Tylko do pobrania programu. Informatura działa w pełni offline i nie wysyła żadnych danych – postępy, kod i ustawienia zostają na Twoim komputerze.</p>
+      </details>
+      <details>
+        <summary>W jakim języku programowania pisać?</summary>
+        <p>W tym, którego użyjesz na maturze: Python, C++ albo Java. Język zmienisz w każdej chwili – na stronie startowej, w zadaniu albo w lekcji. W zadaniach do wyboru są tylko języki zainstalowane na komputerze.</p>
+      </details>
+      <details>
+        <summary>Czy działa na macOS?</summary>
+        <p>Na razie nie ma gotowej wersji na macOS – są wersje na Windows 10/11 i Linuksa.</p>
+      </details>
+      <details>
+        <summary>Znalazłem błąd albo mam pomysł. Gdzie to zgłosić?</summary>
+        <p>W <a href="https://github.com/nokkiee/informatura/issues/new/choose">zgłoszeniach na GitHubie</a> – są osobne formularze na błąd w programie, błąd w treści zadania i propozycję.</p>
+      </details>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap foot-in">
+      <div class="brand"><img src="img/icon.svg" alt="" width="26" height="26"><span>Informatura</span></div>
+      <nav class="links" aria-label="Linki">
+        <a href="https://github.com/nokkiee/informatura">Kod na GitHubie</a>
+        <a href="https://github.com/nokkiee/informatura/releases">Wszystkie wersje</a>
+        <a href="https://github.com/nokkiee/informatura/blob/main/CHANGELOG.md">Historia zmian</a>
+        <a href="https://github.com/nokkiee/informatura/blob/main/LICENSE">Licencja GPL-3.0</a>
+      </nav>
+      <p class="small muted">Zadania, pliki z danymi i klucze odpowiedzi pochodzą z matur z informatyki Centralnej Komisji Egzaminacyjnej i należą do CKE. Informatura nie jest związana z CKE i służy wyłącznie do nauki.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Linux visitors get the AppImage as the main download
+    (function () {
+      var ua = navigator.userAgent;
+      if (!/Linux/.test(ua) || /Android/.test(ua)) return;
+      var main = document.getElementById('dl-main');
+      var alt = document.getElementById('dl-alt');
+      var href = main.href;
+      main.href = alt.href;
+      alt.href = href;
+      document.getElementById('dl-main-label').textContent = 'Pobierz dla Linuksa';
+      document.getElementById('dl-alt-label').textContent = 'Pobierz dla Windows';
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+name: Strona
+
+# Publishes the project's page (site/) on GitHub Pages: https://nokkiee.github.io/informatura/
+# The download links and version on the page come from the latest release, so the page is
+# rebuilt whenever a release is published.
+on:
+  push:
+    branches: [main]
+    paths: ['site/**', 'scripts/build-site.js', 'docs/screenshots/**', 'docs/social-preview.png', 'build/icon.*', '.github/workflows/pages.yml']
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Build the page with the latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          read -r VERSION RELEASE_DATE < <(gh release view --repo "$GITHUB_REPOSITORY" --json tagName,publishedAt --jq '"\(.tagName) \(.publishedAt)"')
+          export VERSION RELEASE_DATE
+          node scripts/build-site.js _site
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

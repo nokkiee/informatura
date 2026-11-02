@@ -5,3 +5,4 @@ build/wine/
 *.log
 logs/
 .DS_Store
+_site/

@@ -13,6 +13,8 @@ Zmiany w repozytorium, które trafią do następnej wersji programu (sam program
 - Workflow *Sumy kontrolne* sam dołącza `SHA256SUMS.txt` do każdego publikowanego wydania;
   [SECURITY.md](SECURITY.md) opisuje, jak sprawdzić pobrany plik.
 - Obrazek podglądu repozytorium (`docs/social-preview.png`).
+- Strona projektu na GitHub Pages: [nokkiee.github.io/informatura](https://nokkiee.github.io/informatura/) – opis,
+  zrzuty ekranu, pobieranie najnowszej wersji, wymagania i najczęstsze pytania.
 - Testy e2e czekają dłużej na pierwszy start programu na świeżym runnerze Windows.
 
 ## [1.3.1] – 2026-11-02
