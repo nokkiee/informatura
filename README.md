@@ -240,6 +240,7 @@ tak sprawdzone są formuły z podpowiedzi.
 
 Na GitHubie (Actions) workflow **Testy** uruchamia wszystkie testy na Linuksie i Windowsie, a **Build aplikacji**
 buduje instalator, wersję przenośną, AppImage i .deb, instaluje program i sprawdza, czy zbudowana wersja działa.
+Po opublikowaniu wydania **Sumy kontrolne** dołącza do niego `SHA256SUMS.txt` z sumami SHA-256 wszystkich plików.
 
 Gotową paczkę można szybko sprawdzić. To polecenie otwiera zadanie każdego rodzaju i wypisuje `SELFTEST OK`:
 

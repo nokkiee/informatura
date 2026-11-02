@@ -14,7 +14,8 @@ Sam program działa tak samo jak w 1.3.0.
 - README z wyśrodkowanym logo i odznakami.
 - Automatyczne sprawdzanie podzielone na workflowy *Testy* i *Build aplikacji*; każda zbudowana
   wersja programu jest uruchamiana testowo.
-- Plik `SHA256SUMS.txt` z sumami kontrolnymi przy wydaniu.
+- Plik `SHA256SUMS.txt` z sumami kontrolnymi przy wydaniu – od teraz dołączany automatycznie przez
+  workflow *Sumy kontrolne* przy publikacji każdego wydania.
 
 ## [1.3.0] – 2026-11-01
 

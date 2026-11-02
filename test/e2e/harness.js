@@ -80,7 +80,8 @@ function waitFor(fn, ms = 10000, step = 50) {
   const scenario = require(path.resolve(process.argv[process.argv.length - 1]));
   let code = 0;
   try {
-    await waitFor(() => H.js(`!document.body.classList.contains('loading')`));
+    // the first start on a fresh CI runner (Windows scanning the just-downloaded Electron) can be slow
+    await waitFor(() => H.js(`!document.body.classList.contains('loading')`), 60000);
     await scenario(H);
     if (errors.length) throw new Error(`renderer logged ${errors.length} error(s)`);
     console.log('PASS');
