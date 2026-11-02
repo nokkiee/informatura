@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Luka bezpieczeństwa
+    url: https://github.com/nokkiee/informatura/security/advisories/new
+    about: Zgłoś ją prywatnie – nie w publicznym zgłoszeniu.
+  - name: Najnowsza wersja programu
+    url: https://github.com/nokkiee/informatura/releases/latest
+    about: Zanim zgłosisz błąd, sprawdź, czy występuje w najnowszej wersji.

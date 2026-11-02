@@ -1,0 +1,23 @@
+name: Propozycja
+description: Pomysł na nową funkcję albo usprawnienie.
+title: "[Propozycja] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Czego brakuje albo co przeszkadza?
+      description: Opisz sytuację, w której to by się przydało.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Jak to mogłoby działać?
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Dodatkowe informacje
+      description: Zrzuty ekranu, przykłady z innych programów, linki.

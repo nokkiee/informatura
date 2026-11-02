@@ -1,0 +1,71 @@
+name: Błąd w programie
+description: Coś nie działa albo działa inaczej, niż powinno.
+title: "[Błąd] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Dzięki za zgłoszenie! Im dokładniej opiszesz, co się stało, tym szybciej da się to naprawić.
+        Błąd w treści, danych albo kluczu zadania zgłoś formularzem **Błąd w treści zadania**.
+  - type: input
+    id: version
+    attributes:
+      label: Wersja programu
+      description: Ustawienia → O programie
+      placeholder: np. 1.3.1
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: System
+      options:
+        - Windows 10 / 11 (instalator)
+        - Windows (wersja przenośna)
+        - Linux (AppImage)
+        - Linux (.deb)
+        - inny
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Gdzie
+      description: Zadanie albo ekran, którego dotyczy błąd.
+      placeholder: np. 2023-maj/6.1, Lekcje → Programowanie, Ustawienia
+  - type: dropdown
+    id: lang
+    attributes:
+      label: Język programowania
+      options:
+        - nie dotyczy
+        - Python
+        - C++
+        - Java
+        - SQL
+  - type: textarea
+    id: what
+    attributes:
+      label: Co się stało?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Jak to powtórzyć?
+      placeholder: |
+        1. Otwórz …
+        2. Kliknij …
+        3. …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Czego się spodziewałeś?
+  - type: textarea
+    id: extra
+    attributes:
+      label: Zrzut ekranu, komunikat, kod
+      description: Przeciągnij tu zrzut ekranu albo wklej treść komunikatu lub kodu.

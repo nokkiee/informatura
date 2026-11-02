@@ -1,0 +1,58 @@
+name: Błąd w treści zadania
+description: Treść, dane, klucz odpowiedzi, podpowiedź albo lekcja nie zgadzają się z arkuszem albo zawierają błąd.
+title: "[Treść] "
+labels: [treść]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Wszystkie zadania pochodzą z oryginalnych arkuszy CKE, więc każda niezgodność jest ważna.
+        Podaj, gdzie jest błąd i jak powinno być – najlepiej ze stroną oryginalnego arkusza (przycisk **Arkusz PDF**).
+  - type: dropdown
+    id: exam
+    attributes:
+      label: Matura
+      options:
+        - maj 2023
+        - czerwiec 2023
+        - maj 2024
+        - czerwiec 2024
+        - maj 2025
+        - czerwiec 2025
+        - maj 2026
+        - czerwiec 2026
+        - nie dotyczy (lekcja)
+    validations:
+      required: true
+  - type: input
+    id: task
+    attributes:
+      label: Numer zadania albo lekcja
+      placeholder: np. 6.1 albo Lekcje → Bazy danych → lekcja 3
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Czego dotyczy błąd?
+      options:
+        - treść zadania
+        - plik z danymi
+        - klucz odpowiedzi / ocenianie
+        - podpowiedź
+        - przykładowe rozwiązanie
+        - lekcja albo test lekcji
+        - inne
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: Co się nie zgadza i jak powinno być?
+    validations:
+      required: true
+  - type: input
+    id: page
+    attributes:
+      label: Strona w oryginalnym arkuszu PDF
+      placeholder: np. str. 12

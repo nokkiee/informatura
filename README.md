@@ -267,7 +267,7 @@ INFORMATURA_SELFTEST=1 dist/linux-unpacked/informatura --no-sandbox
 
 ## Współpraca
 
-Zgłoszenia błędów i propozycje są mile widziane – zasady i przygotowanie środowiska opisuje
+Historia wersji jest w [CHANGELOG.md](CHANGELOG.md). Zgłoszenia błędów i propozycje są mile widziane – zasady i przygotowanie środowiska opisuje
 [CONTRIBUTING.md](CONTRIBUTING.md). Obowiązuje [kodeks postępowania](CODE_OF_CONDUCT.md), a luki
 bezpieczeństwa zgłaszaj według [SECURITY.md](SECURITY.md) (nie w publicznych zgłoszeniach).
 

@@ -35,9 +35,30 @@ wydanie, a w opisie wydania podziękuję za zgłoszenie (o ile nie wolisz pozost
 - **Program nie łączy się z internetem** i nie wysyła żadnych danych. Linki do stron otwierają się w
   Twojej przeglądarce. Postępy, kod i ustawienia są zapisywane tylko na Twoim komputerze.
 - **Pliki instalacyjne nie są podpisane cyfrowo.** Pobieraj je tylko z
-  [Releases](https://github.com/nokkiee/informatura/releases) w tym repozytorium.
+  [Releases](https://github.com/nokkiee/informatura/releases) w tym repozytorium. Przy każdym wydaniu
+  jest plik `SHA256SUMS.txt` z sumami kontrolnymi – zobacz niżej, jak sprawdzić pobrany plik.
 
 Za lukę uważamy na przykład: wykonanie kodu albo poleceń bez Twojej wiedzy (np. przez treść zadania,
 plik z danymi albo zapisany stan programu), dostęp do plików spoza folderu programu i folderu
 roboczego bez Twojego działania albo obejście zabezpieczeń okna programu (Content Security Policy,
 izolacja kontekstu).
+
+## Jak sprawdzić pobrany plik
+
+Suma kontrolna SHA-256 to „odcisk palca” pliku: jeśli choć jeden bajt się różni, suma jest zupełnie
+inna. Porównaj sumę pobranego pliku z wierszem dla tego pliku w `SHA256SUMS.txt` z tego samego wydania.
+
+Windows (PowerShell, w folderze z pobranym plikiem):
+
+```bash
+Get-FileHash .\Informatura-Setup-1.3.1.exe -Algorithm SHA256
+```
+
+Linux (w folderze z pobranym plikiem i `SHA256SUMS.txt`):
+
+```bash
+sha256sum --check --ignore-missing SHA256SUMS.txt
+```
+
+Jeśli suma się nie zgadza, nie uruchamiaj pliku – pobierz go ponownie, a gdy problem się powtarza,
+zgłoś to według zasad powyżej.
